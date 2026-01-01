@@ -30,7 +30,6 @@ import { useCallback, useState } from "react";
 import { Skeleton } from "ui/skeleton";
 import { useArchives } from "@/hooks/queries/use-archives";
 import { ArchiveDialog } from "../archive-dialog";
-import { ArchiveDialog } from "../archive-dialog";
 
 export function AppSidebarMenus() {
   const router = useRouter();
