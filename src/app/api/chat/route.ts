@@ -59,6 +59,7 @@ const logger = globalLogger.withDefaults({
 export async function POST(request: Request) {
   try {
     const json = await request.json();
+    console.log("[Chat API] Request received:", JSON.stringify(json, null, 2));
 
     const session = await getSession();
 
@@ -75,6 +76,7 @@ export async function POST(request: Request) {
       imageTool,
       mentions = [],
       attachments = [],
+      knowledgeBaseId,
     } = chatApiSchemaRequestBodySchema.parse(json);
 
     const model = customModelProvider.getModel(chatModel);
@@ -269,10 +271,49 @@ export async function POST(request: Request) {
           .map((v) => filterMcpServerCustomizations(MCP_TOOLS!, v))
           .orElse({});
 
+        // RAG Context Injection
+        let context = "";
+        if (knowledgeBaseId) {
+          const lastUserMessage = messages
+            .slice()
+            .reverse()
+            .find((m) => m.role === "user");
+          if (
+            lastUserMessage &&
+            typeof lastUserMessage.parts[0] === "object" &&
+            "text" in lastUserMessage.parts[0]
+          ) {
+            // Optimization: Only use text parts
+            // We need to import findRelevantChunks.
+            // Assuming dynamic import or top-level import. Top-level is better.
+            try {
+              const { findRelevantChunks } = await import(
+                "@/lib/rag/retrieval"
+              );
+              const query =
+                messages
+                  .filter((m) => m.role === "user")
+                  .slice(-1)[0]
+                  ?.parts.find((p) => p.type === "text")?.text || "";
+              if (query) {
+                const chunks = await findRelevantChunks(query, knowledgeBaseId);
+                if (chunks.length > 0) {
+                  context =
+                    "Use the following context to answer the user's question:\n\n" +
+                    chunks.map((c: any) => c.content).join("\n\n");
+                }
+              }
+            } catch (e) {
+              logger.error("RAG Retrieval Failed", e);
+            }
+          }
+        }
+
         const systemPrompt = mergeSystemPrompt(
           buildUserSystemPrompt(session.user, userPreferences, agent),
           buildMcpServerCustomizationsSystemPrompt(mcpServerCustomizations),
           !supportToolCall && buildToolCallUnsupportedModelSystemPrompt,
+          context,
         );
 
         const IMAGE_TOOL: Record<string, Tool> = useImageTool

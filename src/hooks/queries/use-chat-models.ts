@@ -15,7 +15,7 @@ export const useChatModels = (options?: SWRConfiguration) => {
       }[];
     }[]
   >("/api/chat/models", fetcher, {
-    dedupingInterval: 60_000 * 5,
+    dedupingInterval: 0,
     revalidateOnFocus: false,
     fallbackData: [],
     onSuccess: (data) => {

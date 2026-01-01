@@ -12,12 +12,117 @@ import {
   unique,
   varchar,
   index,
+  vector,
+  integer,
 } from "drizzle-orm/pg-core";
 import { isNotNull } from "drizzle-orm";
 import { DBWorkflow, DBEdge, DBNode } from "app-types/workflow";
 import { UIMessage } from "ai";
 import { ChatMetadata } from "app-types/chat";
 import { TipTapMentionJsonContent } from "@/types/util";
+
+export const TeamTable = pgTable("team", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  name: text("name").notNull(),
+  description: text("description"),
+  ownerId: uuid("owner_id")
+    .notNull()
+    .references(() => UserTable.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const TeamMemberTable = pgTable(
+  "team_member",
+  {
+    id: uuid("id").primaryKey().notNull().defaultRandom(),
+    teamId: uuid("team_id")
+      .notNull()
+      .references(() => TeamTable.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => UserTable.id, { onDelete: "cascade" }),
+    role: varchar("role", { enum: ["owner", "admin", "member"] })
+      .notNull()
+      .default("member"),
+    createdAt: timestamp("created_at")
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => [
+    unique().on(table.teamId, table.userId),
+    index("team_member_user_id_idx").on(table.userId),
+    index("team_member_team_id_idx").on(table.teamId),
+  ],
+);
+
+export const KnowledgeBaseTable = pgTable("knowledge_base", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  name: text("name").notNull(),
+  description: text("description"),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => UserTable.id, { onDelete: "cascade" }),
+  teamId: uuid("team_id").references(() => TeamTable.id, {
+    onDelete: "set null",
+  }),
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const DocumentTable = pgTable("document", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  knowledgeBaseId: uuid("knowledge_base_id")
+    .notNull()
+    .references(() => KnowledgeBaseTable.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  size: integer("size").notNull(), // in bytes
+  type: text("type").notNull(), // mime type
+  status: varchar("status", {
+    enum: ["pending", "processing", "completed", "error"],
+  })
+    .notNull()
+    .default("pending"),
+  error: text("error"),
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const DocumentChunkTable = pgTable(
+  "document_chunk",
+  {
+    id: uuid("id").primaryKey().notNull().defaultRandom(),
+    documentId: uuid("document_id")
+      .notNull()
+      .references(() => DocumentTable.id, { onDelete: "cascade" }),
+    content: text("content").notNull(),
+    embedding: vector("embedding", { dimensions: 1536 }),
+    metadata: json("metadata"),
+    createdAt: timestamp("created_at")
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => [
+    index("document_chunk_embedding_idx").using(
+      "hnsw",
+      table.embedding.op("vector_cosine_ops"),
+    ),
+  ],
+);
+
+export const PipelineTable = pgTable("pipeline", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  name: text("name").notNull(),
+  config: json("config").notNull(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => UserTable.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
 
 export const ChatThreadTable = pgTable("chat_thread", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
@@ -47,6 +152,9 @@ export const AgentTable = pgTable("agent", {
   userId: uuid("user_id")
     .notNull()
     .references(() => UserTable.id, { onDelete: "cascade" }),
+  teamId: uuid("team_id").references(() => TeamTable.id, {
+    onDelete: "set null",
+  }),
   instructions: json("instructions").$type<Agent["instructions"]>(),
   visibility: varchar("visibility", {
     enum: ["public", "private", "readonly"],
@@ -374,3 +482,8 @@ export const ChatExportCommentTable = pgTable("chat_export_comment", {
 export type ArchiveEntity = typeof ArchiveTable.$inferSelect;
 export type ArchiveItemEntity = typeof ArchiveItemTable.$inferSelect;
 export type BookmarkEntity = typeof BookmarkTable.$inferSelect;
+
+export type KnowledgeBaseEntity = typeof KnowledgeBaseTable.$inferSelect;
+export type DocumentEntity = typeof DocumentTable.$inferSelect;
+export type DocumentChunkEntity = typeof DocumentChunkTable.$inferSelect;
+export type PipelineEntity = typeof PipelineTable.$inferSelect;

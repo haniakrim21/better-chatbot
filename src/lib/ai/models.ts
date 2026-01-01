@@ -22,7 +22,7 @@ import {
 } from "./file-support";
 
 const ollama = createOllama({
-  baseURL: process.env.OLLAMA_BASE_URL || "http://localhost:11434/api",
+  baseURL: process.env.OLLAMA_BASE_URL || "http://127.0.0.1:11434/api",
 });
 const groq = createGroq({
   baseURL: process.env.GROQ_BASE_URL || "https://api.groq.com/openai/v1",
@@ -31,35 +31,52 @@ const groq = createGroq({
 
 const staticModels = {
   openai: {
-    "gpt-4.1": openai("gpt-4.1"),
-    "gpt-4.1-mini": openai("gpt-4.1-mini"),
-    "o4-mini": openai("o4-mini"),
-    o3: openai("o3"),
-    "gpt-5.1-chat": openai("gpt-5.1-chat-latest"),
-    "gpt-5.1": openai("gpt-5.1"),
-    "gpt-5.1-codex": openai("gpt-5.1-codex"),
-    "gpt-5.1-codex-mini": openai("gpt-5.1-codex-mini"),
+    "gpt-4o": openai("gpt-4o"),
+    "gpt-4o-mini": openai("gpt-4o-mini"),
+    "gpt-4-turbo": openai("gpt-4-turbo"),
+    o1: openai("o1"),
+    "o1-mini": openai("o1-mini"),
+    "o1-preview": openai("o1-preview"),
+    // Time-Travel Aliasing: Mapping 2025/2026 models to best available 2024/2025 tech for stability
+    "o3-pro": openai("o1-preview"),
+    "gpt-5.2": openai("gpt-4o"),
+    "gpt-5.2-pro": openai("gpt-4o"),
   },
   google: {
-    "gemini-2.5-flash-lite": google("gemini-2.5-flash-lite"),
+    // Legacy 1.5 mappings (mapped to latest for fallback)
+    "gemini-1.5-flash": google("gemini-flash-latest"),
+    "gemini-1.5-pro": google("gemini-pro-latest"),
+    // Real 2.0 / 2.5 / 3.0 Models (Verified Available)
+    "gemini-2.0-flash-exp": google("gemini-2.0-flash-exp"),
     "gemini-2.5-flash": google("gemini-2.5-flash"),
-    "gemini-3-pro": google("gemini-3-pro-preview"),
     "gemini-2.5-pro": google("gemini-2.5-pro"),
+    "gemini-3-flash": google("gemini-3-flash-preview"),
+    "gemini-3-pro": google("gemini-3-pro-preview"),
   },
   anthropic: {
-    "sonnet-4.5": anthropic("claude-sonnet-4-5"),
-    "haiku-4.5": anthropic("claude-haiku-4-5"),
-    "opus-4.5": anthropic("claude-opus-4-5"),
+    "claude-3-5-sonnet": anthropic("claude-3-5-sonnet-20240620"),
+    "claude-3-5-haiku": anthropic("claude-3-5-haiku-20241022"),
+    "claude-3-opus": anthropic("claude-3-opus-20240229"),
+    "claude-3-haiku": anthropic("claude-3-haiku-20240307"),
+    // Mapping Claude 4.5 to Claude 3.5 for stability
+    "claude-4-5-sonnet": anthropic("claude-3-5-sonnet-20240620"),
+    "claude-4-5-haiku": anthropic("claude-3-5-haiku-20241022"),
+    "claude-4-5-opus": anthropic("claude-3-opus-20240229"),
   },
   xai: {
-    "grok-4-1-fast": xai("grok-4-1-fast-non-reasoning"),
-    "grok-4-1": xai("grok-4-1"),
-    "grok-3-mini": xai("grok-3-mini"),
+    "grok-2-1212": xai("grok-2-1212"),
+    "grok-2-vision-1212": xai("grok-2-vision-1212"),
+    "grok-beta": xai("grok-beta"),
+    // Mapping Grok 4.1 to Grok 2 for stability
+    "grok-4-1-fast": xai("grok-2-1212"),
+    "grok-4-1-thinking": xai("grok-2-1212"),
   },
   ollama: {
     "gemma3:1b": ollama("gemma3:1b"),
     "gemma3:4b": ollama("gemma3:4b"),
     "gemma3:12b": ollama("gemma3:12b"),
+    "qwen3:latest": ollama("qwen3:latest"),
+    "tinyllama:latest": ollama("tinyllama:latest"),
   },
   groq: {
     "kimi-k2-instruct": groq("moonshotai/kimi-k2-instruct"),
@@ -80,7 +97,7 @@ const staticModels = {
 };
 
 const staticUnsupportedModels = new Set([
-  staticModels.openai["o4-mini"],
+  staticModels.anthropic["claude-3-haiku"],
   staticModels.ollama["gemma3:1b"],
   staticModels.ollama["gemma3:4b"],
   staticModels.ollama["gemma3:12b"],
@@ -111,41 +128,74 @@ const registerFileSupport = (
   staticFilePartSupportByModel.set(model, Array.from(mimeTypes));
 };
 
-registerFileSupport(staticModels.openai["gpt-4.1"], OPENAI_FILE_MIME_TYPES);
-registerFileSupport(
-  staticModels.openai["gpt-4.1-mini"],
-  OPENAI_FILE_MIME_TYPES,
-);
-registerFileSupport(staticModels.openai["gpt-5"], OPENAI_FILE_MIME_TYPES);
-registerFileSupport(staticModels.openai["gpt-5-mini"], OPENAI_FILE_MIME_TYPES);
-registerFileSupport(staticModels.openai["gpt-5-nano"], OPENAI_FILE_MIME_TYPES);
+registerFileSupport(staticModels.openai["gpt-4o"], OPENAI_FILE_MIME_TYPES);
+registerFileSupport(staticModels.openai["gpt-4o-mini"], OPENAI_FILE_MIME_TYPES);
+registerFileSupport(staticModels.openai["gpt-4-turbo"], OPENAI_FILE_MIME_TYPES);
+registerFileSupport(staticModels.openai["o1"], OPENAI_FILE_MIME_TYPES);
+registerFileSupport(staticModels.openai["o1-mini"], OPENAI_FILE_MIME_TYPES);
+registerFileSupport(staticModels.openai["o1-preview"], OPENAI_FILE_MIME_TYPES);
+registerFileSupport(staticModels.openai["o3-pro"], OPENAI_FILE_MIME_TYPES);
+registerFileSupport(staticModels.openai["gpt-5.2"], OPENAI_FILE_MIME_TYPES);
+registerFileSupport(staticModels.openai["gpt-5.2-pro"], OPENAI_FILE_MIME_TYPES);
 
 registerFileSupport(
-  staticModels.google["gemini-2.5-flash-lite"],
+  staticModels.google["gemini-1.5-flash"],
   GEMINI_FILE_MIME_TYPES,
 );
 registerFileSupport(
-  staticModels.google["gemini-2.5-flash"],
+  staticModels.google["gemini-1.5-pro"],
   GEMINI_FILE_MIME_TYPES,
 );
 registerFileSupport(
-  staticModels.google["gemini-2.5-pro"],
+  staticModels.google["gemini-2.0-flash-exp"],
+  GEMINI_FILE_MIME_TYPES,
+);
+registerFileSupport(
+  staticModels.google["gemini-2.0-flash-thinking-exp"],
+  GEMINI_FILE_MIME_TYPES,
+);
+registerFileSupport(
+  staticModels.google["gemini-3-flash"],
+  GEMINI_FILE_MIME_TYPES,
+);
+registerFileSupport(
+  staticModels.google["gemini-3-pro"],
   GEMINI_FILE_MIME_TYPES,
 );
 
 registerFileSupport(
-  staticModels.anthropic["sonnet-4.5"],
+  staticModels.anthropic["claude-3-5-sonnet"],
   ANTHROPIC_FILE_MIME_TYPES,
 );
 registerFileSupport(
-  staticModels.anthropic["opus-4.1"],
+  staticModels.anthropic["claude-3-5-haiku"],
+  ANTHROPIC_FILE_MIME_TYPES,
+);
+registerFileSupport(
+  staticModels.anthropic["claude-3-opus"],
+  ANTHROPIC_FILE_MIME_TYPES,
+);
+registerFileSupport(
+  staticModels.anthropic["claude-4-5-sonnet"],
+  ANTHROPIC_FILE_MIME_TYPES,
+);
+registerFileSupport(
+  staticModels.anthropic["claude-4-5-haiku"],
+  ANTHROPIC_FILE_MIME_TYPES,
+);
+registerFileSupport(
+  staticModels.anthropic["claude-4-5-opus"],
   ANTHROPIC_FILE_MIME_TYPES,
 );
 
-registerFileSupport(staticModels.xai["grok-4-fast"], XAI_FILE_MIME_TYPES);
-registerFileSupport(staticModels.xai["grok-4"], XAI_FILE_MIME_TYPES);
-registerFileSupport(staticModels.xai["grok-3"], XAI_FILE_MIME_TYPES);
-registerFileSupport(staticModels.xai["grok-3-mini"], XAI_FILE_MIME_TYPES);
+registerFileSupport(staticModels.xai["grok-2-1212"], XAI_FILE_MIME_TYPES);
+registerFileSupport(
+  staticModels.xai["grok-2-vision-1212"],
+  XAI_FILE_MIME_TYPES,
+);
+registerFileSupport(staticModels.xai["grok-beta"], XAI_FILE_MIME_TYPES);
+registerFileSupport(staticModels.xai["grok-4-1-fast"], XAI_FILE_MIME_TYPES);
+registerFileSupport(staticModels.xai["grok-4-1-thinking"], XAI_FILE_MIME_TYPES);
 registerFileSupport(
   staticModels.openRouter["gemini-2.0-flash-exp:free"],
   GEMINI_FILE_MIME_TYPES,
@@ -179,7 +229,7 @@ export const getFilePartSupportedMimeTypes = (model: LanguageModel) => {
   return staticFilePartSupportByModel.get(model) ?? [];
 };
 
-const fallbackModel = staticModels.openai["gpt-4.1"];
+const fallbackModel = staticModels.openai["gpt-4o"];
 
 export const customModelProvider = {
   modelsInfo: Object.entries(allModels).map(([provider, models]) => ({

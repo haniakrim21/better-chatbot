@@ -81,6 +81,7 @@ import { redriectMcpOauth } from "lib/ai/mcp/oauth-redirect";
 import { GeminiIcon } from "ui/gemini-icon";
 import { useChatModels } from "@/hooks/queries/use-chat-models";
 import { OpenAIIcon } from "ui/openai-icon";
+import { KnowledgeBaseSelector } from "./knowledge-base-selector";
 
 interface ToolSelectDropdownProps {
   align?: "start" | "end" | "center";
@@ -89,6 +90,7 @@ interface ToolSelectDropdownProps {
   mentions?: ChatMention[];
   onSelectWorkflow?: (workflow: WorkflowSummary) => void;
   onSelectAgent?: (agent: AgentSummary) => void;
+  onSelectKB?: (kbId: string) => void;
   onGenerateImage?: (provider?: "google" | "openai") => void;
   className?: string;
 }
@@ -109,6 +111,7 @@ export function ToolSelectDropdown({
   onSelectWorkflow,
   onSelectAgent,
   onGenerateImage,
+  onSelectKB,
   mentions,
   className,
 }: ToolSelectDropdownProps) {
@@ -258,6 +261,10 @@ export function ToolSelectDropdown({
           onGenerateImage={onGenerateImage}
           modelInfo={modelInfo}
         />
+        <div className="py-1">
+          <DropdownMenuSeparator />
+        </div>
+        <KnowledgeBaseSelector onSelectKB={onSelectKB} />
         <div className="py-1">
           <DropdownMenuSeparator />
         </div>

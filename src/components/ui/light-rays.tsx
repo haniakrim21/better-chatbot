@@ -31,14 +31,17 @@ interface LightRaysProps {
 }
 
 const hexToRgb = (hex: string): [number, number, number] => {
-  const m = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-  return m
-    ? [
-        parseInt(m[1], 16) / 255,
-        parseInt(m[2], 16) / 255,
-        parseInt(m[3], 16) / 255,
-      ]
-    : [1, 1, 1];
+  hex = hex.replace(/^#/, "");
+  if (hex.length === 3 || hex.length === 4) {
+    hex = hex
+      .split("")
+      .map((char) => char + char)
+      .join("");
+  }
+  const int = parseInt(hex.substring(0, 6), 16);
+  return [(int >> 16) & 255, (int >> 8) & 255, int & 255].map(
+    (c) => c / 255,
+  ) as [number, number, number];
 };
 
 const getAnchorAndDir = (
@@ -158,6 +161,10 @@ const LightRays: React.FC<LightRaysProps> = ({
       const renderer = new Renderer({
         dpr: Math.min(window.devicePixelRatio, 2),
         alpha: true,
+      });
+      console.log("LightRays: WebGL initialized", {
+        w: containerRef.current.clientWidth,
+        h: containerRef.current.clientHeight,
       });
       rendererRef.current = renderer;
 
@@ -482,7 +489,7 @@ void main() {
   return (
     <div
       ref={containerRef}
-      className={`w-full h-full bg-background pointer-events-none z-[3] overflow-hidden relative ${className}`.trim()}
+      className={`w-full h-full pointer-events-none z-[3] overflow-hidden relative ${className}`.trim()}
     />
   );
 };

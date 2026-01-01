@@ -7,6 +7,7 @@ import { AppSidebarMenus } from "./app-sidebar-menus";
 import { AppSidebarAgents } from "./app-sidebar-agents";
 import { AppSidebarThreads } from "./app-sidebar-threads";
 import { SidebarHeaderShared } from "./sidebar-header";
+import { NabdLogo } from "@/components/logo-animated";
 
 import { isShortcutEvent, Shortcuts } from "lib/keyboard-shortcuts";
 import { AppSidebarUser } from "./app-sidebar-user";
@@ -39,7 +40,12 @@ export function AppSidebar({
       className="border-r border-sidebar-border/80"
     >
       <SidebarHeaderShared
-        title="better-chatbot"
+        title={
+          <div className="flex items-center gap-3 py-2">
+            <NabdLogo size={32} />
+            <span className="font-bold text-xl">Nabd</span>
+          </div>
+        }
         href="/"
         enableShortcuts={true}
         onLinkClick={() => {

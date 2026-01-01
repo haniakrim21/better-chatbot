@@ -1,4 +1,7 @@
 import type { NextConfig } from "next";
+
+// Force restart
+
 import createNextIntlPlugin from "next-intl/plugin";
 
 const BUILD_OUTPUT = process.env.NEXT_STANDALONE_OUTPUT
@@ -18,6 +21,20 @@ export default () => {
     experimental: {
       taint: true,
       authInterrupts: true,
+      serverActions: {
+        allowedOrigins: [
+          "localhost:3000",
+          "127.0.0.1:3000",
+          "localhost:3001",
+          "10.138.73.233:3000",
+          "10.138.73.233:3001",
+          "10.138.73.233:3002",
+          "10.138.73.233:3003",
+          "192.168.8.190:3000",
+          "192.168.8.190:3001",
+        ],
+        bodySizeLimit: "2mb",
+      },
     },
   };
   const withNextIntl = createNextIntlPlugin();

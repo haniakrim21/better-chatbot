@@ -188,7 +188,7 @@
       "createAccount": "Create account"
     },
     "Intro": {
-      "description": "Welcome to better-chatbot. Sign in to experience our AI-powered conversational tools."
+      "description": "Welcome to NabdGPT. Sign in to experience our AI-powered conversational tools."
     }
   },
   "Chat": {
@@ -327,6 +327,7 @@
   },
   "Layout": {
     "workflow": "Workflow",
+    "knowledge": "Knowledge",
     "admin": "Admin",
     "users": "Users",
     "toggleSidebar": "Toggle Sidebar",
@@ -380,7 +381,8 @@
     "showLessChats": "Show less",
     "reportAnIssue": "Report an issue",
     "joinCommunity": "Join Community",
-    "userSettings": "User Settings"
+    "userSettings": "User Settings",
+    "adminSettings": "Admin Settings"
   },
   "Archive": {
     "title": "Archive",
@@ -425,7 +427,7 @@
     "generateAgentGreeting": "Hello! I'll help you create your own agent. What would you like to create?",
     "generateAgentDetailedGreeting": "Hello! I'll help you create your own agent. What would you like to create? You can write briefly or in detail.",
     "inputPromptHere": "input prompt here...",
-    "agentNamePlaceholder": "better-agent",
+    "agentNamePlaceholder": "nabd-agent",
     "myAgents": "My Agents",
     "bookmarkedAgents": "Bookmarked Agents",
     "sharedAgents": "Shared Agents",
@@ -752,6 +754,7 @@
     "mcpConfiguration": "MCP Configuration",
     "nameMustContainOnlyAlphanumericCharactersAndHyphens": "Name must contain only alphanumeric characters (A-Z, a-z, 0-9) and hyphens (-)",
     "nameIsRequired": "Name is required",
+    "inputVariablesNotSupported": "Input variables (e.g. '{'input:...'}') are not supported. Please replace them with actual values.",
     "configurationSavedSuccessfully": "Configuration saved successfully",
     "enterMcpServerName": "Enter MCP server name",
     "saveConfiguration": "Save Configuration",

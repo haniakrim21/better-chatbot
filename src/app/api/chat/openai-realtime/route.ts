@@ -28,7 +28,10 @@ const logger = globalLogger.withDefaults({
 
 export async function POST(request: NextRequest) {
   try {
+    console.log("[OpenAI Realtime] Received request");
+
     if (!process.env.OPENAI_API_KEY) {
+      console.error("[OpenAI Realtime] OPENAI_API_KEY is not set");
       return new Response(
         JSON.stringify({ error: "OPENAI_API_KEY is not set" }),
         {
@@ -40,6 +43,7 @@ export async function POST(request: NextRequest) {
     const session = await getSession();
 
     if (!session?.user.id) {
+      console.warn("[OpenAI Realtime] Unauthorized");
       return new Response("Unauthorized", { status: 401 });
     }
 
@@ -111,6 +115,23 @@ export async function POST(request: NextRequest) {
         tools: bindingTools,
       }),
     });
+
+    console.log(
+      "[OpenAI Realtime] Fetched session from OpenAI, status:",
+      r.status,
+    );
+
+    if (!r.ok) {
+      const errText = await r.text();
+      console.error("[OpenAI Realtime] Failed to create session:", errText);
+      return new Response(
+        JSON.stringify({
+          error: "Failed to create OpenAI session",
+          details: errText,
+        }),
+        { status: 500 },
+      );
+    }
 
     return new Response(r.body, {
       status: 200,

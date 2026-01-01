@@ -1,8 +1,7 @@
 "use client";
 
 import { getToolName, isToolUIPart, TextPart } from "ai";
-import { DEFAULT_VOICE_TOOLS, UIMessageWithCompleted } from "lib/ai/speech";
-
+import { UIMessageWithCompleted } from "lib/ai/speech";
 import {
   OPENAI_VOICE,
   useOpenAIVoiceChat as OpenAIVoiceChat,
@@ -40,7 +39,6 @@ import {
   DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "ui/dropdown-menu";
-import { GeminiIcon } from "ui/gemini-icon";
 import { MessageLoading } from "ui/message-loading";
 import { OpenAIIcon } from "ui/openai-icon";
 import { Tooltip, TooltipContent, TooltipTrigger } from "ui/tooltip";
@@ -56,6 +54,7 @@ import { isShortcutEvent, Shortcuts } from "lib/keyboard-shortcuts";
 import { useAgent } from "@/hooks/queries/use-agent";
 import { ChatMention } from "app-types/chat";
 import { Avatar, AvatarFallback, AvatarImage } from "ui/avatar";
+import { DEFAULT_VOICE_TOOLS } from "lib/ai/speech";
 
 const prependTools: EnabledTools[] = [
   {
@@ -122,6 +121,12 @@ export function ChatBotVoice() {
     );
   }, [agentId, agent, mcpList, allowedMcpServers]);
 
+  const openaiSession = OpenAIVoiceChat({
+    toolMentions,
+    agentId,
+    ...voiceChat.options.providerOptions,
+  });
+
   const {
     isListening,
     isAssistantSpeaking,
@@ -134,11 +139,7 @@ export function ChatBotVoice() {
     startListening,
     stop,
     stopListening,
-  } = OpenAIVoiceChat({
-    toolMentions,
-    agentId,
-    ...voiceChat.options.providerOptions,
-  });
+  } = openaiSession;
 
   const startWithSound = useCallback(() => {
     if (!startAudio.current) {
@@ -264,8 +265,6 @@ export function ChatBotVoice() {
   }, [error]);
 
   useEffect(() => {
-    if (voiceChat.isOpen) return;
-
     const handleKeyDown = (e: KeyboardEvent) => {
       const isVoiceChatEvent = isShortcutEvent(e, Shortcuts.toggleVoiceChat);
       if (isVoiceChatEvent) {
@@ -399,24 +398,6 @@ export function ChatBotVoice() {
                             )}
                           </DropdownMenuSubContent>
                         </DropdownMenuPortal>
-                      </DropdownMenuSub>
-                      <DropdownMenuSub>
-                        <DropdownMenuSub>
-                          <DropdownMenuSubTrigger
-                            className="flex items-center gap-2 text-muted-foreground"
-                            icon=""
-                          >
-                            <GeminiIcon className="size-3.5" />
-                            Gemini
-                          </DropdownMenuSubTrigger>
-                          <DropdownMenuPortal>
-                            <DropdownMenuSubContent>
-                              <div className="text-xs text-muted-foreground p-6">
-                                Not Implemented Yet
-                              </div>
-                            </DropdownMenuSubContent>
-                          </DropdownMenuPortal>
-                        </DropdownMenuSub>
                       </DropdownMenuSub>
                     </DropdownMenuGroup>
                   </DropdownMenuContent>
@@ -586,7 +567,7 @@ function ConversationView({
                         .map((word, wordIndex) => (
                           <span
                             key={wordIndex}
-                            className="animate-in fade-in duration-3000"
+                            className="animate-in fade-in duration-300"
                           >
                             {word}{" "}
                           </span>
@@ -638,7 +619,7 @@ function CompactMessageView({
           return (
             <Dialog key={index}>
               <DialogTrigger asChild>
-                <div className="animate-in slide-in-from-bottom-2 fade-in duration-3000 max-w-xs w-full">
+                <div className="animate-in slide-in-from-bottom-2 fade-in duration-300 max-w-xs w-full">
                   <Button
                     variant={"outline"}
                     size={"icon"}
@@ -699,7 +680,7 @@ function CompactMessageView({
               {textPart.text?.split(" ").map((word, wordIndex) => (
                 <span
                   key={wordIndex}
-                  className="animate-in fade-in duration-5000"
+                  className="animate-in fade-in duration-300"
                 >
                   {word}{" "}
                 </span>

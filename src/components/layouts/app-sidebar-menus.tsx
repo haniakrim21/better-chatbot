@@ -23,16 +23,16 @@ import {
   FolderSearchIcon,
   PlusIcon,
   Waypoints,
+  BookOpenIcon,
+  UsersIcon,
 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { Skeleton } from "ui/skeleton";
 import { useArchives } from "@/hooks/queries/use-archives";
 import { ArchiveDialog } from "../archive-dialog";
-import { getIsUserAdmin } from "lib/user/utils";
-import { BasicUser } from "app-types/user";
-import { AppSidebarAdmin } from "./app-sidebar-menu-admin";
+import { ArchiveDialog } from "../archive-dialog";
 
-export function AppSidebarMenus({ user }: { user?: BasicUser }) {
+export function AppSidebarMenus() {
   const router = useRouter();
   const t = useTranslations("");
   const { setOpenMobile } = useSidebar();
@@ -101,7 +101,31 @@ export function AppSidebarMenus({ user }: { user?: BasicUser }) {
             </SidebarMenuItem>
           </Tooltip>
         </SidebarMenu>
-        {getIsUserAdmin(user) && <AppSidebarAdmin />}
+        <SidebarMenu>
+          <Tooltip>
+            <SidebarMenuItem>
+              <Link href="/knowledge">
+                <SidebarMenuButton className="font-semibold">
+                  <BookOpenIcon className="size-4" />
+                  {t("Layout.knowledge")}
+                </SidebarMenuButton>
+              </Link>
+            </SidebarMenuItem>
+          </Tooltip>
+        </SidebarMenu>
+        <SidebarMenu>
+          <Tooltip>
+            <SidebarMenuItem>
+              <Link href="/teams">
+                <SidebarMenuButton className="font-semibold">
+                  <UsersIcon className="size-4" />
+                  Teams
+                </SidebarMenuButton>
+              </Link>
+            </SidebarMenuItem>
+          </Tooltip>
+        </SidebarMenu>
+
         <SidebarMenu className="group/archive">
           <Tooltip>
             <SidebarMenuItem>

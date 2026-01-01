@@ -21,17 +21,16 @@ interface ParticlesProps {
 
 const hexToRgb = (hex: string): [number, number, number] => {
   hex = hex.replace(/^#/, "");
-  if (hex.length === 3) {
+  if (hex.length === 3 || hex.length === 4) {
     hex = hex
       .split("")
-      .map((c) => c + c)
+      .map((char) => char + char)
       .join("");
   }
-  const int = parseInt(hex, 16);
-  const r = ((int >> 16) & 255) / 255;
-  const g = ((int >> 8) & 255) / 255;
-  const b = (int & 255) / 255;
-  return [r, g, b];
+  const int = parseInt(hex.substring(0, 6), 16);
+  return [(int >> 16) & 255, (int >> 8) & 255, int & 255].map(
+    (c) => c / 255,
+  ) as [number, number, number];
 };
 
 const vertex = /* glsl */ `
@@ -135,6 +134,7 @@ const Particles: React.FC<ParticlesProps> = ({
     const gl = renderer.gl;
     container.appendChild(gl.canvas);
     gl.clearColor(0, 0, 0, 0);
+    console.log("Particles: WebGL initialized");
 
     const camera = new Camera(gl, { fov: 15 });
     camera.position.set(0, 0, cameraDistance);

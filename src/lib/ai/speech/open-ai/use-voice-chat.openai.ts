@@ -383,17 +383,37 @@ export function useOpenAIVoiceChat(props?: VoiceChatOptions): VoiceChatSession {
     setError(null);
     setMessages([]);
     try {
+      console.log("[OpenAI Hook] Creating session...");
       const session = await createSession();
-      console.log({ session });
+      console.log("[OpenAI Hook] Session created:", session);
       const sessionToken = session.client_secret.value;
       const pc = new RTCPeerConnection();
       if (!audioElement.current) {
         audioElement.current = document.createElement("audio");
       }
       audioElement.current.autoplay = true;
+
+      // Ensure audio context is ready if needed by browser policy
+      try {
+        const AudioContext =
+          window.AudioContext || (window as any).webkitAudioContext;
+        if (AudioContext) {
+          const ctx = new AudioContext();
+          if (ctx.state === "suspended") {
+            await ctx.resume();
+          }
+          ctx.close(); // Just to trigger permission
+        }
+      } catch (_e) {
+        // Ignore
+      }
+
       pc.ontrack = (e) => {
         if (audioElement.current) {
           audioElement.current.srcObject = e.streams[0];
+          audioElement.current
+            .play()
+            .catch((e) => console.error("Audio play failed", e));
         }
       };
       if (!audioStream.current) {

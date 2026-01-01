@@ -26,6 +26,7 @@ export const AgentCreateSchema = z
       })
       .optional(),
     userId: z.string(),
+    teamId: z.string().nullable().optional(),
     instructions: AgentInstructionsSchema,
     visibility: VisibilitySchema.optional().default("private"),
   })
@@ -42,6 +43,7 @@ export const AgentUpdateSchema = z
       })
       .optional(),
     instructions: AgentInstructionsSchema.optional(),
+    teamId: z.string().nullable().optional(),
     visibility: VisibilitySchema.optional(),
   })
   .strip();
@@ -60,6 +62,7 @@ export type AgentSummary = {
   description?: string;
   icon?: AgentIcon;
   userId: string;
+  teamId?: string | null;
   visibility: AgentVisibility;
   createdAt: Date;
   updatedAt: Date;

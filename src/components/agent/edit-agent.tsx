@@ -36,6 +36,7 @@ import { ShareableActions, Visibility } from "@/components/shareable-actions";
 import { GenerateAgentDialog } from "./generate-agent-dialog";
 import { AgentIconPicker } from "./agent-icon-picker";
 import { AgentToolSelector } from "./agent-tool-selector";
+import { TeamSelector } from "@/components/teams/team-selector";
 import {
   RandomDataGeneratorExample,
   WeatherExample,
@@ -49,6 +50,7 @@ const defaultConfig = (): PartialBy<
   return {
     name: "",
     description: "",
+    teamId: null,
     icon: {
       type: "emoji",
       value:
@@ -442,6 +444,18 @@ export default function EditAgent({
               readOnly={!hasEditAccess}
             />
           )}
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <Label>Team Access</Label>
+          <TeamSelector
+            value={agent.teamId}
+            onChange={(teamId) => setAgent({ teamId })}
+            className="w-full relative z-50"
+          />
+          <p className="text-xs text-muted-foreground">
+            Assign this agent to a team to share it with members.
+          </p>
         </div>
 
         <div className="mt-10 flex items-center gap-2">

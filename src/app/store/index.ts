@@ -41,6 +41,9 @@ export interface AppState {
   threadImageToolModel: {
     [threadId: string]: string | undefined;
   };
+  threadKnowledgeBase: {
+    [threadId: string]: string | undefined;
+  };
   toolPresets: {
     allowedMcpServers?: Record<string, AllowedMCPServer>;
     allowedAppDefaultToolkit?: AppDefaultToolkit[];
@@ -78,6 +81,7 @@ const initialState: AppState = {
   threadMentions: {},
   threadFiles: {},
   threadImageToolModel: {},
+  threadKnowledgeBase: {},
   mcpList: [],
   agentList: [],
   workflowToolList: [],

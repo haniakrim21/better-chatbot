@@ -73,6 +73,9 @@ interface PromptInputProps {
   onFocus?: () => void;
 }
 
+import { VoiceToTextButton } from "./chat/voice-to-text-button";
+import { PromptEnhancer } from "./chat/prompt-enhancer";
+
 const ChatMentionInput = dynamic(() => import("./chat-mention-input"), {
   ssr: false,
   loading() {
@@ -243,6 +246,20 @@ export default function PromptInput({
       editorRef.current?.commands.focus();
     },
     [threadId, editorRef],
+  );
+
+  const handleSelectKB = useCallback(
+    (kbId: string) => {
+      if (!threadId) return;
+      setIsUploadDropdownOpen(false);
+      appStoreMutate((prev) => ({
+        threadKnowledgeBase: {
+          ...prev.threadKnowledgeBase,
+          [threadId]: kbId ? kbId : undefined,
+        },
+      }));
+    },
+    [threadId, appStoreMutate],
   );
 
   const addMention = useCallback(
@@ -576,10 +593,20 @@ export default function PromptInput({
                         onSelectWorkflow={onSelectWorkflow}
                         onSelectAgent={onSelectAgent}
                         onGenerateImage={handleGenerateImage}
+                        onSelectKB={handleSelectKB}
                         mentions={mentions}
                       />
                     </>
                   ))}
+                <VoiceToTextButton
+                  onTranscript={(text) => setInput(input + text)}
+                  disabled={isLoading || voiceDisabled}
+                />
+                <PromptEnhancer
+                  input={input}
+                  setInput={setInput}
+                  disabled={isLoading}
+                />
 
                 <div className="flex-1" />
 

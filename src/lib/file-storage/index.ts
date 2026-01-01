@@ -3,15 +3,21 @@ import { IS_DEV } from "lib/const";
 import type { FileStorage } from "./file-storage.interface";
 import { createS3FileStorage } from "./s3-file-storage";
 import { createVercelBlobStorage } from "./vercel-blob-storage";
+import { createLocalFileStorage } from "./local-file-storage";
 import logger from "logger";
 
-export type FileStorageDriver = "vercel-blob" | "s3";
+export type FileStorageDriver = "vercel-blob" | "s3" | "local";
 
 const resolveDriver = (): FileStorageDriver => {
   const candidate = process.env.FILE_STORAGE_TYPE;
 
   const normalized = candidate?.trim().toLowerCase();
-  if (normalized === "vercel-blob" || normalized === "s3") {
+  if (
+    normalized === "vercel-blob" ||
+    normalized === "s3" ||
+    normalized === "local"
+  ) {
+    // @ts-ignore
     return normalized;
   }
 
@@ -33,6 +39,8 @@ const createFileStorage = (): FileStorage => {
       return createVercelBlobStorage();
     case "s3":
       return createS3FileStorage();
+    case "local":
+      return createLocalFileStorage();
     default: {
       const exhaustiveCheck: never = storageDriver;
       throw new Error(`Unsupported file storage driver: ${exhaustiveCheck}`);

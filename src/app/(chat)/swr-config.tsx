@@ -25,8 +25,12 @@ export function SWRConfigProvider({
   useEffect(() => {
     console.log(
       "%c█▄▄ █▀▀ ▀█▀ ▀█▀ █▀▀ █▀█\n█▄█ █▄▄  █   █  █▄▄ █▀▄\n\n%c⛓️ Just a Better Chatbot\nhttps://github.com/cgoinglove/better-chatbot",
-      "color: #00d4ff; font-weight: bold; font-family: monospace; font-size: 16px; text-shadow: 0 0 10px #00d4ff;",
-      "color: #888; font-size: 12px;",
+      "font-family:monospace;color:transparent;font-size:30px;-webkit-text-stroke:2px #3b82f6;text-shadow: 0 0 10px rgba(59,130,246,0.3);",
+      "font-family:monospace;font-size:14px;color:#888;",
+    );
+    console.log(
+      "%cNabdGPT",
+      "font-family:sans-serif;font-size:24px;font-weight:bold;color:#a855f7;text-shadow: 0 0 20px rgba(168,85,247,0.5);",
     );
   }, []);
   return <SWRConfig value={config}>{children}</SWRConfig>;

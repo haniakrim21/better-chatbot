@@ -106,6 +106,18 @@ export default function MCPEditor({
     const result = isMaybeRemoteConfig(jsonConfig)
       ? MCPRemoteConfigZodSchema.safeParse(jsonConfig)
       : MCPStdioConfigZodSchema.safeParse(jsonConfig);
+
+    if (JSON.stringify(jsonConfig).includes("${input:")) {
+      handleErrorWithToast(
+        new Error(
+          t("MCP.inputVariablesNotSupported") ||
+            "Input variables (e.g. ${input:...}) are not supported. Please replace them with actual values.",
+        ),
+        "mcp-editor-error",
+      );
+      return false;
+    }
+
     if (!result.success) {
       handleErrorWithToast(result.error, "mcp-editor-error");
     }
