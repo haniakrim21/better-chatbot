@@ -5,6 +5,7 @@ import {
 import { Tool } from "ai";
 import { tag } from "lib/tag";
 import { z } from "zod";
+import { McpServerEntity } from "lib/db/pg/schema.pg";
 
 export const MCPRemoteConfigZodSchema = z.object({
   url: z.string().url().describe("The URL of the SSE endpoint"),
@@ -62,6 +63,7 @@ export type MCPServerInfo = {
   };
   tags?: string[];
   usageCount?: number;
+  canManage?: boolean;
 };
 
 export type McpServerInsert = {
@@ -70,6 +72,7 @@ export type McpServerInsert = {
   config: MCPServerConfig;
   id?: string;
   userId: string;
+  teamId?: string | null;
   visibility?: "public" | "private";
   tags?: string[] | null;
   usageCount?: number;
@@ -81,6 +84,7 @@ export type McpServerSelect = {
   config: MCPServerConfig;
   id: string;
   userId: string;
+  teamId?: string | null;
   visibility: "public" | "private";
   userName?: string | null;
   userAvatar?: string | null;
@@ -102,7 +106,10 @@ export interface MCPRepository {
   selectById(id: string): Promise<McpServerSelect | null>;
   selectByServerName(name: string): Promise<McpServerSelect | null>;
   selectAll(): Promise<McpServerSelect[]>;
-  selectAllForUser(userId: string): Promise<McpServerSelect[]>;
+  selectAllForUser(
+    userId: string,
+    teamIds?: string[],
+  ): Promise<McpServerEntity[]>;
   deleteById(id: string): Promise<void>;
   existsByServerName(name: string): Promise<boolean>;
 

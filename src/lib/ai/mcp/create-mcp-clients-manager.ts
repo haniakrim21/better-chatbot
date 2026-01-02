@@ -32,7 +32,7 @@ import { colorize } from "consola/utils";
  */
 export interface MCPConfigStorage {
   init(manager: MCPClientsManager): Promise<void>;
-  loadAll(): Promise<McpServerSelect[]>;
+  loadAll(opt?: { teamIds?: string[] }): Promise<McpServerSelect[]>;
   save(server: McpServerInsert): Promise<McpServerSelect>;
   delete(id: string): Promise<void>;
   has(id: string): Promise<boolean>;
@@ -114,9 +114,50 @@ export class MCPClientsManager {
   /**
    * Returns all tools from all clients as a flat object
    */
-  async tools(): Promise<Record<string, VercelAIMcpTool>> {
+  async tools(opt?: {
+    teamIds?: string[];
+  }): Promise<Record<string, VercelAIMcpTool>> {
     await this.waitInitialized();
-    return Array.from(this.clients.entries()).reduce(
+
+    // If teamIds are provided, we need to ensure we have clients for those team servers
+    if (opt?.teamIds?.length && this.storage) {
+      const allConfigs = await this.storage.loadAll({ teamIds: opt.teamIds });
+      await Promise.all(
+        allConfigs
+          .filter((c) => c.enabled !== false)
+          .map(async ({ id, name, config }) => {
+            if (!this.clients.has(id)) {
+              await this.addClient(id, name, config).catch((error) => {
+                this.logger.error(
+                  `Failed to initialize client ${name}:`,
+                  error,
+                );
+              });
+            }
+          }),
+      );
+    }
+    // Filter clients based on teamIds (and public/owned logic implied by repository) if needed
+    // But since tools() returns all initialized tools, and we just initialized team tools,
+    // we might receive tools from other users if shared memory?
+    // Actually MCPClientsManager is globalSingle, so it holds ALL clients.
+    // We should filter the returned tools based on visibility.
+    // However, existing logic just returns everything.
+    // The safest way is to filter the clients we iterate over.
+
+    let clientsToUse = Array.from(this.clients.entries());
+
+    if (opt?.teamIds?.length && this.storage) {
+      // Re-fetch allowed configs for this user context (public + user-owned + team-owned)
+      // Optimization: loadAll with teamIds returns exactly what this user should see.
+      const allowedConfigs = await this.storage.loadAll({
+        teamIds: opt.teamIds,
+      });
+      const allowedIds = new Set(allowedConfigs.map((c) => c.id));
+      clientsToUse = clientsToUse.filter(([id]) => allowedIds.has(id));
+    }
+
+    return clientsToUse.reduce(
       (acc, [id, client]) => {
         if (!client.client?.toolInfo?.length) return acc;
         const clientName = client.name;

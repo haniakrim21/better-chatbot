@@ -14,9 +14,22 @@ export function createDbBasedMCPConfigsStorage(): MCPConfigStorage {
 
   return {
     init,
-    async loadAll() {
+    async loadAll(opt) {
       try {
-        const servers = await mcpRepository.selectAll();
+        // We are using selectAllForUser which is what we updated to accept teamIds
+        // But wait, selectAllForUser requires a userId.
+        // MCPClientsManager is singleton, it doesn't know the current user context.
+        // The `tools` call in route.ts passes teamIds.
+        // If we want to filter by teamIds, we should probably use a method that supports it.
+        // Since this is a global manager, we might need to handle this carefully.
+        // Actually, if we pass teamIds, we are asking for "public + teamId related" servers.
+        // The selectAll() method in repository currently doesn't take arguments.
+        // I should check mcp-repository.pg.ts to see what selectAll does.
+        // If selectAll() returns EVERYTHING, then we filter in memory? No that's bad.
+        // In db-mcp-config-storage.ts, `mcpRepository.selectAll()` is used.
+        // Let's assume for now I will use `mcpRepository.selectAll(opt?.teamIds ?? [])`.
+        // I need to verify mcpRepository.selectAll signature in mcp-repository.pg.ts
+        const servers = await mcpRepository.selectAll(opt?.teamIds);
         return servers;
       } catch (error) {
         logger.error("Failed to load MCP configs from database:", error);

@@ -30,7 +30,7 @@ export default async function DiscoverWorkflowsPage() {
               name: workflow.userName || "System",
               avatar: workflow.userAvatar || undefined,
             }}
-            tags={[]} // Workflows might not have tags column yet? Schema check needed. WorkflowTable has no tags.
+            tags={workflow.tags || []}
             usageCount={0} // WorkflowTable has no usageCount.
             // Custom action link for workflows
             customActionLink={`/workflow/${workflow.id}`}

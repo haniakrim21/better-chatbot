@@ -20,6 +20,7 @@ export function DiscoverLayout({ children }: DiscoverLayoutProps) {
     if (pathname.includes("/discover/agents")) return "agents";
     if (pathname.includes("/discover/mcp")) return "mcp";
     if (pathname.includes("/discover/workflows")) return "workflows";
+
     if (pathname.includes("/discover/models")) return "models";
     return "featured";
   };
@@ -89,6 +90,7 @@ export function DiscoverLayout({ children }: DiscoverLayoutProps) {
                 Workflows
               </Link>
             </TabsTrigger>
+
             {/* Future Models Tab */}
             {/* <Link href="/discover/models">
                  <TabsTrigger value="models">{t("Discover.Tabs.Models")}</TabsTrigger>

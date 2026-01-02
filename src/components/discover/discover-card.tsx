@@ -9,6 +9,7 @@ import { Button } from "ui/button";
 import { Badge } from "ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "ui/avatar";
 import { ArrowUpRight, User, Download, MessageSquare } from "lucide-react";
+import * as Icons from "lucide-react";
 import { cn } from "lib/utils";
 
 interface DiscoverCardProps {
@@ -197,6 +198,25 @@ export function DiscoverCard({
       }
       if (typedIcon.type === "image") {
         return renderImage(typedIcon.value);
+      }
+      if (typedIcon.type === "lucide") {
+        // Convert kebab-case to PascalCase for Lucide (e.g. 'book-open' -> 'BookOpen')
+        const iconName = typedIcon.value
+          .split("-")
+          .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
+          .join("");
+
+        const IconComponent = (Icons as any)[iconName];
+        if (IconComponent) {
+          return (
+            <IconComponent
+              className="size-6"
+              style={{ color: (typedIcon as any).color }}
+            />
+          );
+        }
+        // Fallback if icon not found
+        return <span className="text-xl">?</span>;
       }
     }
 

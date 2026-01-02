@@ -396,8 +396,13 @@ export const workflowToVercelAITools = (
 export const loadMcpTools = (opt?: {
   mentions?: ChatMention[];
   allowedMcpServers?: Record<string, AllowedMCPServer>;
+  teamIds?: string[];
 }) =>
-  safe(() => mcpClientsManager.tools())
+  safe(() =>
+    mcpClientsManager.tools({
+      teamIds: opt?.teamIds,
+    }),
+  )
     .map((tools) => {
       if (opt?.mentions?.length) {
         return filterMCPToolsByMentions(tools, opt.mentions);
@@ -409,6 +414,8 @@ export const loadMcpTools = (opt?: {
 export const loadWorkFlowTools = (opt: {
   mentions?: ChatMention[];
   dataStream: UIMessageStreamWriter;
+  userId?: string;
+  teamIds?: string[];
 }) =>
   safe(() =>
     opt?.mentions?.length
@@ -420,7 +427,9 @@ export const loadWorkFlowTools = (opt: {
                 (v as Extract<ChatMention, { type: "workflow" }>).workflowId,
             ),
         )
-      : [],
+      : opt.userId
+        ? workflowRepository.selectAll(opt.userId, opt.teamIds)
+        : [],
   )
     .map((tools) => workflowToVercelAITools(tools, opt.dataStream))
     .orElse({} as Record<string, VercelAIWorkflowTool>);

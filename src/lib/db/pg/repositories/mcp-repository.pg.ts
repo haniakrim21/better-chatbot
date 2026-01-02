@@ -1,6 +1,6 @@
 import { pgDb as db } from "../db.pg";
 import { McpServerTable, UserTable } from "../schema.pg";
-import { eq, or, desc, sql } from "drizzle-orm";
+import { eq, or, desc, sql, inArray } from "drizzle-orm";
 import { generateUUID } from "lib/utils";
 import type { MCPRepository } from "app-types/mcp";
 
@@ -19,6 +19,7 @@ export const pgMcpRepository: MCPRepository = {
         enabled: true,
         createdAt: new Date(),
         updatedAt: new Date(),
+        teamId: undefined, // Default to null/undefined
       })
       .onConflictDoUpdate({
         target: [McpServerTable.id],
@@ -47,23 +48,35 @@ export const pgMcpRepository: MCPRepository = {
     };
   },
 
-  async selectAll() {
-    const results = await db.select().from(McpServerTable);
+  async selectAll(teamIds?: string[]) {
+    const results = await db
+      .select()
+      .from(McpServerTable)
+      .where(
+        or(
+          eq(McpServerTable.visibility, "public"),
+          teamIds && teamIds.length > 0
+            ? inArray(McpServerTable.teamId, teamIds)
+            : undefined,
+        ),
+      );
     return results.map((result) => ({
       ...result,
       tags: result.tags ?? undefined,
     }));
   },
 
-  async selectAllForUser(userId) {
-    // Get user's own MCP servers and featured ones
+  async selectAllForUser(userId, teamIds = []) {
+    // Get user's own MCP servers, public ones, AND team-shared ones
     const results = await db
       .select({
         id: McpServerTable.id,
         name: McpServerTable.name,
+        description: McpServerTable.description,
         config: McpServerTable.config,
         enabled: McpServerTable.enabled,
         userId: McpServerTable.userId,
+        teamId: McpServerTable.teamId,
         visibility: McpServerTable.visibility,
         createdAt: McpServerTable.createdAt,
         updatedAt: McpServerTable.updatedAt,
@@ -78,12 +91,15 @@ export const pgMcpRepository: MCPRepository = {
         or(
           eq(McpServerTable.userId, userId),
           eq(McpServerTable.visibility, "public"),
+          teamIds.length > 0
+            ? inArray(McpServerTable.teamId, teamIds)
+            : undefined,
         ),
       )
       .orderBy(desc(McpServerTable.createdAt));
     return results.map((result) => ({
       ...result,
-      tags: result.tags ?? undefined,
+      tags: result.tags ?? null,
       userName: result.userName ?? undefined,
       userAvatar: result.userAvatar ?? undefined,
     }));

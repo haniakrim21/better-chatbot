@@ -185,7 +185,7 @@ export default function MCPDashboard({ message, user }: MCPDashboardProps) {
                   className="hidden sm:block"
                 >
                   <Button className="font-semibold" variant={"ghost"}>
-                    {t("marketplace")}
+                    Browse Smithery
                   </Button>
                 </Link>
               )}

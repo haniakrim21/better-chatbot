@@ -25,6 +25,7 @@ import {
   Waypoints,
   BookOpenIcon,
   UsersIcon,
+  Compass,
 } from "lucide-react";
 import { useCallback, useState } from "react";
 import { Skeleton } from "ui/skeleton";
@@ -79,23 +80,9 @@ export function AppSidebarMenus() {
         <SidebarMenu>
           <Tooltip>
             <SidebarMenuItem>
-              <Link href="/mcp">
-                <SidebarMenuButton className="font-semibold">
-                  <MCPIcon className="size-4 fill-accent-foreground" />
-                  {t("Layout.mcpConfiguration")}
-                </SidebarMenuButton>
-              </Link>
-            </SidebarMenuItem>
-          </Tooltip>
-        </SidebarMenu>
-        <SidebarMenu>
-          <Tooltip>
-            <SidebarMenuItem>
               <Link href="/discover">
                 <SidebarMenuButton className="font-semibold">
-                  <div className="size-4 flex items-center justify-center">
-                    <span className="text-sm">🧭</span>
-                  </div>
+                  <Compass className="size-4" />
                   {t("Discover.title")}
                 </SidebarMenuButton>
               </Link>
@@ -133,6 +120,18 @@ export function AppSidebarMenus() {
                 <SidebarMenuButton className="font-semibold">
                   <UsersIcon className="size-4" />
                   Teams
+                </SidebarMenuButton>
+              </Link>
+            </SidebarMenuItem>
+          </Tooltip>
+        </SidebarMenu>
+        <SidebarMenu>
+          <Tooltip>
+            <SidebarMenuItem>
+              <Link href="/mcp">
+                <SidebarMenuButton className="font-semibold">
+                  <MCPIcon className="size-4 fill-accent-foreground" />
+                  {t("Layout.mcpConfiguration")}
                 </SidebarMenuButton>
               </Link>
             </SidebarMenuItem>

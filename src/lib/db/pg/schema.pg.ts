@@ -219,6 +219,9 @@ export const McpServerTable = pgTable("mcp_server", {
   userId: uuid("user_id")
     .notNull()
     .references(() => UserTable.id, { onDelete: "cascade" }),
+  teamId: uuid("team_id").references(() => TeamTable.id, {
+    onDelete: "set null",
+  }),
   visibility: varchar("visibility", {
     enum: ["public", "private"],
   })
@@ -356,9 +359,13 @@ export const WorkflowTable = pgTable("workflow", {
   })
     .notNull()
     .default("private"),
+  tags: json("tags").$type<string[]>(),
   userId: uuid("user_id")
     .notNull()
     .references(() => UserTable.id, { onDelete: "cascade" }),
+  teamId: uuid("team_id").references(() => TeamTable.id, {
+    onDelete: "set null",
+  }),
   createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });

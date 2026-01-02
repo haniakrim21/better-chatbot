@@ -14,6 +14,10 @@ import { customModelProvider, isToolCallUnsupportedModel } from "lib/ai/models";
 import { mcpClientsManager } from "lib/ai/mcp/mcp-manager";
 
 import { agentRepository, chatRepository } from "lib/db/repository";
+import { userRepository } from "lib/db/repository";
+import { pgDb as db } from "lib/db/pg/db.pg";
+import { KnowledgeBaseTable } from "lib/db/pg/schema.pg";
+import { and, eq, or, inArray } from "drizzle-orm";
 import globalLogger from "logger";
 import {
   buildMcpServerCustomizationsSystemPrompt,
@@ -211,12 +215,15 @@ export async function POST(request: Request) {
         logger.info(
           `mcp-server count: ${mcpClients.length}, mcp-tools count :${Object.keys(mcpTools).length}`,
         );
+        const teamIds = await userRepository.getTeamsByUserId(session.user.id);
+
         const MCP_TOOLS = await safe()
           .map(errorIf(() => !isToolCallAllowed && "Not allowed"))
           .map(() =>
             loadMcpTools({
               mentions,
               allowedMcpServers,
+              teamIds,
             }),
           )
           .orElse({});
@@ -227,6 +234,8 @@ export async function POST(request: Request) {
             loadWorkFlowTools({
               mentions,
               dataStream,
+              userId: session.user.id,
+              teamIds,
             }),
           )
           .orElse({});
@@ -283,28 +292,54 @@ export async function POST(request: Request) {
             typeof lastUserMessage.parts[0] === "object" &&
             "text" in lastUserMessage.parts[0]
           ) {
-            // Optimization: Only use text parts
-            // We need to import findRelevantChunks.
-            // Assuming dynamic import or top-level import. Top-level is better.
-            try {
-              const { findRelevantChunks } = await import(
-                "@/lib/rag/retrieval"
+            // Verify access to knowledge base
+            const [hasAccess] = await db
+              .select({ id: KnowledgeBaseTable.id })
+              .from(KnowledgeBaseTable)
+              .where(
+                and(
+                  eq(KnowledgeBaseTable.id, knowledgeBaseId),
+                  or(
+                    eq(KnowledgeBaseTable.userId, session.user.id),
+                    teamIds.length > 0
+                      ? inArray(KnowledgeBaseTable.teamId, teamIds)
+                      : undefined,
+                  ),
+                ),
               );
-              const query =
-                messages
-                  .filter((m) => m.role === "user")
-                  .slice(-1)[0]
-                  ?.parts.find((p) => p.type === "text")?.text || "";
-              if (query) {
-                const chunks = await findRelevantChunks(query, knowledgeBaseId);
-                if (chunks.length > 0) {
-                  context =
-                    "Use the following context to answer the user's question:\n\n" +
-                    chunks.map((c: any) => c.content).join("\n\n");
+
+            if (!hasAccess) {
+              logger.warn(
+                `Unauthorized access attempt to knowledge base ${knowledgeBaseId} by user ${session.user.id}`,
+              );
+              // Fail silently or skip RAG
+            } else {
+              // Optimization: Only use text parts
+              // We need to import findRelevantChunks.
+              // Assuming dynamic import or top-level import. Top-level is better.
+              try {
+                const { findRelevantChunks } = await import(
+                  "@/lib/rag/retrieval"
+                );
+                const query =
+                  messages
+                    .filter((m) => m.role === "user")
+                    .slice(-1)[0]
+                    ?.parts.find((p) => p.type === "text")?.text || "";
+                if (query) {
+                  const chunks = await findRelevantChunks(
+                    query,
+                    knowledgeBaseId,
+                  );
+                  if (chunks.length > 0) {
+                    context =
+                      "Use the following context to answer the user's question:\n\n" +
+                      chunks.map((c: any) => c.content).join("\n\n");
+                  }
                 }
+              } catch (e) {
+                logger.error("RAG Retrieval Failed", e);
               }
-            } catch (e) {
-              logger.error("RAG Retrieval Failed", e);
             }
           }
         }

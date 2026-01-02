@@ -104,6 +104,11 @@ export function ShareableActions({
   const t = useTranslations();
   const router = useRouter();
 
+  // Use explicit canDelete check if provided, otherwise fallback to isOwner
+  // But wait, the component using this (MCPCard) passes isOwner={hasManagePermission} now.
+  // So 'isOwner' prop inside ShareableActions actually means "has permission".
+  // Let's verify how 'isOwner' is used for Delete button.
+
   const isAnyLoading = useMemo(
     () =>
       isVisibilityChangeLoading || isBookmarkToggleLoading || isDeleteLoading,

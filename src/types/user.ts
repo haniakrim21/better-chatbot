@@ -69,10 +69,11 @@ export type UserRepository = {
     totalTokens: number;
     period: string;
   }>;
-  getUserAuthMethods: (userId: string) => Promise<{
+  getUserAuthMethods(userId: string): Promise<{
     hasPassword: boolean;
     oauthProviders: string[];
   }>;
+  getTeamsByUserId(userId: string): Promise<string[]>;
 };
 
 export const UserZodSchema = z.object({

@@ -3,11 +3,23 @@ import { ObjectJsonSchema7, Visibility } from "./util";
 import { NodeKind } from "lib/ai/workflow/workflow.interface";
 import { tag } from "lib/tag";
 
-export type WorkflowIcon = {
-  type: "emoji";
-  value: string;
-  style?: Record<string, string>;
-};
+export type WorkflowIcon =
+  | {
+      type: "emoji";
+      value: string;
+      style?: Record<string, string>;
+    }
+  | {
+      type: "image";
+      value: string; // URL
+      style?: Record<string, string>;
+    }
+  | {
+      type: "lucide";
+      value: string; // Icon name e.g. "activity"
+      color?: string;
+      style?: Record<string, string>;
+    };
 
 export type DBWorkflow = {
   id: string;
@@ -17,7 +29,9 @@ export type DBWorkflow = {
   description?: string;
   isPublished: boolean;
   visibility: Visibility;
+  tags?: string[];
   userId: string;
+  teamId?: string;
   createdAt: Date;
   updatedAt: Date;
 };
@@ -58,17 +72,22 @@ export type WorkflowSummary = {
   description?: string;
   icon?: WorkflowIcon;
   visibility: Visibility;
+  tags?: string[];
   isPublished: boolean;
   userId: string;
   userName: string;
   userAvatar?: string;
   updatedAt: Date;
+  schema: ObjectJsonSchema7;
 };
 export interface WorkflowRepository {
   delete(id: string): Promise<void>;
   selectByUserId(userId: string): Promise<DBWorkflow[]>;
-  selectAll(userId: string): Promise<WorkflowSummary[]>;
-  selectExecuteAbility(userId: string): Promise<WorkflowSummary[]>;
+  selectAll(userId: string, teamIds?: string[]): Promise<WorkflowSummary[]>;
+  selectExecuteAbility(
+    userId: string,
+    teamIds?: string[],
+  ): Promise<WorkflowSummary[]>;
   selectToolByIds(ids: string[]): Promise<
     {
       id: string;

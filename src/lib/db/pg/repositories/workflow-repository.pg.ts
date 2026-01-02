@@ -61,7 +61,7 @@ export const pgWorkflowRepository: WorkflowRepository = {
     );
   },
 
-  async selectExecuteAbility(userId) {
+  async selectExecuteAbility(userId, teamIds = []) {
     const rows = await pgDb
       .select({
         id: WorkflowTable.id,
@@ -69,6 +69,7 @@ export const pgWorkflowRepository: WorkflowRepository = {
         description: WorkflowTable.description,
         icon: WorkflowTable.icon,
         visibility: WorkflowTable.visibility,
+        tags: WorkflowTable.tags,
         isPublished: WorkflowTable.isPublished,
         userId: WorkflowTable.userId,
         userName: UserTable.name,
@@ -82,13 +83,14 @@ export const pgWorkflowRepository: WorkflowRepository = {
           eq(WorkflowTable.isPublished, true),
           or(
             eq(WorkflowTable.userId, userId),
+            inArray(WorkflowTable.teamId, teamIds),
             not(eq(WorkflowTable.visibility, "private")),
           ),
         ),
       );
     return rows as WorkflowSummary[];
   },
-  async selectAll(userId) {
+  async selectAll(userId, teamIds = []) {
     const rows = await pgDb
       .select({
         id: WorkflowTable.id,
@@ -96,22 +98,36 @@ export const pgWorkflowRepository: WorkflowRepository = {
         description: WorkflowTable.description,
         icon: WorkflowTable.icon,
         visibility: WorkflowTable.visibility,
+        tags: WorkflowTable.tags,
         isPublished: WorkflowTable.isPublished,
         userId: WorkflowTable.userId,
         userName: UserTable.name,
         userAvatar: UserTable.image,
         updatedAt: WorkflowTable.updatedAt,
+        schema: WorkflowNodeDataTable.nodeConfig,
       })
       .from(WorkflowTable)
       .innerJoin(UserTable, eq(WorkflowTable.userId, UserTable.id))
+      .leftJoin(
+        WorkflowNodeDataTable,
+        and(
+          eq(WorkflowNodeDataTable.workflowId, WorkflowTable.id),
+          eq(WorkflowNodeDataTable.kind, NodeKind.Input),
+        ),
+      )
       .where(
         or(
           inArray(WorkflowTable.visibility, ["public", "readonly"]),
           eq(WorkflowTable.userId, userId),
+          inArray(WorkflowTable.teamId, teamIds),
         ),
       )
       .orderBy(desc(WorkflowTable.createdAt));
-    return rows as WorkflowSummary[];
+    return rows.map((row) => ({
+      ...row,
+      schema:
+        row.schema?.outputSchema || structuredClone(defaultObjectJsonSchema),
+    })) as WorkflowSummary[];
   },
   async selectById(id) {
     const [workflow] = await pgDb

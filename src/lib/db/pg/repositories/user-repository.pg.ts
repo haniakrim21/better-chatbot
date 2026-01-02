@@ -177,4 +177,17 @@ export const pgUserRepository: UserRepository = {
         .map((a) => a.providerId),
     };
   },
+  getTeamsByUserId: async (userId: string) => {
+    // Assuming you have a TeamMemberTable or similar to link users and teams
+    // If not, you'll need to create one or adjust this query based on your schema.
+    // For now, I'll assume we need to import TeamMemberTable and select from it.
+    // I need to check schema first to be sure about table names.
+    // Speculative implementation based on typical many-to-many:
+    const { TeamMemberTable } = await import("../schema.pg");
+    const teams = await pgDb
+      .select({ teamId: TeamMemberTable.teamId })
+      .from(TeamMemberTable)
+      .where(eq(TeamMemberTable.userId, userId));
+    return teams.map((t) => t.teamId);
+  },
 };

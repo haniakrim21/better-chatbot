@@ -17,7 +17,7 @@ export class MemoryMCPConfigStorage implements MCPConfigStorage {
     // No initialization needed for memory storage
   }
 
-  async loadAll(): Promise<McpServerSelect[]> {
+  async loadAll(_opt?: { teamIds?: string[] }): Promise<McpServerSelect[]> {
     return Array.from(this.configs.values());
   }
 
@@ -29,6 +29,8 @@ export class MemoryMCPConfigStorage implements MCPConfigStorage {
       config: server.config,
       userId: server.userId || "test-user",
       visibility: server.visibility || "private",
+      enabled: true,
+      teamId: server.teamId ?? null,
     };
     this.configs.set(id, savedServer);
     return savedServer;

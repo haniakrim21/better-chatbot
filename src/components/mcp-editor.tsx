@@ -172,6 +172,43 @@ export default function MCPEditor({
 
   const handleConfigChange = (data: string) => {
     setJsonString(data);
+
+    // Check for Smithery command paste
+    if (data.trim().startsWith("npx -y @smithery/cli run")) {
+      const SMITH_REGEX = /npx\s+-y\s+@smithery\/cli\s+run\s+([^\s]+)(.*)/;
+      const match = data.trim().match(SMITH_REGEX);
+      if (match) {
+        const [_, packageName, argsStr] = match;
+        // Extract args, handling potential quotes if needed (simple split for now)
+        const extraArgs = argsStr.trim().split(/\s+/).filter(Boolean);
+
+        const newConfig: MCPServerConfig = {
+          command: "npx",
+          args: ["-y", "@smithery/cli", "run", packageName, ...extraArgs],
+        };
+
+        toast.info(t("MCP.detectedSmitheryCommand"), {
+          description: "Converted to MCP Stdio config automatically.",
+        });
+
+        setConfig(newConfig);
+        setJsonString(JSON.stringify(newConfig, null, 2));
+
+        // Auto-fill name if empty
+        if (!name && packageName) {
+          const derivedName =
+            packageName
+              .split("/")
+              .pop()
+              ?.replace(/[^a-zA-Z0-9-]/g, "-") || "";
+          if (derivedName) setName(derivedName);
+        }
+
+        setJsonError(null);
+        return;
+      }
+    }
+
     const result = safeJSONParse(data);
     errorDebounce.clear();
     if (result.success) {
@@ -224,6 +261,21 @@ export default function MCPEditor({
                 className="font-mono h-[40vh] resize-none overflow-y-auto"
                 placeholder={STDIO_ARGS_ENV_PLACEHOLDER}
               />
+              <p className="text-xs text-muted-foreground">
+                {t.rich("MCP.pasteSmitheryCommandTip", {
+                  link: (chunks) => (
+                    <a
+                      href="https://smithery.ai"
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="underline hover:text-foreground"
+                    >
+                      {chunks}
+                    </a>
+                  ),
+                  code: (chunks) => <code>{chunks}</code>,
+                })}
+              </p>
             </div>
 
             {/* Right side: JSON view */}

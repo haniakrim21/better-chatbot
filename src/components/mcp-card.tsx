@@ -9,6 +9,7 @@ import {
   Settings2,
   Wrench,
 } from "lucide-react";
+import { toast } from "sonner";
 import { Alert, AlertDescription, AlertTitle } from "ui/alert";
 import { Button } from "ui/button";
 import { Card, CardContent, CardHeader } from "ui/card";
@@ -53,13 +54,16 @@ export const MCPCard = memo(function MCPCard({
   user,
   userName,
   userAvatar,
+  canManage,
 }: MCPServerInfo & { user: BasicUser }) {
   const [isProcessing, setIsProcessing] = useState(false);
   const [visibilityChangeLoading, setVisibilityChangeLoading] = useState(false);
   const t = useTranslations("MCP");
   const appStoreMutate = appStore((state) => state.mutate);
   const { mutate } = useSWRConfig();
+
   const isOwner = userId === user?.id;
+  const hasManagePermission = canManage ?? isOwner;
   const canChangeVisibility = useMemo(
     () => canChangeVisibilityMCP(user?.role),
     [user?.role],
@@ -91,14 +95,28 @@ export const MCPCard = memo(function MCPCard({
     [],
   );
 
+  // Duplicate handleDelete removed
+
   const handleRefresh = useCallback(
     () => pipeProcessing(() => refreshMcpClientAction(id)),
     [id],
   );
 
   const handleDelete = useCallback(async () => {
-    await pipeProcessing(() => removeMcpClientAction(id));
-  }, [id]);
+    if (!id) return;
+
+    setIsProcessing(true);
+    try {
+      await removeMcpClientAction(id);
+      await mutate("/api/mcp/clients"); // Revalidate client list
+      toast.success(t("deleteSuccess"));
+    } catch (error) {
+      console.error("Failed to delete MCP client:", error);
+      toast.error(t("deleteError"));
+    } finally {
+      setIsProcessing(false);
+    }
+  }, [id, mutate, appStoreMutate, t]);
 
   const handleAuthorize = useCallback(
     () => pipeProcessing(() => redriectMcpOauth(id)),
@@ -241,15 +259,17 @@ export const MCPCard = memo(function MCPCard({
         <ShareableActions
           type="mcp"
           visibility={visibility === "public" ? "public" : "private"}
-          isOwner={isOwner}
+          isOwner={hasManagePermission}
           canChangeVisibility={canChangeVisibility}
           editHref={
-            isOwner ? `/mcp/modify/${encodeURIComponent(id)}` : undefined
+            hasManagePermission
+              ? `/mcp/modify/${encodeURIComponent(id)}`
+              : undefined
           }
           onVisibilityChange={
             canChangeVisibility ? handleVisibilityChange : undefined
           }
-          onDelete={isOwner ? handleDelete : undefined}
+          onDelete={hasManagePermission ? handleDelete : undefined}
           isVisibilityChangeLoading={visibilityChangeLoading}
           isDeleteLoading={isProcessing}
           disabled={isLoading}
@@ -303,8 +323,8 @@ export const MCPCard = memo(function MCPCard({
 
       <div className="relative hidden sm:flex w-full">
         <CardContent className="flex min-w-0 w-full flex-row text-sm max-h-[320px] overflow-hidden border-e-0">
-          {/* Only show config to owners to prevent credential exposure */}
-          {isOwner && config && (
+          {/* Only show config to owners/admins to prevent credential exposure */}
+          {hasManagePermission && config && (
             <div className="w-1/2 min-w-0 flex flex-col pe-2 border-e border-border">
               <div className="flex items-center gap-2 mb-2 pt-2 pb-1 z-10">
                 <Settings size={14} className="text-muted-foreground" />
@@ -319,7 +339,7 @@ export const MCPCard = memo(function MCPCard({
           )}
 
           <div
-            className={`${isOwner && config ? "w-1/2" : "w-full"} min-w-0 flex flex-col ${isOwner && config ? "ps-4" : ""}`}
+            className={`${hasManagePermission && config ? "w-1/2" : "w-full"} min-w-0 flex flex-col ${hasManagePermission && config ? "ps-4" : ""}`}
           >
             <div className="flex items-center gap-2 mb-4 pt-2 pb-1 z-10">
               <Wrench size={14} className="text-muted-foreground" />
