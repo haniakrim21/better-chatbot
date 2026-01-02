@@ -120,7 +120,7 @@ export default function EmailSignUp({
         </CardTitle>
         <CardDescription className="py-12">
           <div className="flex flex-col gap-2">
-            <p className="text-xs text-muted-foreground text-right">
+            <p className="text-xs text-muted-foreground text-end">
               Step {step} of {steps.length}
             </p>
             <div className="h-2 w-full relative bg-input">
@@ -274,7 +274,7 @@ export default function EmailSignUp({
               }}
             >
               {step === 3 ? t("Auth.SignUp.createAccount") : t("Common.next")}
-              {isLoading && <Loader className="size-4 ml-2" />}
+              {isLoading && <Loader className="size-4 ms-2" />}
             </Button>
             <Button
               tabIndex={step === 1 ? -1 : 0}
@@ -283,7 +283,7 @@ export default function EmailSignUp({
               variant="ghost"
               onClick={backStep}
             >
-              <ChevronLeft className="size-4" />
+              <ChevronLeft className="size-4 rtl:rotate-180" />
               {t("Common.back")}
             </Button>
           </div>

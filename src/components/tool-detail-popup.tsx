@@ -146,12 +146,12 @@ export function ToolDetailPopupContent({
       <Separator className="my-4" />
       <div>
         <div className="flex items-center mb-1">
-          <h5 className="mr-auto">
+          <h5 className="me-auto">
             <Tooltip>
               <TooltipTrigger asChild>
                 <span className="text-xs font-medium flex-1 flex items-center">
                   {t("MCP.additionalInstructions")}
-                  <Info className="size-3 ml-1 text-muted-foreground" />
+                  <Info className="size-3 ms-1 text-muted-foreground" />
                 </span>
               </TooltipTrigger>
               <TooltipContent>

@@ -149,7 +149,7 @@ export function UserAvatarUpload({
                 onClick={handleUploadClick}
                 disabled={isUploading}
               >
-                <Upload className="mr-2 size-4" />
+                <Upload className="me-2 size-4" />
                 {t("uploadPhoto")}
               </Button>
 
@@ -159,7 +159,7 @@ export function UserAvatarUpload({
                 onClick={handleDefaultAvatarClick}
                 disabled={isUploading}
               >
-                <ImageIcon className="mr-2 size-4" />
+                <ImageIcon className="me-2 size-4" />
                 {t("chooseDefault")}
               </Button>
 
@@ -169,7 +169,7 @@ export function UserAvatarUpload({
                 onClick={handleEmojiClick}
                 disabled={isUploading}
               >
-                <Smile className="mr-2 size-4" />
+                <Smile className="me-2 size-4" />
                 {t("useEmoji")}
               </Button>
 
@@ -179,7 +179,7 @@ export function UserAvatarUpload({
                 onClick={handleGenerateClick}
                 disabled={isUploading}
               >
-                <Sparkles className="mr-2 size-4" />
+                <Sparkles className="me-2 size-4" />
                 {t("generateWithAI")}
               </Button>
             </div>

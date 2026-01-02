@@ -75,7 +75,7 @@ export function TeamSelector({
               Personal (No Team)
             </div>
           )}
-          <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+          <ChevronsUpDown className="ms-2 h-4 w-4 shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-[200px] p-0">
@@ -93,7 +93,7 @@ export function TeamSelector({
               >
                 <Check
                   className={cn(
-                    "mr-2 h-4 w-4",
+                    "me-2 h-4 w-4",
                     !value ? "opacity-100" : "opacity-0",
                   )}
                 />
@@ -113,7 +113,7 @@ export function TeamSelector({
                 >
                   <Check
                     className={cn(
-                      "mr-2 h-4 w-4",
+                      "me-2 h-4 w-4",
                       value === team.id ? "opacity-100" : "opacity-0",
                     )}
                   />

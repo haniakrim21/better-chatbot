@@ -72,7 +72,7 @@ export function SidebarHeaderShared({
               <h4 className="font-bold">{title}</h4>
               {showMobileToggle && (
                 <div
-                  className="ml-auto block sm:hidden"
+                  className="ms-auto block sm:hidden"
                   onClick={(e) => {
                     e.preventDefault();
                     e.stopPropagation();

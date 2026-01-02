@@ -19,7 +19,6 @@ import {
   isToolUIPart,
   lastAssistantMessageIsCompleteWithToolCalls,
   TextUIPart,
-  UIMessage,
 } from "ai";
 
 import { safe } from "ts-safe";
@@ -46,6 +45,10 @@ import {
 import { useTranslations } from "next-intl";
 import { Think } from "ui/think";
 import { useGenerateThreadTitle } from "@/hooks/queries/use-generate-thread-title";
+interface Props {
+  threadId: string;
+  initialMessages: any[];
+}
 
 export default function ChatBot({ threadId, initialMessages }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
@@ -474,7 +477,7 @@ function DeleteThreadPopup({
           </Button>
           <Button variant="destructive" onClick={handleDelete} autoFocus>
             {t("Common.delete")}
-            {isDeleting && <Loader className="size-3.5 ml-2 animate-spin" />}
+            {isDeleting && <Loader className="size-3.5 ms-2 animate-spin" />}
           </Button>
         </DialogFooter>
       </DialogContent>

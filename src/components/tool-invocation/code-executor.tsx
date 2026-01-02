@@ -125,7 +125,7 @@ export const CodeExecutor = memo(function CodeExecutor({
         <div
           key={i}
           className={cn(
-            "flex gap-1 text-muted-foreground pl-3",
+            "flex gap-1 text-muted-foreground ps-3",
             log.type == "error" && "text-destructive",
             log.type == "warn" && "text-yellow-500",
           )}
@@ -139,7 +139,7 @@ export const CodeExecutor = memo(function CodeExecutor({
             ) : log.type == "warn" ? (
               <AlertTriangleIcon className="size-2" />
             ) : (
-              <ChevronRight className="size-2" />
+              <ChevronRight className="size-2 rtl:rotate-180" />
             )}
           </div>
           <div className="flex-1 min-w-0 whitespace-pre-wrap gap-1">
@@ -213,14 +213,14 @@ export const CodeExecutor = memo(function CodeExecutor({
           {isRunning ? (
             <Loader className="size-2 animate-spin" />
           ) : (
-            <div className="w-1 h-1 mr-1 ring ring-border rounded-full" />
+            <div className="w-1 h-1 me-1 ring ring-border rounded-full" />
           )}
           better-chatbot
           <Percent className="size-2" />
         </div>
         {logs}
         {isRunning && (
-          <div className="ml-3 animate-caret-blink text-muted-foreground">
+          <div className="ms-3 animate-caret-blink text-muted-foreground">
             |
           </div>
         )}

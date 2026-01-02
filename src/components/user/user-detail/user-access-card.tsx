@@ -152,7 +152,7 @@ export function UserAccessCard({
                     className="h-8 text-xs"
                     data-testid="update-password-button"
                   >
-                    <Lock className="w-3 h-3 mr-1" />
+                    <Lock className="w-3 h-3 me-1" />
                     {t("updatePassword")}
                   </Button>
                 </UpdateUserPasswordDialog>
@@ -186,7 +186,7 @@ export function UserAccessCard({
                       className="h-8 text-xs"
                       data-testid="delete-user-button"
                     >
-                      <Trash2 className="w-3 h-3 mr-1" />
+                      <Trash2 className="w-3 h-3 me-1" />
                       {t("deleteUser")}
                     </Button>
                   </UserDeleteDialog>

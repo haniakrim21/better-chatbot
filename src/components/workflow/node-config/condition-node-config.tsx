@@ -134,7 +134,7 @@ export function ConditionNodeDataConfig({
         {!data.branches.elseIf?.length && (
           <>
             <p className="font-bold text-xs mb-2 text-blue-500">ELSE IF</p>
-            <p className="text-xs ml-12 text-muted-foreground">
+            <p className="text-xs ms-12 text-muted-foreground">
               {t("Workflow.elseIfDescription")}
             </p>
           </>
@@ -167,11 +167,11 @@ export function ConditionNodeDataConfig({
       <div className="px-4">
         <div className="font-bold text-xs flex mb-2">
           <p className="w-12 text-blue-500">ELSE</p>
-          <span className="ml-1 text-muted-foreground">
+          <span className="ms-1 text-muted-foreground">
             CASE {(data.branches.elseIf?.length ?? 0) + 2}
           </span>
         </div>
-        <p className="text-xs ml-12 text-muted-foreground ">
+        <p className="text-xs ms-12 text-muted-foreground ">
           {t("Workflow.elseDescription")}
         </p>
       </div>
@@ -251,7 +251,7 @@ function ConditionBranchItem({
     <div className="flex flex-col gap-1 relative">
       <div className="font-bold text-xs flex mb-2">
         <p className="w-12 text-blue-500">{type?.toUpperCase()}</p>
-        <span className="ml-1 text-muted-foreground">CASE {caseNumber}</span>
+        <span className="ms-1 text-muted-foreground">CASE {caseNumber}</span>
       </div>
       {branch.conditions.length > 0 && (
         <div className="flex">
@@ -259,9 +259,9 @@ function ConditionBranchItem({
             {branch.conditions.length > 1 && (
               <>
                 <div className="flex-1 w-full flex justify-end items-end">
-                  <div className="h-[calc(100%-1rem)] w-1/2 border-l border-dashed border-t rounded-tl-full"></div>
+                  <div className="h-[calc(100%-1rem)] w-1/2 border-s border-dashed border-t rounded-ss-full"></div>
                 </div>
-                <div className="text-xs text-center my-1 pr-1">
+                <div className="text-xs text-center my-1 pe-1">
                   <button
                     onClick={() =>
                       onChange({
@@ -276,7 +276,7 @@ function ConditionBranchItem({
                   </button>
                 </div>
                 <div className="flex-1 w-full flex justify-end items-start">
-                  <div className="h-[calc(100%-1rem)] w-1/2 border-l border-dashed border-b rounded-bl-full"></div>
+                  <div className="h-[calc(100%-1rem)] w-1/2 border-s border-dashed border-b rounded-es-full"></div>
                 </div>
               </>
             )}
@@ -318,7 +318,7 @@ function ConditionBranchItem({
         >
           <Badge
             variant={"secondary"}
-            className="ml-12 cursor-pointer hover:bg-input py-2 px-4"
+            className="ms-12 cursor-pointer hover:bg-input py-2 px-4"
           >
             <PlusIcon className="size-4" /> {t("Workflow.addCondition")}
           </Badge>
@@ -327,7 +327,7 @@ function ConditionBranchItem({
         {onDelete && (
           <Button
             variant={"ghost"}
-            className="ml-auto text-xs mr-7"
+            className="ms-auto text-xs me-7"
             onClick={onDelete}
           >
             <TrashIcon className="size-3.5" />
@@ -406,7 +406,7 @@ function ConditionRuleItem({
             />
           </div>
         </VariableSelect>
-        <div className="h-4 px-2 ml-auto">
+        <div className="h-4 px-2 ms-auto">
           <Separator orientation="vertical" />
         </div>
         <Select
@@ -562,7 +562,7 @@ function ConditionHandle({
         <div className="px-2 w-full text-xs py-1 font-bold bg-input border rounded-xs flex">
           <span className="text-blue-500">{type.toUpperCase()}</span>
           {caseNumber && (
-            <span className="text-muted-foreground ml-auto">
+            <span className="text-muted-foreground ms-auto">
               CASE {caseNumber}
             </span>
           )}

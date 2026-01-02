@@ -380,11 +380,11 @@ export function InteractiveTable(props: InteractiveTableProps) {
                 </DropdownMenuTrigger>
                 <DropdownMenuContent>
                   <DropdownMenuItem onClick={exportToCSV}>
-                    <Download className="h-4 w-4 mr-2" />
+                    <Download className="h-4 w-4 me-2" />
                     CSV
                   </DropdownMenuItem>
                   <DropdownMenuItem onClick={exportToExcel}>
-                    <FileSpreadsheet className="h-4 w-4 mr-2" />
+                    <FileSpreadsheet className="h-4 w-4 me-2" />
                     Excel
                   </DropdownMenuItem>
                 </DropdownMenuContent>
@@ -401,7 +401,7 @@ export function InteractiveTable(props: InteractiveTableProps) {
                   return (
                     <TableHead
                       key={column.key}
-                      className={`relative select-none ${index === 0 ? "pl-6" : index === visibleColumnsArray.length - 1 ? "pr-6" : ""} ${
+                      className={`relative select-none ${index === 0 ? "ps-6" : index === visibleColumnsArray.length - 1 ? "pe-6" : ""} ${
                         column.type === "number" ||
                         column.type === "date" ||
                         column.type === "boolean"
@@ -453,7 +453,7 @@ export function InteractiveTable(props: InteractiveTableProps) {
                       {visibleColumnsArray.map((column, index) => (
                         <TableCell
                           key={column.key}
-                          className={`py-3 ${index === 0 ? "pl-6" : index === visibleColumnsArray.length - 1 ? "pr-6" : ""} ${
+                          className={`py-3 ${index === 0 ? "ps-6" : index === visibleColumnsArray.length - 1 ? "pe-6" : ""} ${
                             column.type === "number" || column.type === "date"
                               ? "text-center"
                               : column.type == "boolean"
@@ -497,7 +497,7 @@ export function InteractiveTable(props: InteractiveTableProps) {
                   }
                   disabled={currentPage === 1}
                 >
-                  <ChevronLeft className="h-4 w-4" />
+                  <ChevronLeft className="h-4 w-4 rtl:rotate-180" />
                   Previous
                 </Button>
 
@@ -514,7 +514,7 @@ export function InteractiveTable(props: InteractiveTableProps) {
                   disabled={currentPage === totalPages}
                 >
                   Next
-                  <ChevronRight className="h-4 w-4" />
+                  <ChevronRight className="h-4 w-4 rtl:rotate-180" />
                 </Button>
               </div>
             )}

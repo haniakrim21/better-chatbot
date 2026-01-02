@@ -9,7 +9,7 @@ export function BackButtonSkeleton() {
       className="hover:bg-muted opacity-50 cursor-not-allowed"
       disabled
     >
-      <ArrowLeft className="mr-2 h-4 w-4" />
+      <ArrowLeft className="me-2 h-4 w-4 rtl:rotate-180" />
       Back to Users
     </Button>
   );

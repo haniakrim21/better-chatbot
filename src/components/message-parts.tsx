@@ -497,7 +497,7 @@ export const AssistMessagePart = memo(function AssistMessagePart({
                               {metadata.chatModel.model}
                               {metadata.toolCount !== undefined &&
                                 metadata.toolCount > 0 && (
-                                  <span className="ml-2">
+                                  <span className="ms-2">
                                     • {metadata.toolCount} tools
                                   </span>
                                 )}
@@ -626,7 +626,7 @@ export const ReasoningPart = memo(function ReasoningPart({
         </button>
       </div>
 
-      <div className="pl-4">
+      <div className="ps-4">
         <AnimatePresence initial={false}>
           {isExpanded && (
             <motion.div
@@ -638,7 +638,7 @@ export const ReasoningPart = memo(function ReasoningPart({
               variants={variants}
               transition={{ duration: 0.2, ease: "easeInOut" }}
               style={{ overflow: "hidden" }}
-              className="pl-6 text-muted-foreground border-l flex flex-col gap-4"
+              className="ps-6 text-muted-foreground border-s flex flex-col gap-4"
             >
               <Markdown>
                 {reasoningText || (isThinking ? "" : "Hmm, let's see...🤔")}
@@ -987,13 +987,13 @@ export const ToolMessagePart = memo(
               </span>
               {mcpToolName && (
                 <>
-                  <ChevronRight className="size-3.5" />
+                  <ChevronRight className="size-3.5 rtl:rotate-180" />
                   <span className="text-muted-foreground group-hover/title:text-primary transition-colors duration-300">
                     {mcpToolName}
                   </span>
                 </>
               )}
-              <div className="ml-auto group-hover/title:bg-input p-1.5 rounded transition-colors duration-300">
+              <div className="ms-auto group-hover/title:bg-input p-1.5 rounded transition-colors duration-300">
                 <ChevronDownIcon
                   className={cn(isExpanded && "rotate-180", "size-3.5")}
                 />
@@ -1207,7 +1207,7 @@ export const FileMessagePart = memo(
         <div
           className={cn(
             "max-w-md rounded-lg overflow-hidden border border-border",
-            isUserMessage ? "ml-auto" : "mr-auto",
+            isUserMessage ? "ms-auto" : "me-auto",
           )}
         >
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -1231,8 +1231,8 @@ export const FileMessagePart = memo(
         className={cn(
           "max-w-md rounded-2xl border border-border/80 p-4 shadow-sm backdrop-blur-sm",
           isUserMessage
-            ? "ml-auto bg-accent text-accent-foreground border-accent/40"
-            : "mr-auto bg-muted/60 text-foreground",
+            ? "ms-auto bg-accent text-accent-foreground border-accent/40"
+            : "me-auto bg-muted/60 text-foreground",
         )}
       >
         <div className="flex items-start gap-4">
@@ -1251,7 +1251,7 @@ export const FileMessagePart = memo(
               )}
             />
           </div>
-          <div className="flex-1 min-w-0 space-y-1 pr-3">
+          <div className="flex-1 min-w-0 space-y-1 pe-3">
             <p
               className={cn(
                 "text-sm font-medium line-clamp-1",
@@ -1344,8 +1344,8 @@ export function SourceUrlMessagePart({
       className={cn(
         "max-w-md rounded-2xl border border-border/80 p-4 backdrop-blur-sm shadow-sm",
         isUserMessage
-          ? "ml-auto bg-accent text-accent-foreground border-accent/40"
-          : "mr-auto bg-muted/60 text-foreground",
+          ? "ms-auto bg-accent text-accent-foreground border-accent/40"
+          : "me-auto bg-muted/60 text-foreground",
       )}
     >
       <div className="flex items-start gap-4 max-w-sm">
@@ -1364,7 +1364,7 @@ export function SourceUrlMessagePart({
             )}
           />
         </div>
-        <div className="flex-1 min-w-0 space-y-1 pr-3">
+        <div className="flex-1 min-w-0 space-y-1 pe-3">
           <a
             href={part.url}
             target="_blank"

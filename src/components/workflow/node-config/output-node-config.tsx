@@ -135,7 +135,7 @@ export const OutputNodeDataConfig = memo(function ({
                     {item.schema?.type}
                   </span>
 
-                  <ChevronDownIcon className="size-3 ml-auto" />
+                  <ChevronDownIcon className="size-3 ms-auto" />
                 </div>
               </VariableSelect>
               <Button

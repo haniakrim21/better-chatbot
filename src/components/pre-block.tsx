@@ -61,7 +61,7 @@ const PurePre = ({
           <Button
             size="icon"
             variant={copied ? "secondary" : "ghost"}
-            className="ml-auto z-10 p-3! size-2! rounded-sm"
+            className="ms-auto z-10 p-3! size-2! rounded-sm"
             onClick={() => {
               copy(code);
             }}

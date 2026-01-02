@@ -46,7 +46,7 @@ export default function KnowledgeDetailPage() {
             disabled={uploading}
             onClick={() => document.getElementById("file-upload")?.click()}
           >
-            <Upload className="mr-2 h-4 w-4" />
+            <Upload className="me-2 h-4 w-4" />
             {uploading ? "Uploading..." : "Upload Document"}
           </Button>
           <input
@@ -66,9 +66,9 @@ export default function KnowledgeDetailPage() {
         <CardContent>
           <div className="space-y-2">
             <div className="flex items-center p-2 rounded-md border bg-card">
-              <FileText className="h-4 w-4 mr-2" />
+              <FileText className="h-4 w-4 me-2" />
               <span className="flex-1">example.pdf</span>
-              <span className="text-xs text-muted-foreground mr-2">
+              <span className="text-xs text-muted-foreground me-2">
                 Processed
               </span>
             </div>

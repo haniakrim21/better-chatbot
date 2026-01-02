@@ -97,9 +97,9 @@ export default function CommentForm({
         data-testid="comment-submit"
       >
         {isSubmitting ? (
-          <LoaderIcon className="mr-1 animate-spin" />
+          <LoaderIcon className="me-1 animate-spin" />
         ) : (
-          <SendIcon className="mr-1" />
+          <SendIcon className="me-1" />
         )}
       </Button>
     </div>

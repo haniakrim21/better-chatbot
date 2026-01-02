@@ -105,7 +105,7 @@ export default function Comment({
 
         {/* Render replies */}
         {comment.replies && comment.replies.length > 0 && (
-          <div className="mt-2 border-l-1 border-border/30 pl-4">
+          <div className="mt-2 border-s-1 border-border/30 ps-4">
             {comment.replies.map((reply) => (
               <Comment
                 key={reply.id}

@@ -61,7 +61,7 @@ export function AppSidebarMenus() {
                 <SidebarMenuButton className="flex font-semibold group/new-chat bg-input/20 border border-border/40">
                   <WriteIcon className="size-4" />
                   {t("Layout.newChat")}
-                  <div className="flex items-center gap-1 text-xs font-medium ml-auto opacity-0 group-hover/new-chat:opacity-100 transition-opacity">
+                  <div className="flex items-center gap-1 text-xs font-medium ms-auto opacity-0 group-hover/new-chat:opacity-100 transition-opacity">
                     {getShortcutKeyList(Shortcuts.openNewChat).map((key) => (
                       <span
                         key={key}

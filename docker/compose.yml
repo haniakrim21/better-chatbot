@@ -7,29 +7,59 @@ services:
       - '3000:3000'
     environment:
       - NO_HTTPS=1
+      # Override DB and Redis hosts to point to docker service names
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/better_chatbot
+      - REDIS_URL=redis://redis:6379
+      - KV_URL=redis://redis:6379
     env_file:
-      - .env
-    dns:
-      - 8.8.8.8 # Google's public DNS server
-      - 8.8.4.4 # Google's public DNS server
+      - ../.env
     networks:
       - better-chatbot-networks
     depends_on:
-      - postgres
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
     restart: unless-stopped
 
   postgres:
     image: pgvector/pgvector:pg17
-    env_file:
-      - .env
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: better_chatbot
+    ports:
+      - "5432:5432"
     networks:
       - better-chatbot-networks
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready -U postgres" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: unless-stopped
+
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - better-chatbot-networks
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: [ "CMD", "redis-cli", "ping" ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
     restart: unless-stopped
 
 volumes:
   postgres_data:
+  redis_data:
+
 
 networks:
   better-chatbot-networks:

@@ -100,7 +100,7 @@ export const UserStatsCardLoaderSkeleton = () => {
             {/* Model List Skeleton */}
             <div className="space-y-2">
               <Skeleton className="h-4 w-32 mb-3" />
-              <div className="max-h-[280px] overflow-y-auto pr-2 space-y-2">
+              <div className="max-h-[280px] overflow-y-auto pe-2 space-y-2">
                 {Array.from({ length: 6 }).map((_, index) => (
                   <div
                     key={index}
@@ -116,7 +116,7 @@ export const UserStatsCardLoaderSkeleton = () => {
                         <Skeleton className="h-3 w-16" />
                       </div>
                     </div>
-                    <Skeleton className="h-4 w-12 shrink-0 ml-3" />
+                    <Skeleton className="h-4 w-12 shrink-0 ms-3" />
                   </div>
                 ))}
               </div>

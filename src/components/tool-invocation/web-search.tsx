@@ -155,7 +155,7 @@ function PureWebSearchToolInvocation({ part }: WebSearchToolInvocationProps) {
                         href={result.url}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="group rounded-full bg-secondary pl-1.5 pr-2 py-1.5 text-xs flex items-center gap-1 hover:bg-input hover:ring hover:ring-blue-500 transition-all cursor-pointer"
+                        className="group rounded-full bg-secondary ps-1.5 pe-2 py-1.5 text-xs flex items-center gap-1 hover:bg-input hover:ring hover:ring-blue-500 transition-all cursor-pointer"
                       >
                         <div className="rounded-full bg-input ring ring-input">
                           <Avatar className="size-3 rounded-full">
@@ -217,7 +217,7 @@ function PureWebSearchToolInvocation({ part }: WebSearchToolInvocationProps) {
             )}
           </div>
           {result?.results?.length && (
-            <p className="text-xs text-muted-foreground ml-1 flex items-center gap-1">
+            <p className="text-xs text-muted-foreground ms-1 flex items-center gap-1">
               {t("Common.resultsFound", {
                 count: result?.results?.length,
               })}

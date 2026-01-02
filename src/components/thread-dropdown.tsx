@@ -136,7 +136,7 @@ export function ThreadDropdown({
       <PopoverTrigger asChild>{children}</PopoverTrigger>
       <PopoverContent className="p-0 w-[220px]" side={side} align={align}>
         <Command>
-          <div className="flex items-center gap-2 px-2 py-1 text-xs pt-2 text-muted-foreground ml-1">
+          <div className="flex items-center gap-2 px-2 py-1 text-xs pt-2 text-muted-foreground ms-1">
             {t("Chat.Thread.chat")}
           </div>
 
@@ -146,7 +146,7 @@ export function ThreadDropdown({
                 <ChatExportPopup threadId={threadId}>
                   <div className="flex items-center gap-2 w-full px-2 py-1 rounded">
                     <UploadIcon className="text-foreground" />
-                    <span className="mr-4">{t("Chat.Thread.exportChat")}</span>
+                    <span className="me-4">{t("Chat.Thread.exportChat")}</span>
                   </div>
                 </ChatExportPopup>
               </CommandItem>
@@ -157,7 +157,7 @@ export function ThreadDropdown({
                 >
                   <div className="flex items-center gap-2 w-full px-2 py-1 rounded">
                     <PencilLine className="text-foreground" />
-                    <span className="mr-4">{t("Chat.Thread.renameChat")}</span>
+                    <span className="me-4">{t("Chat.Thread.renameChat")}</span>
                   </div>
                 </UpdateThreadNameDialog>
               </CommandItem>
@@ -167,8 +167,8 @@ export function ThreadDropdown({
                   <DropdownMenuTrigger asChild>
                     <div className="flex items-center gap-2 w-full px-2 py-1 rounded hover:bg-accent">
                       <Archive className="text-foreground" />
-                      <span className="mr-4">{t("Archive.addToArchive")}</span>
-                      <ChevronRight className="ml-auto h-4 w-4" />
+                      <span className="me-4">{t("Archive.addToArchive")}</span>
+                      <ChevronRight className="ms-auto h-4 w-4 rtl:rotate-180" />
                     </div>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent
@@ -190,10 +190,10 @@ export function ThreadDropdown({
                           onClick={() => handleAddToArchive(archive.id)}
                           className="cursor-pointer"
                         >
-                          <Archive className="mr-2 h-4 w-4" />
+                          <Archive className="me-2 h-4 w-4" />
                           <span className="truncate">{archive.name}</span>
                           {archive.itemCount > 0 && (
-                            <span className="ml-auto text-xs text-muted-foreground">
+                            <span className="ms-auto text-xs text-muted-foreground">
                               {archive.itemCount}
                             </span>
                           )}
@@ -216,7 +216,7 @@ export function ThreadDropdown({
                     {t("Chat.Thread.deleteChat")}
                   </span>
                   {isDeleting && (
-                    <Loader className="ml-auto h-4 w-4 animate-spin" />
+                    <Loader className="ms-auto h-4 w-4 animate-spin" />
                   )}
                 </div>
               </CommandItem>

@@ -30,7 +30,7 @@ export default function KnowledgePage() {
         </div>
         <Link href="/knowledge/new">
           <Button>
-            <PlusIcon className="mr-2 h-4 w-4" /> New Knowledge Base
+            <PlusIcon className="me-2 h-4 w-4" /> New Knowledge Base
           </Button>
         </Link>
       </div>

@@ -47,7 +47,7 @@ export function SelectedNodeConfigTab({ node }: { node: UINode }) {
             />
             <DropdownMenu>
               <DropdownMenuTrigger asChild>
-                <div className="ml-auto rounded hover:bg-secondary cursor-pointer p-1">
+                <div className="ms-auto rounded hover:bg-secondary cursor-pointer p-1">
                   <MoreHorizontalIcon className="size-3.5" />
                 </div>
               </DropdownMenuTrigger>

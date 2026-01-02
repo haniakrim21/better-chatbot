@@ -50,11 +50,11 @@ export const SelectModel = (props: PropsWithChildren<SelectModelProps>) => {
             className="data-[state=open]:bg-input! hover:bg-input! "
             data-testid="model-selector-button"
           >
-            <div className="mr-auto flex items-center gap-1">
+            <div className="me-auto flex items-center gap-1">
               {(props.showProvider ?? true) && (
                 <ModelProviderIcon
                   provider={model?.provider || ""}
-                  className="size-2.5 mr-1"
+                  className="size-2.5 me-1"
                 />
               )}
               <p data-testid="selected-model-name">{model?.model || "model"}</p>
@@ -123,11 +123,11 @@ export const SelectModel = (props: PropsWithChildren<SelectModelProps>) => {
                           data-testid="selected-model-check"
                         />
                       ) : (
-                        <div className="ml-3" />
+                        <div className="ms-3" />
                       )}
-                      <span className="pr-2">{item.name}</span>
+                      <span className="pe-2">{item.name}</span>
                       {item.isToolCallUnsupported && (
-                        <div className="ml-auto flex items-center gap-1 text-xs text-muted-foreground">
+                        <div className="ms-auto flex items-center gap-1 text-xs text-muted-foreground">
                           No tools
                         </div>
                       )}
@@ -161,7 +161,7 @@ const ProviderHeader = memo(function ProviderHeader({
       {provider}
       {!hasAPIKey && (
         <>
-          <span className="text-xs ml-auto text-muted-foreground">
+          <span className="text-xs ms-auto text-muted-foreground">
             No API Key
           </span>
         </>

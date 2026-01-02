@@ -178,7 +178,7 @@ export default function Comments({
                   {truncateString(replyTo.authorName, 8)}
                 </span>{" "}
                 <XIcon
-                  className="ml-auto size-2.5 cursor-pointer hover:text-primary"
+                  className="ms-auto size-2.5 cursor-pointer hover:text-primary"
                   onClick={() => setReplyTo(null)}
                 />
               </div>

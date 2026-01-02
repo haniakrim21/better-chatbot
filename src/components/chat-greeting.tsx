@@ -44,7 +44,7 @@ export const ChatGreeting = () => {
       exit={{ opacity: 0 }}
       transition={{ delay: 0.3 }}
     >
-      <div className="rounded-xl p-6 flex flex-col gap-2 leading-relaxed text-center">
+      <div className="rounded-xl p-6 flex flex-col gap-2 leading-relaxed text-start">
         <h1 className="text-2xl md:text-3xl">
           {word ? <FlipWords words={[word]} className="text-primary" /> : ""}
         </h1>

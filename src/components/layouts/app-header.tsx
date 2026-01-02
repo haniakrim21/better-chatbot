@@ -212,11 +212,11 @@ function ThreadDropdownComponent() {
                 className="data-[state=open]:bg-input! hover:text-foreground cursor-pointer flex gap-1 items-center px-2 py-1 rounded-md hover:bg-accent"
               >
                 {generatingTitleThreadIds.includes(currentThread.id) ? (
-                  <TextShimmer className="truncate max-w-60 min-w-0 mr-1">
+                  <TextShimmer className="truncate max-w-60 min-w-0 me-1">
                     {currentThread.title || "New Chat"}
                   </TextShimmer>
                 ) : (
-                  <p className="truncate max-w-60 min-w-0 mr-1">
+                  <p className="truncate max-w-60 min-w-0 me-1">
                     {currentThread.title || "New Chat"}
                   </p>
                 )}

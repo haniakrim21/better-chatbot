@@ -114,7 +114,7 @@ export default async function ArchivePage({
           <div className="flex items-center gap-3 mb-2">
             <h1 className="text-2xl font-bold">{archive.name}</h1>
             <div className="flex-1" />
-            <p className="text-xs text-muted-foreground mr-2">
+            <p className="text-xs text-muted-foreground me-2">
               Created {formatTimeAgo(archive.createdAt)}
             </p>
             <div className="h-4">

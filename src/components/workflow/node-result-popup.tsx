@@ -131,7 +131,7 @@ export function NodeResultPopup({
                   <Button
                     variant="ghost"
                     size="icon"
-                    className="ml-auto"
+                    className="ms-auto"
                     onClick={() =>
                       copy(
                         JSON.stringify(

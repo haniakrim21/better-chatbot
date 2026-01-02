@@ -538,14 +538,14 @@ export default function PromptInput({
                       }
                       onClick={() => fileInputRef.current?.click()}
                     >
-                      <PaperclipIcon className="mr-2 size-4" />
+                      <PaperclipIcon className="me-2 size-4" />
                       {t("uploadImage")}
                     </DropdownMenuItem>
 
                     <DropdownMenuSub>
                       <DropdownMenuSubTrigger className="cursor-pointer">
-                        <ImagesIcon className="mr-4 size-4 text-muted-foreground" />
-                        <span className="mr-4">{t("generateImage")}</span>
+                        <ImagesIcon className="me-4 size-4 text-muted-foreground" />
+                        <span className="me-4">{t("generateImage")}</span>
                       </DropdownMenuSubTrigger>
                       <DropdownMenuPortal>
                         <DropdownMenuSubContent>
@@ -554,7 +554,7 @@ export default function PromptInput({
                             onClick={() => handleGenerateImage("google")}
                             className="cursor-pointer"
                           >
-                            <GeminiIcon className="mr-2 size-4" />
+                            <GeminiIcon className="me-2 size-4" />
                             Gemini (Nano Banana)
                           </DropdownMenuItem>
                           <DropdownMenuItem
@@ -562,7 +562,7 @@ export default function PromptInput({
                             onClick={() => handleGenerateImage("openai")}
                             className="cursor-pointer"
                           >
-                            <OpenAIIcon className="mr-2 size-4" />
+                            <OpenAIIcon className="me-2 size-4" />
                             OpenAI
                           </DropdownMenuItem>
                         </DropdownMenuSubContent>
@@ -614,7 +614,7 @@ export default function PromptInput({
                   <Button
                     variant={"ghost"}
                     size={"sm"}
-                    className="rounded-full group data-[state=open]:bg-input! hover:bg-input! mr-1"
+                    className="rounded-full group data-[state=open]:bg-input! hover:bg-input! me-1"
                     data-testid="model-selector-button"
                   >
                     {chatModel?.model ? (

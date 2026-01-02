@@ -169,7 +169,7 @@ export default function MCPDashboard({ message, user }: MCPDashboardProps) {
                           onClick={() => handleRecommendedSelect(mcp)}
                           className="cursor-pointer"
                         >
-                          <Icon className="size-4 mr-2" />
+                          <Icon className="size-4 me-2" />
                           <span>{mcp.label}</span>
                         </DropdownMenuItem>
                       );

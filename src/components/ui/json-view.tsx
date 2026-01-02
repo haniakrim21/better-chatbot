@@ -97,7 +97,7 @@ const JsonNode = memo(
         return (
           <div className="flex items-center">
             {name && (
-              <span className="mr-1 text-muted-foreground">{name}:</span>
+              <span className="me-1 text-muted-foreground">{name}:</span>
             )}
             <span className="text-muted-foreground">{symbolMap.empty}</span>
           </div>
@@ -107,11 +107,11 @@ const JsonNode = memo(
       return (
         <div className="flex flex-col">
           <div
-            className="flex items-center mr-1 rounded cursor-pointer group hover:bg-input/30"
+            className="flex items-center me-1 rounded cursor-pointer group hover:bg-input/30"
             onClick={() => setIsExpanded(!isExpanded)}
           >
             {name && (
-              <span className="mr-1 text-muted-foreground  hover:text-foreground">
+              <span className="me-1 text-muted-foreground  hover:text-foreground">
                 {name}:
               </span>
             )}
@@ -124,7 +124,7 @@ const JsonNode = memo(
                 <span className="text-muted-foreground  group-hover:text-foreground">
                   {symbolMap.collapsed}
                 </span>
-                <span className="ml-1 text-muted-foreground  group-hover:text-foreground">
+                <span className="ms-1 text-muted-foreground  group-hover:text-foreground">
                   {itemCount} {itemCount === 1 ? "item" : "items"}
                 </span>
               </>
@@ -132,7 +132,7 @@ const JsonNode = memo(
           </div>
           {isExpanded && (
             <>
-              <div className="pl-2 ml-4 border-l border-border">
+              <div className="ps-2 ms-4 border-s border-border">
                 {isArray
                   ? (items as JsonValue[]).map((item, index) => (
                       <div key={index} className="my-1">
@@ -168,9 +168,9 @@ const JsonNode = memo(
 
       if (!isTooLong) {
         return (
-          <div className="flex mr-1 rounded hover:bg-input/30">
+          <div className="flex me-1 rounded hover:bg-input/30">
             {name && (
-              <span className="mr-1 text-muted-foreground">{name}:</span>
+              <span className="me-1 text-muted-foreground">{name}:</span>
             )}
             <pre className={typeStyleMap.string}>&quot;{value}&quot;</pre>
           </div>
@@ -178,9 +178,9 @@ const JsonNode = memo(
       }
 
       return (
-        <div className="flex mr-1 rounded group hover:bg-input/30">
+        <div className="flex me-1 rounded group hover:bg-input/30">
           {name && (
-            <span className="mr-1 text-muted-foreground  hover:text-foreground">
+            <span className="me-1 text-muted-foreground  hover:text-foreground">
               {name}:
             </span>
           )}
@@ -206,18 +206,18 @@ const JsonNode = memo(
         return renderString(data as string);
       case "undefined":
         return (
-          <div className="flex items-center mr-1 rounded hover:bg-input/30">
+          <div className="flex items-center me-1 rounded hover:bg-input/30">
             {name && (
-              <span className="mr-1 text-muted-foreground">{name}:</span>
+              <span className="me-1 text-muted-foreground">{name}:</span>
             )}
             <span className={typeStyleMap.undefined}>undefined</span>
           </div>
         );
       default:
         return (
-          <div className="flex items-center mr-1 rounded hover:bg-input/30">
+          <div className="flex items-center me-1 rounded hover:bg-input/30">
             {name && (
-              <span className="mr-1 text-muted-foreground">{name}:</span>
+              <span className="me-1 text-muted-foreground">{name}:</span>
             )}
             <span className={typeStyleMap[dataType] || typeStyleMap.default}>
               {data === null ? "null" : String(data)}

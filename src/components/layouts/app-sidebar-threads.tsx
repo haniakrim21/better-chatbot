@@ -247,7 +247,7 @@ export function AppSidebarThreads() {
                   {group.threads.map((thread) => (
                     <SidebarMenuSub
                       key={thread.id}
-                      className={"group/thread mr-0"}
+                      className={"group/thread me-0"}
                     >
                       <SidebarMenuSubItem>
                         <ThreadDropdown
@@ -312,7 +312,7 @@ export function AppSidebarThreads() {
                 className="w-full hover:bg-input! justify-start"
                 onClick={() => setIsExpanded(!isExpanded)}
               >
-                <MoreHorizontal className="mr-2" />
+                <MoreHorizontal className="me-2" />
                 {isExpanded ? t("showLessChats") : t("showAllChats")}
                 {isExpanded ? <ChevronUp /> : <ChevronDown />}
               </Button>

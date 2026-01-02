@@ -213,7 +213,7 @@ export function UserInstructionsContent() {
           <Button variant="ghost">{t("Common.cancel")}</Button>
           <Button disabled={isSaving || isLoading} onClick={savePreferences}>
             {t("Common.save")}
-            {isSaving && <Loader className="size-4 ml-2 animate-spin" />}
+            {isSaving && <Loader className="size-4 ms-2 animate-spin" />}
           </Button>
         </div>
       )}

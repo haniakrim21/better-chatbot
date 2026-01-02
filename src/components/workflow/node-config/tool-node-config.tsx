@@ -122,7 +122,7 @@ export const ToolNodeDataConfig = memo(function ({
                       )}
                       <span className="font-semibold">{key}</span>
 
-                      <span className="text-muted-foreground ml-2">
+                      <span className="text-muted-foreground ms-2">
                         {isString(data.tool?.parameterSchema?.properties?.[key])
                           ? data.tool?.parameterSchema?.properties?.[key]
                           : toAny(data.tool?.parameterSchema?.properties?.[key])

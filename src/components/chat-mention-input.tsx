@@ -209,9 +209,9 @@ export function ChatMentionInputSuggestion({
               }),
             icon: <MCPIcon className="size-3.5 text-foreground" />,
             suffix: selectedIds?.includes(mcpId) ? (
-              <CheckIcon className="size-3 ml-auto" />
+              <CheckIcon className="size-3 ms-auto" />
             ) : (
-              <span className="ml-auto text-xs text-muted-foreground">
+              <span className="ms-auto text-xs text-muted-foreground">
                 {mcp.toolInfo?.length} tools
               </span>
             ),
@@ -245,7 +245,7 @@ export function ChatMentionInputSuggestion({
                   }),
                 icon: <HammerIcon className="size-3.5" />,
                 suffix: selectedIds?.includes(toolId) && (
-                  <CheckIcon className="size-3 ml-auto" />
+                  <CheckIcon className="size-3 ms-auto" />
                 ),
               };
             }) || [];
@@ -294,7 +294,7 @@ export function ChatMentionInputSuggestion({
             </Avatar>
           ),
           suffix: selectedIds?.includes(id) && (
-            <CheckIcon className="size-3 ml-auto" />
+            <CheckIcon className="size-3 ms-auto" />
           ),
         };
       });
@@ -337,7 +337,7 @@ export function ChatMentionInputSuggestion({
             </Avatar>
           ),
           suffix: selectedIds?.includes(id) && (
-            <CheckIcon className="size-3 ml-auto" />
+            <CheckIcon className="size-3 ms-auto" />
           ),
         };
       });
@@ -419,7 +419,7 @@ export function ChatMentionInputSuggestion({
             }),
           icon: item.icon,
           suffix: selectedIds?.includes(id) && (
-            <CheckIcon className="size-3 ml-auto" />
+            <CheckIcon className="size-3 ms-auto" />
           ),
         };
       });
@@ -688,7 +688,7 @@ export function ChatMentionInputSuggestion({
               // Desktop horizontal layout
               <div className="flex flex-1 h-[300px]">
                 {/* Agents & Workflows Column */}
-                <div className="flex-1 border-r overflow-y-auto">
+                <div className="flex-1 border-e overflow-y-auto">
                   <div className="p-2">
                     <div className="text-xs font-medium text-muted-foreground px-2 py-1.5">
                       {groupedMentions.agent.title}
@@ -742,7 +742,7 @@ export function ChatMentionInputSuggestion({
                 </div>
 
                 {/* MCP Tools Column */}
-                <div className="flex-1 border-r overflow-y-auto">
+                <div className="flex-1 border-e overflow-y-auto">
                   <div className="p-2">
                     <div className="text-xs font-medium text-muted-foreground px-2 py-1.5">
                       {groupedMentions.mcp.title}

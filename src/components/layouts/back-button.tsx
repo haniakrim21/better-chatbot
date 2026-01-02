@@ -13,7 +13,7 @@ export function BackButton({ returnUrl, title, ...props }: BackButtonProps) {
   return (
     <Link href={returnUrl} {...props}>
       <Button variant="ghost" size="sm" className="hover:bg-muted">
-        <ArrowLeft className="mr-2 h-4 w-4" />
+        <ArrowLeft className="me-2 h-4 w-4 rtl:rotate-180" />
         {title}
       </Button>
     </Link>

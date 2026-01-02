@@ -37,7 +37,7 @@ export function AppSidebar({
   return (
     <Sidebar
       collapsible="offcanvas"
-      className="border-r border-sidebar-border/80"
+      className="border-e border-sidebar-border/80"
     >
       <SidebarHeaderShared
         title={
@@ -56,7 +56,7 @@ export function AppSidebar({
 
       <SidebarContent className="mt-2 overflow-hidden relative">
         <div className="flex flex-col overflow-y-auto">
-          <AppSidebarMenus user={user} />
+          <AppSidebarMenus />
           <AppSidebarAgents userRole={userRole} />
           <AppSidebarThreads />
         </div>

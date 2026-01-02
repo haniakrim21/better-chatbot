@@ -66,7 +66,7 @@ function NodeSelectContent({
             {key}
 
             {unSupportedKinds.includes(NodeKind[key]) && (
-              <span className="ml-auto text-xs text-muted-foreground">
+              <span className="ms-auto text-xs text-muted-foreground">
                 Soon...
               </span>
             )}

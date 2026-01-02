@@ -82,7 +82,7 @@ export function UserDetailFormCard({
           <User className="h-5 w-5 text-primary" />
           {tCommon("userDetailsCardTitle")}
           {user.id === currentUserId && (
-            <Badge variant="outline" className="text-xs ml-auto">
+            <Badge variant="outline" className="text-xs ms-auto">
               {tCommon("you")}
             </Badge>
           )}

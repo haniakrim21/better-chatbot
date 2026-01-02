@@ -47,7 +47,7 @@ export function JsonViewPopup({
           <Button
             variant="ghost"
             size="icon"
-            className={cn("size-3! p-4! ml-auto")}
+            className={cn("size-3! p-4! ms-auto")}
             onClick={() => copy(isString(data) ? data : JSON.stringify(data))}
           >
             {copied ? <Check /> : <Copy />}

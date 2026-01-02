@@ -182,7 +182,7 @@ export function AppSidebarAgents({ userRole }: { userRole?: string | null }) {
                       return (
                         <SidebarMenu
                           key={agent.id}
-                          className="group/agent mr-0 w-full"
+                          className="group/agent me-0 w-full"
                         >
                           <SidebarMenuItem
                             className="px-2 cursor-pointer w-full"
@@ -235,7 +235,7 @@ export function AppSidebarAgents({ userRole }: { userRole?: string | null }) {
                                     side="right"
                                     align="start"
                                   >
-                                    <SidebarMenuAction className="data-[state=open]:bg-input! data-[state=open]:opacity-100  opacity-0 group-hover/agent:opacity-100 mr-2">
+                                    <SidebarMenuAction className="data-[state=open]:bg-input! data-[state=open]:opacity-100  opacity-0 group-hover/agent:opacity-100 me-2">
                                       <MoreHorizontal className="size-4" />
                                     </SidebarMenuAction>
                                   </AgentDropdown>

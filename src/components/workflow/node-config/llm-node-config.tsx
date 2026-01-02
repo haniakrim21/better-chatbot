@@ -165,7 +165,7 @@ export const LLMNodeDataConfig = memo(function ({
                 >
                   <VariableIcon className="size-3.5 text-blue-500" />
                   <span className="font-semibold">{`${key}.${property}`}</span>
-                  <span className="text-muted-foreground ml-2">
+                  <span className="text-muted-foreground ms-2">
                     {
                       toAny(
                         data.outputSchema.properties[key].properties![property],
@@ -184,7 +184,7 @@ export const LLMNodeDataConfig = memo(function ({
             >
               <VariableIcon className="size-3.5 text-blue-500" />
               <span className="font-semibold">{key}</span>
-              <span className="text-muted-foreground ml-2">
+              <span className="text-muted-foreground ms-2">
                 {data.outputSchema.properties[key].type}
               </span>
             </div>,
@@ -231,7 +231,7 @@ export const LLMNodeDataConfig = memo(function ({
                 <Button
                   variant={"ghost"}
                   size={"icon"}
-                  className="ml-auto size-7 hover:bg-destructive/10! hover:text-destructive"
+                  className="ms-auto size-7 hover:bg-destructive/10! hover:text-destructive"
                   onClick={() => removeMessage(index)}
                 >
                   <TrashIcon className="size-3 hover:text-destructive" />
@@ -297,7 +297,7 @@ export const LLMNodeDataStack = memo(function ({
     <div className="flex flex-col gap-1 px-4 mt-4">
       <div className="border bg-input text-[10px] rounded px-2 py-1 flex items-center gap-1">
         <span className="font-semibold">{data.model.model}</span>
-        <VariableIcon className="size-3.5 text-blue-500 ml-auto" />
+        <VariableIcon className="size-3.5 text-blue-500 ms-auto" />
         <span className="text-xs text-muted-foreground ">
           {isTextResponse ? "text" : "object"}
         </span>

@@ -103,7 +103,7 @@ function PureWorkflowInvocation({ result }: WorkflowInvocationProps) {
               )}
               <span
                 className={cn(
-                  "ml-auto text-xs",
+                  "ms-auto text-xs",
                   item.status != "fail" && "text-muted-foreground",
                 )}
               >

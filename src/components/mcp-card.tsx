@@ -136,7 +136,7 @@ export const MCPCard = memo(function MCPCard({
         key={`header-${status}-${needsAuthorization}`}
         className="flex items-center gap-1 mb-2"
       >
-        {isLoading && <Loader className="size-4 z-20 animate-spin mr-1" />}
+        {isLoading && <Loader className="size-4 z-20 animate-spin me-1" />}
 
         <h4 className="font-bold text-xs sm:text-lg flex items-center gap-1">
           {name}
@@ -261,7 +261,7 @@ export const MCPCard = memo(function MCPCard({
             <div className="h-4">
               <Separator orientation="vertical" />
             </div>
-            <div className="flex items-center gap-1.5 ml-2">
+            <div className="flex items-center gap-1.5 ms-2">
               <Avatar className="size-4 ring shrink-0 rounded-full">
                 <AvatarImage src={userAvatar || undefined} />
                 <AvatarFallback className="text-xs">
@@ -302,10 +302,10 @@ export const MCPCard = memo(function MCPCard({
       )}
 
       <div className="relative hidden sm:flex w-full">
-        <CardContent className="flex min-w-0 w-full flex-row text-sm max-h-[320px] overflow-hidden border-r-0">
+        <CardContent className="flex min-w-0 w-full flex-row text-sm max-h-[320px] overflow-hidden border-e-0">
           {/* Only show config to owners to prevent credential exposure */}
           {isOwner && config && (
-            <div className="w-1/2 min-w-0 flex flex-col pr-2 border-r border-border">
+            <div className="w-1/2 min-w-0 flex flex-col pe-2 border-e border-border">
               <div className="flex items-center gap-2 mb-2 pt-2 pb-1 z-10">
                 <Settings size={14} className="text-muted-foreground" />
                 <h5 className="text-muted-foreground text-sm font-medium">
@@ -319,7 +319,7 @@ export const MCPCard = memo(function MCPCard({
           )}
 
           <div
-            className={`${isOwner && config ? "w-1/2" : "w-full"} min-w-0 flex flex-col ${isOwner && config ? "pl-4" : ""}`}
+            className={`${isOwner && config ? "w-1/2" : "w-full"} min-w-0 flex flex-col ${isOwner && config ? "ps-4" : ""}`}
           >
             <div className="flex items-center gap-2 mb-4 pt-2 pb-1 z-10">
               <Wrench size={14} className="text-muted-foreground" />
@@ -349,7 +349,7 @@ export const MCPCard = memo(function MCPCard({
 // Tools list component
 const ToolsList = memo(
   ({ tools, serverId }: { tools: MCPToolInfo[]; serverId: string }) => (
-    <div className="space-y-2 pr-2">
+    <div className="space-y-2 pe-2">
       {tools.map((tool) => (
         <div
           key={tool.name}
@@ -365,7 +365,7 @@ const ToolsList = memo(
           </ToolDetailPopup>
 
           <div className="flex items-center px-1 justify-center self-stretch">
-            <ChevronRight size={16} />
+            <ChevronRight size={16} className="rtl:rotate-180" />
           </div>
         </div>
       ))}

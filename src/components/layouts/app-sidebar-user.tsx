@@ -16,7 +16,6 @@ import {
 import { AvatarFallback, AvatarImage, Avatar } from "ui/avatar";
 import { SidebarMenuButton, SidebarMenuItem, SidebarMenu } from "ui/sidebar";
 import {
-  ChevronsUpDown,
   Command,
   LogOutIcon,
   Settings2,
@@ -89,16 +88,16 @@ export function AppSidebarUserInner(props: {
               <span className="truncate" data-testid="sidebar-user-email">
                 {user?.email}
               </span>
-              <ChevronsUpDown className="ml-auto" />
+              <ChevronRight className="ms-auto rtl:rotate-180" />
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
             side="top"
             className="bg-background w-[--radix-dropdown-menu-trigger-width] min-w-60 rounded-lg"
-            align="center"
+            align="start"
           >
             <DropdownMenuLabel className="p-0 font-normal">
-              <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
+              <div className="flex items-center gap-2 px-1 py-1.5 text-start text-sm">
                 <Avatar className="h-8 w-8 rounded-full">
                   <AvatarImage
                     src={getUserAvatar(user)}
@@ -108,7 +107,7 @@ export function AppSidebarUserInner(props: {
                     {user?.name?.slice(0, 1) || ""}
                   </AvatarFallback>
                 </Avatar>
-                <div className="grid flex-1 text-left text-sm leading-tight">
+                <div className="grid flex-1 text-start text-sm leading-tight">
                   <span
                     className="truncate font-medium"
                     data-testid="sidebar-user-name"
@@ -190,17 +189,17 @@ function SelectTheme() {
                 themeStyle,
               )}`}
             </span>
-            <ChevronRight className="size-4 ml-2" />
+            <ChevronRight className="size-4 ms-2 rtl:rotate-180" />
           </>
         }
       >
-        <Palette className="mr-2 size-4" />
-        <span className="mr-auto">{t("theme")}</span>
+        <Palette className="me-2 size-4" />
+        <span className="me-auto">{t("theme")}</span>
       </DropdownMenuSubTrigger>
       <DropdownMenuPortal>
         <DropdownMenuSubContent className="w-48">
           <DropdownMenuLabel className="text-muted-foreground w-full flex items-center">
-            <span className="text-muted-foreground text-xs mr-2 select-none">
+            <span className="text-muted-foreground text-xs me-2 select-none">
               {capitalizeFirstLetter(theme)}
             </span>
             <div className="flex-1" />
@@ -264,7 +263,7 @@ function SelectLanguage() {
   return (
     <DropdownMenuSub>
       <DropdownMenuSubTrigger>
-        <Languages className="mr-2 size-4" />
+        <Languages className="me-2 size-4" />
         <span>{t("language")}</span>
       </DropdownMenuSubTrigger>
       <DropdownMenuPortal>

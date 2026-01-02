@@ -33,7 +33,7 @@ export default async function AgentsLoading() {
               <CardDescription className="mt-2">
                 <p>{t("Layout.createYourOwnAgent")}</p>
               </CardDescription>
-              <div className="mt-auto ml-auto flex-1">
+              <div className="mt-auto ms-auto flex-1">
                 <Skeleton className="h-10 w-20" />
               </div>
             </CardHeader>

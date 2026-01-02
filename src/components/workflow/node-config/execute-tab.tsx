@@ -111,7 +111,7 @@ export function ExecuteTab({
       title: t("Common.generateInputWithAI"),
       description: (
         <div className="flex items-center gap-2">
-          <p className="mr-auto">
+          <p className="me-auto">
             {t("Workflow.generateInputWithAIDescription")}
           </p>
           <SelectModel
@@ -369,7 +369,7 @@ ${workflow!.description ? `tool-description: ${workflow!.description}` : ""}`,
           <span className="font-semibold">Test Run</span>
           <div
             className={cn(
-              "p-1 rounded hover:bg-secondary cursor-pointer ml-auto",
+              "p-1 rounded hover:bg-secondary cursor-pointer ms-auto",
               isProcessing && "sr-only",
             )}
             onClick={close}
@@ -409,7 +409,7 @@ ${workflow!.description ? `tool-description: ${workflow!.description}` : ""}`,
               <div
                 tabIndex={1}
                 onClick={handleGenerateInputWithAI}
-                className="hover:bg-secondary rounded-sm px-2 py-1 flex items-center gap-2 ml-auto text-xs font-semibold cursor-pointer hover:text-primary transition-colors"
+                className="hover:bg-secondary rounded-sm px-2 py-1 flex items-center gap-2 ms-auto text-xs font-semibold cursor-pointer hover:text-primary transition-colors"
               >
                 {t("Common.generateInputWithAI")}
                 <WandSparklesIcon className="size-3" />
@@ -418,7 +418,7 @@ ${workflow!.description ? `tool-description: ${workflow!.description}` : ""}`,
                 return (
                   <div key={key ?? i}>
                     <Label
-                      className="mb-2 text-sm font-semibold ml-0.5 gap-0.5"
+                      className="mb-2 text-sm font-semibold ms-0.5 gap-0.5"
                       htmlFor={key || String(i)}
                     >
                       {key || "undefined"}
@@ -535,7 +535,7 @@ ${workflow!.description ? `tool-description: ${workflow!.description}` : ""}`,
                     )}
                     <span
                       className={cn(
-                        "ml-auto text-xs",
+                        "ms-auto text-xs",
                         history.status != "fail" && "text-muted-foreground",
                       )}
                     >
@@ -584,7 +584,7 @@ ${workflow!.description ? `tool-description: ${workflow!.description}` : ""}`,
               <Button
                 variant={"ghost"}
                 size={"icon"}
-                className="ml-auto"
+                className="ms-auto"
                 onClick={() => copy(JSON.stringify(lastOutput))}
               >
                 {copied ? (

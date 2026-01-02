@@ -344,7 +344,7 @@ export function ChatBotVoice() {
 
               <EnabledToolsDropdown align="start" side="bottom" tools={tools} />
 
-              <DrawerTitle className="ml-auto">
+              <DrawerTitle className="ms-auto">
                 <DropdownMenu>
                   <DropdownMenuTrigger asChild>
                     <Button variant={"ghost"} size={"icon"}>
@@ -533,7 +533,7 @@ function ConversationView({
             className={cn(
               "flex px-4 py-3",
               message.role == "user" &&
-                "ml-auto max-w-2xl text-foreground rounded-2xl w-fit bg-input/40",
+                "ms-auto max-w-2xl text-foreground rounded-2xl w-fit bg-input/40",
             )}
           >
             {!message.completed ? (
@@ -626,13 +626,13 @@ function CompactMessageView({
                     className="w-full bg-card flex items-center gap-2 px-2 text-xs text-muted-foreground"
                   >
                     <WrenchIcon className="size-3.5" />
-                    <span className="text-sm font-bold min-w-0 truncate mr-auto">
+                    <span className="text-sm font-bold min-w-0 truncate me-auto">
                       {getToolName(toolPart)}
                     </span>
                     {isExecuting ? (
                       <Loader className="size-3.5 animate-spin" />
                     ) : (
-                      <ChevronRight className="size-3.5" />
+                      <ChevronRight className="size-3.5 rtl:rotate-180" />
                     )}
                   </Button>
                 </div>
@@ -649,7 +649,7 @@ function CompactMessageView({
                     <JsonView data={toolPart.input} />
                   </div>
 
-                  <div className="w-1/2 min-w-0 pl-4 flex flex-col">
+                  <div className="w-1/2 min-w-0 ps-4 flex flex-col">
                     <div className="flex items-center gap-2 mb-4 pt-2 pb-1  z-10">
                       <h5 className="text-muted-foreground text-sm font-medium">
                         Outputs

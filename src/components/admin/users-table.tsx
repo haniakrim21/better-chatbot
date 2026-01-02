@@ -153,7 +153,7 @@ export function UsersTable({
               autoFocus={shouldAutoFocusRef.current}
               key={query ?? "empty"}
               placeholder={t("searchPlaceholder")}
-              className="pl-9"
+              className="ps-9"
               name="query"
               defaultValue={query}
               onFocus={() => {
@@ -173,7 +173,7 @@ export function UsersTable({
             href={baseUrl}
             className={cn("shrink-0", buttonVariants({ variant: "outline" }))}
           >
-            <X className="h-4 w-4 mr-1" />
+            <X className="h-4 w-4 me-1" />
             {t("clear")}
           </Link>
         )}
@@ -286,7 +286,7 @@ export function UsersTable({
                   </TableCell>
                   <TableCell>
                     <ChevronRight
-                      className="h-4 w-4 text-muted-foreground"
+                      className="h-4 w-4 text-muted-foreground rtl:rotate-180"
                       data-testid="user-row-chevron"
                     />
                   </TableCell>

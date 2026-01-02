@@ -40,7 +40,7 @@ export async function POST(req: NextRequest) {
   } catch (error) {
     console.error("Error creating team:", error);
     if (error instanceof z.ZodError) {
-      return NextResponse.json({ error: error.errors }, { status: 400 });
+      return NextResponse.json({ error: error.issues }, { status: 400 });
     }
     return NextResponse.json(
       { error: "Failed to create team" },
@@ -55,15 +55,6 @@ export async function GET(req: NextRequest) {
     if (!session) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
-
-    const _members = await db.query.TeamMemberTable.findMany({
-      where: eq(TeamMemberTable.userId, session.user.id),
-      with: {
-        // @ts-ignore - relation needs to be defined in relations definition file if using query builder fully,
-        // but for now we might need to join manually if relations aren't set up.
-        // Let's use a manual join approach or standard query if relations are missing.
-      },
-    });
 
     // Manual join to get team details
     // Since we didn't add the `relations` definitions in a separate file or schema file yet (usually in `relations.ts` or part of schema),

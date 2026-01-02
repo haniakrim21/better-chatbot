@@ -63,40 +63,47 @@ export const FlipWords = ({
           position: "absolute",
         }}
         className={cn(
-          "z-10 inline-block relative text-left text-foreground px-2",
+          "z-10 inline-block relative text-start text-foreground px-2",
           className,
         )}
         key={currentWord}
       >
         {/* edit suggested by Sajal: https://x.com/DewanganSajal */}
-        {currentWord.split(" ").map((word, wordIndex) => (
-          <motion.span
-            key={word + wordIndex}
-            initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
-            animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-            transition={{
-              delay: wordIndex * 0.01,
-              duration: 0.03,
-            }}
-            className="inline-block whitespace-nowrap"
-          >
-            {word.split("").map((letter, letterIndex) => (
-              <motion.span
-                key={word + letterIndex}
-                initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
-                animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
-                transition={{
-                  delay: wordIndex * 0.2 + letterIndex * 0.08,
-                  duration: 0.2,
-                }}
-                className="inline-block"
-              >
-                {letter}
-              </motion.span>
-            ))}
-            <span className="inline-block">&nbsp;</span>
-          </motion.span>
-        ))}
+        {currentWord.split(" ").map((word, wordIndex) => {
+          const isRtl = /[\u0600-\u06FF]/.test(word);
+          return (
+            <motion.span
+              key={word + wordIndex}
+              initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
+              animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+              transition={{
+                delay: wordIndex * 0.3,
+                duration: 0.3,
+              }}
+              className="inline-block whitespace-nowrap"
+            >
+              {isRtl ? (
+                <span className="inline-block">{word}</span>
+              ) : (
+                word.split("").map((letter, letterIndex) => (
+                  <motion.span
+                    key={word + letterIndex}
+                    initial={{ opacity: 0, y: 10, filter: "blur(4px)" }}
+                    animate={{ opacity: 1, y: 0, filter: "blur(0px)" }}
+                    transition={{
+                      delay: wordIndex * 0.3 + letterIndex * 0.05,
+                      duration: 0.2,
+                    }}
+                    className="inline-block"
+                  >
+                    {letter}
+                  </motion.span>
+                ))
+              )}
+              <span className="inline-block">&nbsp;</span>
+            </motion.span>
+          );
+        })}
       </motion.div>
     </AnimatePresence>
   );

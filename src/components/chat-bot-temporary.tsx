@@ -170,7 +170,7 @@ export function ChatBotTemporary() {
             >
               {t("resetChat")}
               <Separator orientation="vertical" />
-              <span className="text-xs text-muted-foreground ml-1">⌘E</span>
+              <span className="text-xs text-muted-foreground ms-1">⌘E</span>
             </Button>
             <TemporaryChatInstructions
               isOpen={isInstructionsOpen}
@@ -185,7 +185,7 @@ export function ChatBotTemporary() {
               <Button variant={"secondary"} className="rounded-full">
                 <Settings2 />
                 <Separator orientation="vertical" />
-                <span className="text-xs text-muted-foreground ml-1">⌘I</span>
+                <span className="text-xs text-muted-foreground ms-1">⌘I</span>
               </Button>
             </TemporaryChatInstructions>
             <DrawerClose asChild>
@@ -195,7 +195,7 @@ export function ChatBotTemporary() {
               >
                 <X />
                 <Separator orientation="vertical" />
-                <span className="text-xs text-muted-foreground ml-1">ESC</span>
+                <span className="text-xs text-muted-foreground ms-1">ESC</span>
               </Button>
             </DrawerClose>
           </DrawerTitle>

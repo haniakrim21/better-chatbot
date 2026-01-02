@@ -146,3 +146,154 @@ export async function inviteMember(
 
   revalidatePath(`/teams/${teamId}`);
 }
+
+export async function removeMember(teamId: string, targetUserId: string) {
+  const session = await getSession();
+  if (!session) {
+    throw new Error("Unauthorized");
+  }
+  const requesterId = session.user.id;
+
+  // Check requester membership
+  const requesterMembership = await db.query.TeamMemberTable.findFirst({
+    where: and(
+      eq(TeamMemberTable.userId, requesterId),
+      eq(TeamMemberTable.teamId, teamId),
+    ),
+  });
+
+  if (!requesterMembership) {
+    throw new Error("Unauthorized");
+  }
+
+  // Check target membership
+  const targetMembership = await db.query.TeamMemberTable.findFirst({
+    where: and(
+      eq(TeamMemberTable.userId, targetUserId),
+      eq(TeamMemberTable.teamId, teamId),
+    ),
+  });
+
+  if (!targetMembership) {
+    throw new Error("Member not found");
+  }
+
+  // Permission Logic
+  const isSelf = requesterId === targetUserId;
+
+  if (isSelf) {
+    // Leaving the team
+    if (requesterMembership.role === "owner") {
+      // Check if last owner
+      const owners = await db.query.TeamMemberTable.findMany({
+        where: and(
+          eq(TeamMemberTable.teamId, teamId),
+          eq(TeamMemberTable.role, "owner"),
+        ),
+      });
+      if (owners.length === 1) {
+        throw new Error("The last owner cannot leave the team.");
+      }
+    }
+  } else {
+    // Removing someone else
+    if (requesterMembership.role === "member") {
+      throw new Error("Permission denied");
+    }
+    if (
+      requesterMembership.role === "admin" &&
+      targetMembership.role !== "member"
+    ) {
+      throw new Error("Admins can only remove members");
+    }
+    // Owners can remove anyone (including other owners, policy dependent, usually fine or restricted)
+    // Assuming Owner can remove anyone for now.
+  }
+
+  await db
+    .delete(TeamMemberTable)
+    .where(
+      and(
+        eq(TeamMemberTable.teamId, teamId),
+        eq(TeamMemberTable.userId, targetUserId),
+      ),
+    );
+
+  revalidatePath(`/teams/${teamId}`);
+  revalidatePath("/teams"); // Refresh list if I left
+}
+
+export async function updateMemberRole(
+  teamId: string,
+  targetUserId: string,
+  newRole: "admin" | "member",
+) {
+  const session = await getSession();
+  if (!session) {
+    throw new Error("Unauthorized");
+  }
+  const requesterId = session.user.id;
+
+  // Check requester membership
+  const requesterMembership = await db.query.TeamMemberTable.findFirst({
+    where: and(
+      eq(TeamMemberTable.userId, requesterId),
+      eq(TeamMemberTable.teamId, teamId),
+    ),
+  });
+
+  if (
+    !requesterMembership ||
+    (requesterMembership.role !== "owner" &&
+      requesterMembership.role !== "admin")
+  ) {
+    throw new Error("Permission denied");
+  }
+
+  // Admin cannot promote/demote other admins or owners?
+  // Usually Admin can manage members, but maybe not other admins.
+  // Let's stick to: Owner can do anything. Admin can only manage 'member' role?
+  // Or simplifying: Admin can generally update roles of members, but cannot touch owners.
+
+  const targetMembership = await db.query.TeamMemberTable.findFirst({
+    where: and(
+      eq(TeamMemberTable.userId, targetUserId),
+      eq(TeamMemberTable.teamId, teamId),
+    ),
+  });
+
+  if (!targetMembership) {
+    throw new Error("Member not found");
+  }
+
+  if (targetMembership.role === "owner") {
+    throw new Error("Cannot change the role of an owner");
+  }
+
+  if (requesterMembership.role === "admin") {
+    // Admin trying to update someone
+    if (targetMembership.role === "admin") {
+      throw new Error("Admins cannot modify other admins");
+    }
+    if (newRole === "admin") {
+      // Admin promoting member to admin?
+      // Check if policy allows. Let's assume yes for now, or maybe only Owner can promote to Admin.
+      // Common pattern: Admin can only manage members. Owner manages Admins.
+      // Let's implement: Admin can only manage Members (remove member).
+      // Promoting to Admin should be Owner-only.
+      throw new Error("Only owners can promote to admin");
+    }
+  }
+
+  await db
+    .update(TeamMemberTable)
+    .set({ role: newRole })
+    .where(
+      and(
+        eq(TeamMemberTable.teamId, teamId),
+        eq(TeamMemberTable.userId, targetUserId),
+      ),
+    );
+
+  revalidatePath(`/teams/${teamId}`);
+}

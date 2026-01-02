@@ -73,7 +73,7 @@
 //             )}
 //           />
 //         </div>
-//         <div className={cn("pl-[7px] flex gap-4", !expanded && "hidden")}>
+//         <div className={cn("ps-[7px] flex gap-4", !expanded && "hidden")}>
 //           <div className="flex flex-col py-4 px-2">
 //             {steps.map((step, index) => {
 //               const isLastStep = index === steps.length - 1;
@@ -117,7 +117,7 @@
 //                       {isStepFinal ? `Final Step` : `Step ${index + 1}`}
 //                     </span>
 //                   </div>
-//                   <p className="text-xs text-muted-foreground break-words px-2 ml-4.5 group-hover/step:text-foreground transition-colors">
+//                   <p className="text-xs text-muted-foreground break-words px-2 ms-4.5 group-hover/step:text-foreground transition-colors">
 //                     <WordByWordFadeIn>{step.thought}</WordByWordFadeIn>
 //                   </p>
 //                   {!isLastStep && (
@@ -130,7 +130,7 @@
 //                         ease: "easeOut",
 //                       }}
 //                       className={cn(
-//                         "h-full ml-[7px] w-[2px] bg-border absolute top-4 origin-top",
+//                         "h-full ms-[7px] w-[2px] bg-border absolute top-4 origin-top",
 //                         index == steps.length - 2 &&
 //                           "bg-gradient-to-b from-40% from-border to-primary",
 //                       )}

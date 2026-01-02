@@ -156,7 +156,7 @@ export function AgentsList({
                     <CardDescription className="mt-2">
                       <p>{t("Layout.createYourOwnAgent")}</p>
                     </CardDescription>
-                    <div className="mt-auto ml-auto flex-1">
+                    <div className="mt-auto ms-auto flex-1">
                       <Button variant="ghost" size="lg">
                         {t("Common.create")}
                         <ArrowUpRight className="size-3.5" />

@@ -164,7 +164,7 @@ export function UserStatisticsCard({ stats, view }: UserStatisticsCardProps) {
 
                   {/* Model List - Vertical Layout with Scroll */}
                   <div className="space-y-2 max-h-[420px] overflow-y-auto ">
-                    <div className="pr-2 space-y-2">
+                    <div className="pe-2 space-y-2">
                       {stats.modelStats.map((modelStat, index) => (
                         <div
                           key={modelStat.model}
@@ -190,7 +190,7 @@ export function UserStatisticsCard({ stats, view }: UserStatisticsCardProps) {
                               </div>
                             </div>
                           </div>
-                          <div className="text-sm font-semibold text-right shrink-0 ml-3">
+                          <div className="text-sm font-semibold text-end shrink-0 ms-3">
                             {modelStat.totalTokens.toLocaleString()}
                           </div>
                         </div>
@@ -229,14 +229,14 @@ export function UserStatisticsCard({ stats, view }: UserStatisticsCardProps) {
               </div>
 
               <div className="rounded-lg border bg-muted/30 p-3 text-center">
-                <p className="text-xs font-medium text-muted-foreground mr-1 mb-1">
+                <p className="text-xs font-medium text-muted-foreground me-1 mb-1">
                   {tCommon("topModel")}
                 </p>
                 <p className="text-lg font-semibold flex items-center justify-center gap-1">
                   {stats.modelStats[0] && (
                     <ModelProviderIcon
                       provider={stats.modelStats[0].provider}
-                      className="h-3 w-3 mr-1"
+                      className="h-3 w-3 me-1"
                     />
                   )}
                   <span className="truncate">

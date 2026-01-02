@@ -188,12 +188,12 @@ export function GenerateAvatarDialog({
             >
               {isGenerating ? (
                 <>
-                  <Loader2 className="mr-2 size-4 animate-spin" />
+                  <Loader2 className="me-2 size-4 animate-spin" />
                   {t("generating")}
                 </>
               ) : (
                 <>
-                  <Sparkles className="mr-2 size-4" />
+                  <Sparkles className="me-2 size-4" />
                   {tCommon("generate")}
                 </>
               )}
@@ -219,7 +219,7 @@ export function GenerateAvatarDialog({
                   variant="outline"
                   className="flex-1"
                 >
-                  <RefreshCw className="mr-2 size-4" />
+                  <RefreshCw className="me-2 size-4" />
                   {t("regenerate")}
                 </Button>
                 <Button
@@ -229,7 +229,7 @@ export function GenerateAvatarDialog({
                 >
                   {isSaving ? (
                     <>
-                      <Loader2 className="mr-2 size-4 animate-spin" />
+                      <Loader2 className="me-2 size-4 animate-spin" />
                       {tCommon("saving")}
                     </>
                   ) : (

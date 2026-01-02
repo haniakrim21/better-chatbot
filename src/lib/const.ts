@@ -85,6 +85,10 @@ export const SUPPORTED_LOCALES = [
     code: "no",
     name: "Norwegian 🇳🇴",
   },
+  {
+    code: "ar",
+    name: "Arabic 🇸🇦",
+  },
 ];
 
 export const BACKGROUND_COLORS = [

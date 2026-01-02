@@ -46,7 +46,7 @@ export default async function TeamDetailsPage({
         </div>
         {(userRole === "owner" || userRole === "admin") && (
           <Button variant="outline" size="sm">
-            <Settings className="mr-2 h-4 w-4" /> Settings
+            <Settings className="me-2 h-4 w-4" /> Settings
           </Button>
         )}
       </div>

@@ -222,7 +222,7 @@ export function HttpNodeConfig({ node }: { node: UINode<any> }) {
             {(httpNode.headers || []).map((header, index) => (
               <div key={index} className="flex gap-2 items-end">
                 <div>
-                  <Label className="text-xs mb-1 ml-1">Key</Label>
+                  <Label className="text-xs mb-1 ms-1">Key</Label>
                   <Input
                     value={header.key}
                     className="w-24 placeholder:text-xs"
@@ -233,7 +233,7 @@ export function HttpNodeConfig({ node }: { node: UINode<any> }) {
                   />
                 </div>
                 <div className="flex-1">
-                  <Label className="text-xs mb-1 ml-1">Value</Label>
+                  <Label className="text-xs mb-1 ms-1">Value</Label>
                   <HttpValueInput
                     allowedTypes={["string", "number"]}
                     className="max-w-[230px]"
@@ -259,7 +259,7 @@ export function HttpNodeConfig({ node }: { node: UINode<any> }) {
             {(httpNode.query || []).map((param, index) => (
               <div key={index} className="flex gap-2 items-end">
                 <div>
-                  <Label className="text-xs mb-1 ml-1 text-muted-foreground">
+                  <Label className="text-xs mb-1 ms-1 text-muted-foreground">
                     Key
                   </Label>
                   <Input
@@ -272,7 +272,7 @@ export function HttpNodeConfig({ node }: { node: UINode<any> }) {
                   />
                 </div>
                 <div className="flex-1">
-                  <Label className="text-xs mb-1 ml-1 text-muted-foreground">
+                  <Label className="text-xs mb-1 ms-1 text-muted-foreground">
                     Value
                   </Label>
                   <HttpValueInput
@@ -312,7 +312,7 @@ export function HttpNodeConfig({ node }: { node: UINode<any> }) {
                   >
                     <Button
                       variant={isBodyVariable ? "secondary" : "ghost"}
-                      className="ml-auto data-[state=open]:bg-secondary"
+                      className="ms-auto data-[state=open]:bg-secondary"
                       size="sm"
                     >
                       <VariableIcon className="size-3" />

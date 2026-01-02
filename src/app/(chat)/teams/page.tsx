@@ -18,7 +18,7 @@ export default async function TeamsPage() {
     redirect("/sign-in");
   }
 
-  const teams = await getTeams(session.user.id);
+  const teams = await getTeams();
 
   return (
     <div className="p-6 space-y-6">
@@ -31,7 +31,7 @@ export default async function TeamsPage() {
         </div>
         <Link href="/teams/new">
           <Button>
-            <PlusIcon className="mr-2 h-4 w-4" /> Create Team
+            <PlusIcon className="me-2 h-4 w-4" /> Create Team
           </Button>
         </Link>
       </div>

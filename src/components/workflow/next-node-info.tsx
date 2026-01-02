@@ -220,7 +220,7 @@ function NextNodeConnector({
               <Tooltip>
                 <TooltipTrigger asChild>
                   <button
-                    className="hover:border-destructive flex transition-colors ml-auto gap-1 border rounded  p-1 items-center"
+                    className="hover:border-destructive flex transition-colors ms-auto gap-1 border rounded  p-1 items-center"
                     onClick={(e) => {
                       e.stopPropagation();
                       onDisconnected(n.edge);

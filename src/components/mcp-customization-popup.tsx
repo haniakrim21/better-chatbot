@@ -175,7 +175,7 @@ export function McpServerCustomizationContent({
               onClick={() => setSelectedTool(null)}
               className="flex items-center gap-2 text-muted-foreground text-sm hover:text-foreground transition-colors mb-8"
             >
-              <ArrowLeft className="size-3" />
+              <ArrowLeft className="size-3 rtl:rotate-180" />
               {t("Common.back")}
             </button>
             {selectedTool.name}
@@ -195,12 +195,12 @@ export function McpServerCustomizationContent({
         <DialogDescription>{/*  */}</DialogDescription>
       </DialogHeader>
       <div className="flex items-center">
-        <h5 className="mr-auto flex items-center py-2">
+        <h5 className="me-auto flex items-center py-2">
           <Tooltip>
             <TooltipTrigger asChild>
               <span className="text-xs font-medium flex-1 flex items-center text-muted-foreground">
                 {t("MCP.mcpServerCustomization")}
-                <Info className="size-3 ml-1 text-muted-foreground" />
+                <Info className="size-3 ms-1 text-muted-foreground" />
               </span>
             </TooltipTrigger>
             <TooltipContent>
@@ -261,7 +261,7 @@ export function McpServerCustomizationContent({
             <TooltipTrigger asChild>
               <span className="text-xs font-medium flex-1 flex items-center text-muted-foreground">
                 {t("MCP.additionalInstructions")}
-                <Info className="size-3 ml-1 text-muted-foreground" />
+                <Info className="size-3 ms-1 text-muted-foreground" />
               </span>
             </TooltipTrigger>
             <TooltipContent>
@@ -315,7 +315,7 @@ export function McpServerCustomizationContent({
                           </p>
                         </AlertDescription>
                       </div>
-                      <ChevronRight className="size-3.5 flex-shrink-0" />
+                      <ChevronRight className="size-3.5 flex-shrink-0 rtl:rotate-180" />
                     </div>
                   </Alert>
                 );

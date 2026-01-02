@@ -34,30 +34,30 @@ export function WorkflowGreeting() {
         <div className="space-y-4">
           <div className="space-y-3">
             <h3 className="text-sm font-semibold">
-              <BlocksIcon className="size-4 inline-block mr-2" />
+              <BlocksIcon className="size-4 inline-block me-2" />
               {t("Workflow.greeting.buildAutomationTitle")}
             </h3>
-            <p className="pl-6 text-xs text-muted-foreground leading-relaxed">
+            <p className="ps-6 text-xs text-muted-foreground leading-relaxed">
               {t("Workflow.greeting.buildAutomationDescription")}
             </p>
           </div>
 
           <div className="space-y-3">
             <h3 className="text-sm font-semibold">
-              <Terminal className="size-4 inline-block mr-2" />
+              <Terminal className="size-4 inline-block me-2" />
               {t("Workflow.greeting.chatbotToolTitle")}
             </h3>
-            <p className="pl-6 text-xs text-muted-foreground leading-relaxed">
+            <p className="ps-6 text-xs text-muted-foreground leading-relaxed">
               {t("Workflow.greeting.chatbotToolDescription")}
             </p>
           </div>
 
           <div className="space-y-3">
             <h3 className="text-sm font-semibold">
-              <ChevronsLeftRightEllipsisIcon className="size-4 inline-block mr-2" />
+              <ChevronsLeftRightEllipsisIcon className="size-4 inline-block me-2" />
               {t("Workflow.greeting.parameterBasedTitle")}
             </h3>
-            <p className="pl-6 text-xs text-muted-foreground leading-relaxed">
+            <p className="ps-6 text-xs text-muted-foreground leading-relaxed">
               {t("Workflow.greeting.parameterBasedDescription")}
             </p>
           </div>

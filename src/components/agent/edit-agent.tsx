@@ -559,7 +559,7 @@ export default function EditAgent({
             )}
 
             <Button
-              className={cn("mt-2", !initialAgent || !isOwner ? "ml-auto" : "")}
+              className={cn("mt-2", !initialAgent || !isOwner ? "ms-auto" : "")}
               onClick={saveAgent}
               disabled={isLoading || !hasEditAccess}
               data-testid="agent-save-button"

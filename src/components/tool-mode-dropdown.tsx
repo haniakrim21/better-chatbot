@@ -101,7 +101,7 @@ export const ToolModeDropdown = ({ disabled }: { disabled?: boolean }) => {
             </TooltipTrigger>
             <TooltipContent className="flex items-center gap-2" side="top">
               {t("selectToolMode")}
-              <span className="text-muted-foreground ml-2">
+              <span className="text-muted-foreground ms-2">
                 {getShortcutKeyList(Shortcuts.toolMode).join("")}
               </span>
             </TooltipContent>
@@ -126,7 +126,7 @@ export const ToolModeDropdown = ({ disabled }: { disabled?: boolean }) => {
               <div className="flex items-center gap-2">
                 <Infinity />
                 <span className="font-bold">Auto</span>
-                {toolChoice == "auto" && <Check className="ml-auto" />}
+                {toolChoice == "auto" && <Check className="ms-auto" />}
               </div>
               <p className="text-xs text-muted-foreground">
                 {t("autoToolModeDescription")}
@@ -143,7 +143,7 @@ export const ToolModeDropdown = ({ disabled }: { disabled?: boolean }) => {
               <div className="flex items-center gap-2">
                 <ClipboardCheck />
                 <span className="font-bold">Manual</span>
-                {toolChoice == "manual" && <Check className="ml-auto" />}
+                {toolChoice == "manual" && <Check className="ms-auto" />}
               </div>
               <p className="text-xs text-muted-foreground">
                 {t("manualToolModeDescription")}
@@ -160,10 +160,10 @@ export const ToolModeDropdown = ({ disabled }: { disabled?: boolean }) => {
               <div className="flex items-center gap-2">
                 <PenOff />
                 <span className="font-bold">None</span>
-                <span className="text-xs text-muted-foreground ml-4">
+                <span className="text-xs text-muted-foreground ms-4">
                   @mention only
                 </span>
-                {toolChoice == "none" && <Check className="ml-auto" />}
+                {toolChoice == "none" && <Check className="ms-auto" />}
               </div>
 
               <p className="text-xs text-muted-foreground">

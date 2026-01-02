@@ -146,7 +146,7 @@ export function OutputSchemaEditor({
       title: t("Workflow.generateSchemaWithAI"),
       description: (
         <div className="flex items-center gap-2">
-          <p className="mr-auto whitespace-pre-wrap">
+          <p className="me-auto whitespace-pre-wrap">
             {t("Workflow.describeOutputDataRequest", {
               eg: '{"name": "John", "age": 30}',
             })}
@@ -334,7 +334,7 @@ Return ONLY the JSON Schema object - no explanations or markdown formatting.`,
                               {field.key || "unnamed"}
                             </span>
                             {field.required && (
-                              <span className="text-destructive ml-1">*</span>
+                              <span className="text-destructive ms-1">*</span>
                             )}
                           </div>
                         </div>
@@ -398,7 +398,7 @@ Return ONLY the JSON Schema object - no explanations or markdown formatting.`,
                         variant="outline"
                         className="w-full border-dashed"
                       >
-                        <PlusIcon className="mr-2" />
+                        <PlusIcon className="me-2" />
                         {t("Workflow.addField")}
                       </Button>
                     </EditJsonSchemaFieldPopup>
@@ -426,7 +426,7 @@ Return ONLY the JSON Schema object - no explanations or markdown formatting.`,
                           variant="outline"
                           size="sm"
                         >
-                          <WandSparklesIcon className="size-3.5 mr-2" />
+                          <WandSparklesIcon className="size-3.5 me-2" />
                           {t("Common.generateWithAI")}
                         </Button>
                       </div>

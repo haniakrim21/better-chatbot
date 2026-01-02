@@ -66,7 +66,7 @@ const PurePreviewMessage = ({
     <div className="w-full mx-auto max-w-3xl px-6 group/message">
       <div
         className={cn(
-          "flex gap-4 w-full group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl",
+          "flex gap-4 w-full group-data-[role=user]/message:ms-auto group-data-[role=user]/message:max-w-2xl",
           className,
         )}
       >
@@ -235,12 +235,12 @@ export const ErrorMessage = ({
                   >
                     {isExpanded ? (
                       <>
-                        <ChevronUp className="h-3 w-3 mr-1" />
+                        <ChevronUp className="h-3 w-3 me-1" />
                         {t("Common.showLess")}
                       </>
                     ) : (
                       <>
-                        <ChevronDown className="h-3 w-3 mr-1" />
+                        <ChevronDown className="h-3 w-3 me-1" />
                         {t("Common.showMore")}
                       </>
                     )}

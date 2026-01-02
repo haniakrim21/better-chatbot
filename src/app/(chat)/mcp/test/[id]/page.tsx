@@ -136,7 +136,7 @@ const SchemaProperty = ({
   return (
     <div
       className={`pb-2 border-b border-border last:border-0 ${
-        level > 0 ? "ml-3 pl-2 border-l" : ""
+        level > 0 ? "ms-3 ps-2 border-l" : ""
       }`}
     >
       <div className="flex items-center gap-2">
@@ -238,18 +238,18 @@ const ToolDescription = ({
     {description.length > 300 && (
       <Button
         variant="ghost"
-        className="ml-auto p-0 h-6 mt-1 text-xs text-muted-foreground hover:text-foreground flex items-center"
+        className="ms-auto p-0 h-6 mt-1 text-xs text-muted-foreground hover:text-foreground flex items-center"
         onClick={toggleDescription}
       >
         {showFullDescription ? (
           <>
             Show less
-            <ChevronUp className="ml-1 h-3 w-3" />
+            <ChevronUp className="ms-1 h-3 w-3" />
           </>
         ) : (
           <>
             Show more
-            <ChevronDown className="ml-1 h-3 w-3" />
+            <ChevronDown className="ms-1 h-3 w-3" />
           </>
         )}
       </Button>
@@ -520,14 +520,14 @@ export default function Page() {
       <ResizablePanelGroup direction="horizontal" className="mt-4">
         {/* Tool List Panel */}
         <ResizablePanel defaultSize={30}>
-          <div className="w-full flex flex-col h-full relative pr-8">
+          <div className="w-full flex flex-col h-full relative pe-8">
             <div className="top-0 pb-2 z-1">
               <div className="w-full relative">
                 <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
                 <Input
                   type="search"
                   placeholder={t("MCP.searchTools")}
-                  className="pl-8 bg-background"
+                  className="ps-8 bg-background"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
                 />
@@ -557,7 +557,7 @@ export default function Page() {
         <ResizablePanel defaultSize={70}>
           <div className="w-full h-full">
             {selectedTool ? (
-              <div className="h-full overflow-y-auto pl-6 pr-12">
+              <div className="h-full overflow-y-auto ps-6 pe-12">
                 <div className="sticky top-0 bg-background">
                   <h3 className="text-xl font-medium mb-4 flex items-center gap-2">
                     {selectedTool.name}
@@ -592,7 +592,7 @@ export default function Page() {
                                   className="h-6 px-2 text-xs"
                                 >
                                   {t("MCP.detail")}
-                                  <ChevronDown className="ml-1 size-3" />
+                                  <ChevronDown className="ms-1 size-3" />
                                 </Button>
                               </DialogTrigger>
                               <DialogPortal>
@@ -655,7 +655,7 @@ export default function Page() {
                                 className="h-6 px-2 text-xs"
                               >
                                 {t("MCP.createInputWithAI")}
-                                <WandSparkles className="ml-1 size-3" />
+                                <WandSparkles className="ms-1 size-3" />
                               </Button>
                             </GenerateExampleInputJsonDialog>
                           </div>
@@ -687,7 +687,7 @@ export default function Page() {
                           className="w-full"
                         >
                           {isCallLoading && (
-                            <Loader className="size-4 animate-spin mr-2" />
+                            <Loader className="size-4 animate-spin me-2" />
                           )}
                           {t("MCP.callTool")}
                         </Button>

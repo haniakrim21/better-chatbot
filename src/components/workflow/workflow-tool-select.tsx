@@ -87,7 +87,7 @@ export function WorkflowToolSelect({
             className="border data-[state=open]:bg-input!"
           >
             {selectedToolLabel}
-            <ChevronDownIcon className="size-3.5 ml-auto" />
+            <ChevronDownIcon className="size-3.5 ms-auto" />
           </Button>
         )}
       </PopoverTrigger>

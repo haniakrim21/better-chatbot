@@ -19,9 +19,36 @@ import {
   DialogTitle,
   DialogTrigger,
 } from "ui/dialog";
-import { PlusIcon, Trash2Icon, ShieldIcon, UserIcon } from "lucide-react";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "ui/alert-dialog";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "ui/select";
+import {
+  PlusIcon,
+  Trash2Icon,
+  ShieldIcon,
+  UserIcon,
+  Loader2,
+} from "lucide-react";
 import { toast } from "sonner";
-import { inviteMember } from "lib/teams/actions";
+import {
+  inviteMember,
+  removeMember,
+  updateMemberRole,
+} from "lib/teams/actions";
 import { useRouter } from "next/navigation";
 
 interface TeamMember {
@@ -53,6 +80,8 @@ export function TeamMemberList({
   const [inviteEmail, setInviteEmail] = useState("");
   const [inviteRole, setInviteRole] = useState<"admin" | "member">("member");
   const [isLoading, setIsLoading] = useState(false);
+  const [memberToRemove, setMemberToRemove] = useState<string | null>(null);
+  const [updatingRoleId, setUpdatingRoleId] = useState<string | null>(null);
   const router = useRouter();
 
   const canManage = currentUserRole === "owner" || currentUserRole === "admin";
@@ -76,6 +105,38 @@ export function TeamMemberList({
     }
   };
 
+  const handleRemove = async () => {
+    if (!memberToRemove) return;
+
+    try {
+      await removeMember(teamId, memberToRemove);
+      toast.success("Member removed successfully");
+      router.refresh();
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.message || "Failed to remove member");
+    } finally {
+      setMemberToRemove(null);
+    }
+  };
+
+  const handleRoleChange = async (
+    userId: string,
+    newRole: "admin" | "member",
+  ) => {
+    setUpdatingRoleId(userId);
+    try {
+      await updateMemberRole(teamId, userId, newRole);
+      toast.success("Role updated successfully");
+      router.refresh();
+    } catch (error: any) {
+      console.error(error);
+      toast.error(error.message || "Failed to update role");
+    } finally {
+      setUpdatingRoleId(null);
+    }
+  };
+
   return (
     <div className="space-y-4">
       <div className="flex justify-between items-center">
@@ -84,7 +145,7 @@ export function TeamMemberList({
           <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
             <DialogTrigger asChild>
               <Button size="sm">
-                <PlusIcon className="mr-2 h-4 w-4" /> Add Member
+                <PlusIcon className="me-2 h-4 w-4" /> Add Member
               </Button>
             </DialogTrigger>
             <DialogContent>
@@ -108,14 +169,20 @@ export function TeamMemberList({
                 </div>
                 <div className="space-y-2">
                   <label className="text-sm font-medium">Role</label>
-                  <select
-                    className="flex h-10 w-full rounded-md border border-input bg-background px-3 py-2 text-sm text-foreground focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2"
+                  <Select
                     value={inviteRole}
-                    onChange={(e) => setInviteRole(e.target.value as any)}
+                    onValueChange={(val: "admin" | "member") =>
+                      setInviteRole(val)
+                    }
                   >
-                    <option value="member">Member</option>
-                    <option value="admin">Admin</option>
-                  </select>
+                    <SelectTrigger>
+                      <SelectValue placeholder="Select a role" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="member">Member</SelectItem>
+                      <SelectItem value="admin">Admin</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </div>
                 <div className="flex justify-end gap-2">
                   <Button
@@ -172,21 +239,50 @@ export function TeamMemberList({
                   </div>
                 </TableCell>
                 <TableCell>
-                  <span
-                    className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium 
-                        ${
-                          member.role === "owner"
-                            ? "bg-primary/10 text-primary"
-                            : member.role === "admin"
-                              ? "bg-orange-500/10 text-orange-600"
-                              : "bg-secondary text-secondary-foreground"
-                        }`}
-                  >
-                    {member.role === "owner" && (
-                      <ShieldIcon className="w-3 h-3 mr-1" />
-                    )}
-                    {member.role}
-                  </span>
+                  {/* Role Display / Editor */}
+                  {canManage &&
+                  member.role !== "owner" &&
+                  member.user.id !== currentUserId &&
+                  (currentUserRole === "owner" ||
+                    (currentUserRole === "admin" &&
+                      member.role === "member")) ? (
+                    <div className="flex items-center gap-2">
+                      <Select
+                        value={member.role}
+                        onValueChange={(val: "admin" | "member") =>
+                          handleRoleChange(member.user.id, val)
+                        }
+                        disabled={updatingRoleId === member.user.id}
+                      >
+                        <SelectTrigger className="h-8 w-[100px]">
+                          <SelectValue />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="member">Member</SelectItem>
+                          <SelectItem value="admin">Admin</SelectItem>
+                        </SelectContent>
+                      </Select>
+                      {updatingRoleId === member.user.id && (
+                        <Loader2 className="h-3 w-3 animate-spin" />
+                      )}
+                    </div>
+                  ) : (
+                    <span
+                      className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium 
+                          ${
+                            member.role === "owner"
+                              ? "bg-primary/10 text-primary"
+                              : member.role === "admin"
+                                ? "bg-orange-500/10 text-orange-600"
+                                : "bg-secondary text-secondary-foreground"
+                          }`}
+                    >
+                      {member.role === "owner" && (
+                        <ShieldIcon className="w-3 h-3 me-1" />
+                      )}
+                      {member.role}
+                    </span>
+                  )}
                 </TableCell>
                 <TableCell className="text-muted-foreground text-sm">
                   {new Date(member.joinedAt).toLocaleDateString()}
@@ -199,6 +295,7 @@ export function TeamMemberList({
                           variant="ghost"
                           size="icon"
                           className="h-8 w-8 text-destructive hover:text-destructive/90"
+                          onClick={() => setMemberToRemove(member.user.id)}
                         >
                           <Trash2Icon className="h-4 w-4" />
                         </Button>
@@ -210,6 +307,30 @@ export function TeamMemberList({
           </TableBody>
         </Table>
       </div>
+
+      <AlertDialog
+        open={!!memberToRemove}
+        onOpenChange={(open) => !open && setMemberToRemove(null)}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>Are you absolutely sure?</AlertDialogTitle>
+            <AlertDialogDescription>
+              This user will be removed from the team and will lose access to
+              all team resources.
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>Cancel</AlertDialogCancel>
+            <AlertDialogAction
+              onClick={handleRemove}
+              className="bg-destructive hover:bg-destructive/90"
+            >
+              Remove Member
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </div>
   );
 }

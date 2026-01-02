@@ -1,7 +1,7 @@
 import { Agent } from "app-types/agent";
 import { UserPreferences } from "app-types/user";
 import { MCPServerConfig } from "app-types/mcp";
-import { sql } from "drizzle-orm";
+import { sql, relations } from "drizzle-orm";
 import {
   pgTable,
   text,
@@ -32,6 +32,16 @@ export const TeamTable = pgTable("team", {
   updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
+export const TeamRelations = relations(TeamTable, ({ one, many }) => ({
+  owner: one(UserTable, {
+    fields: [TeamTable.ownerId],
+    references: [UserTable.id],
+  }),
+  members: many(TeamMemberTable),
+  agents: many(AgentTable),
+  knowledgeBases: many(KnowledgeBaseTable),
+}));
+
 export const TeamMemberTable = pgTable(
   "team_member",
   {
@@ -58,6 +68,17 @@ export const TeamMemberTable = pgTable(
     index("team_member_team_id_idx").on(table.teamId),
   ],
 );
+
+export const TeamMemberRelations = relations(TeamMemberTable, ({ one }) => ({
+  team: one(TeamTable, {
+    fields: [TeamMemberTable.teamId],
+    references: [TeamTable.id],
+  }),
+  user: one(UserTable, {
+    fields: [TeamMemberTable.userId],
+    references: [UserTable.id],
+  }),
+}));
 
 export const KnowledgeBaseTable = pgTable("knowledge_base", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
@@ -219,6 +240,11 @@ export const UserTable = pgTable("user", {
   banExpires: timestamp("ban_expires"),
   role: text("role").notNull().default("user"),
 });
+
+export const UserRelations = relations(UserTable, ({ many }) => ({
+  teamMemberships: many(TeamMemberTable),
+  ownedTeams: many(TeamTable),
+}));
 
 // Role tables removed - using Better Auth's built-in role system
 // Roles are now managed via the 'role' field on UserTable

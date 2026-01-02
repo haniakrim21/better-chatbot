@@ -132,7 +132,7 @@ export function GenerateAgentDialog({
                 onClick={submitGenerateAgent}
                 className="text-xs"
               >
-                <span className="mr-1">
+                <span className="me-1">
                   {isLoading ? "Generating..." : "Send"}
                 </span>
                 {isLoading ? (

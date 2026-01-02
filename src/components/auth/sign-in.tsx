@@ -122,7 +122,7 @@ export default function SignIn({
                 data-testid="signin-submit-button"
               >
                 {loading ? (
-                  <Loader className="size-4 animate-spin ml-1" />
+                  <Loader className="size-4 animate-spin ms-1" />
                 ) : (
                   t("signIn")
                 )}

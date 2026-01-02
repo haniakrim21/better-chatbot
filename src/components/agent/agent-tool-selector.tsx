@@ -103,7 +103,7 @@ export function AgentToolSelector({
         {m.name}
 
         {hasEditAccess && (
-          <span className="ml-2">
+          <span className="ms-2">
             <XIcon className="size-2.5 text-muted-foreground group-hover:text-destructive" />
           </span>
         )}
@@ -132,7 +132,7 @@ export function AgentToolSelector({
         )}
         ref={triggerRef}
       >
-        <div className="flex gap-2 items-center flex-wrap mr-auto">
+        <div className="flex gap-2 items-center flex-wrap me-auto">
           {isLoading ? (
             <span className="text-sm text-muted-foreground">
               {t("Agent.loadingTools")}

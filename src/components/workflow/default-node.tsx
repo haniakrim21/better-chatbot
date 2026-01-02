@@ -141,7 +141,7 @@ export const DefaultNode = memo(function DefaultNode({
                 <div className={cn("pointer-events-none relative")}>
                   <div
                     className={cn(
-                      "flex w-full h-full z-20 pl-2.5",
+                      "flex w-full h-full z-20 ps-2.5",
                       "group-hover:hidden",
                       selected && "hidden",
                     )}
@@ -177,11 +177,11 @@ export const DefaultNode = memo(function DefaultNode({
               </Handle>
             )}
             {data.runtime?.status === "fail" ? (
-              <div className="ml-auto">
+              <div className="ms-auto">
                 <TriangleAlertIcon className="size-3 text-destructive" />
               </div>
             ) : data.runtime?.status === "running" ? (
-              <div className="ml-auto">
+              <div className="ms-auto">
                 <Loader2Icon className="size-3 animate-spin" />
               </div>
             ) : null}

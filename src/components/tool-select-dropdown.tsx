@@ -561,7 +561,7 @@ function WorkflowToolSelector({
                       {workflow.userName && (
                         <Tooltip>
                           <TooltipTrigger asChild>
-                            <Avatar className="size-4 ml-2 shrink-0">
+                            <Avatar className="size-4 ms-2 shrink-0">
                               <AvatarImage src={workflow.userAvatar} />
                               <AvatarFallback className="text-xs text-muted-foreground font-medium">
                                 {workflow.userName[0]?.toUpperCase()}
@@ -649,7 +649,7 @@ function McpServerSelector() {
               variant={"ghost"}
               className="mt-2 text-primary flex items-center gap-1"
             >
-              Add a server <ChevronRight className="size-4" />
+              Add a server <ChevronRight className="size-4 rtl:rotate-180" />
             </Button>
           </Link>
         </div>
@@ -659,7 +659,7 @@ function McpServerSelector() {
             <DropdownMenuSubTrigger
               className="flex items-center gap-2 font-semibold cursor-pointer"
               icon={
-                <div className="flex items-center gap-2 ml-auto">
+                <div className="flex items-center gap-2 ms-auto">
                   {server.status === "authorizing" ? (
                     <div className="flex items-center gap-1">
                       <ShieldAlertIcon className="size-3 text-muted-foreground" />
@@ -671,7 +671,7 @@ function McpServerSelector() {
                           {server.tools.filter((t) => t.checked).length}
                         </span>
                       ) : null}
-                      <ChevronRight className="size-4 text-muted-foreground" />
+                      <ChevronRight className="size-4 text-muted-foreground rtl:rotate-180" />
                     </>
                   )}
                 </div>
@@ -693,7 +693,7 @@ function McpServerSelector() {
               </span>
               {Boolean(server.error) ? (
                 <span
-                  className={cn("text-xs text-destructive ml-1 p-1 rounded")}
+                  className={cn("text-xs text-destructive ms-1 p-1 rounded")}
                 >
                   error
                 </span>
@@ -844,7 +844,7 @@ function McpServerToolSelector({
                   {tool.description}
                 </p>
               </div>
-              <Checkbox checked={tool.checked} className="ml-auto" />
+              <Checkbox checked={tool.checked} className="ms-auto" />
             </DropdownMenuItem>
           ))
         )}
@@ -927,7 +927,7 @@ function AppDefaultToolKitSelector() {
             />
             {tool.label}
             <Switch
-              className="ml-auto"
+              className="ms-auto"
               checked={allowedAppDefaultToolkit?.includes(tool.id)}
             />
           </DropdownMenuItem>
@@ -1032,7 +1032,7 @@ function AgentSelector({
                   {agent.userName && (
                     <Tooltip>
                       <TooltipTrigger asChild>
-                        <Avatar className="size-4 ml-2 shrink-0">
+                        <Avatar className="size-4 ms-2 shrink-0">
                           <AvatarImage src={agent.userAvatar} />
                           <AvatarFallback className="text-xs text-muted-foreground font-medium">
                             {agent.userName[0]?.toUpperCase()}
@@ -1077,7 +1077,7 @@ function ImageGeneratorSelector({
               onClick={() => onGenerateImage?.("google")}
               className="cursor-pointer"
             >
-              <GeminiIcon className="mr-2 size-4" />
+              <GeminiIcon className="me-2 size-4" />
               Gemini (Nano Banana)
             </DropdownMenuItem>
             <DropdownMenuItem
@@ -1085,7 +1085,7 @@ function ImageGeneratorSelector({
               onClick={() => onGenerateImage?.("openai")}
               className="cursor-pointer"
             >
-              <OpenAIIcon className="mr-2 size-4" />
+              <OpenAIIcon className="me-2 size-4" />
               OpenAI
             </DropdownMenuItem>
           </DropdownMenuSubContent>

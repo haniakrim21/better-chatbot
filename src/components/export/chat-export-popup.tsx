@@ -60,7 +60,7 @@ export function ChatExportPopup(props: Props) {
           </DialogDescription>
         </DialogHeader>
         <div className="flex items-center gap-2 p-6 rounded-full border">
-          <span className="mr-auto truncate min-w-0">{`${window.location.origin}/export/...`}</span>
+          <span className="me-auto truncate min-w-0">{`${window.location.origin}/export/...`}</span>
           <Button
             className="rounded-full"
             size="lg"
