@@ -1,6 +1,6 @@
 import type { NextConfig } from "next";
 
-// Force restart
+// Force restart - 404 fix
 
 import createNextIntlPlugin from "next-intl/plugin";
 

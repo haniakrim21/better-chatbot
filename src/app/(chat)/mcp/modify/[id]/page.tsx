@@ -42,6 +42,7 @@ export default async function Page({
               initialConfig={mcpClient.config}
               name={mcpClient.name}
               id={mcpClient.id}
+              teamId={mcpClient.teamId}
             />
           ) : (
             <Alert variant="destructive">MCP client not found</Alert>

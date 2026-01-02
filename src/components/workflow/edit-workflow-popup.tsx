@@ -37,6 +37,7 @@ import { cn, createDebounce } from "lib/utils";
 import { mutate } from "swr";
 import { useTranslations } from "next-intl";
 import { BACKGROUND_COLORS } from "lib/const";
+import { TeamSelect } from "../team-select";
 
 const colorUpdateDebounce = createDebounce();
 
@@ -52,6 +53,7 @@ const defaultConfig = {
   } as WorkflowIcon,
   name: "",
   description: "",
+  teamId: undefined as string | null | undefined,
 };
 
 const zodSchema = z.object({
@@ -61,6 +63,7 @@ const zodSchema = z.object({
     .min(1)
     .regex(/^[a-zA-Z -]+$/),
   description: z.string().max(200).optional(),
+  teamId: z.string().nullable().optional(),
   icon: z.object({
     type: z.enum(["emoji"]),
     value: z.string().min(1),
@@ -81,7 +84,10 @@ export function EditWorkflowPopup({
   onOpenChange,
 }: {
   children?: React.ReactNode;
-  defaultValue?: Pick<DBWorkflow, "id" | "name" | "description" | "icon">;
+  defaultValue?: Pick<
+    DBWorkflow,
+    "id" | "name" | "description" | "icon" | "teamId"
+  >;
   submitAfterRoute?: boolean;
   open?: boolean;
   onSave?: (workflow: DBWorkflow) => void;
@@ -97,6 +103,7 @@ export function EditWorkflowPopup({
           icon: defaultValue.icon || defaultConfig.icon,
           name: defaultValue.name || "",
           id: defaultValue.id || "",
+          teamId: defaultValue.teamId,
         }
       : { ...defaultConfig };
   };
@@ -270,6 +277,18 @@ export function EditWorkflowPopup({
                 className="resize-none min-h-[100px] bg-input border-transparent"
                 value={config.description}
                 onChange={(e) => setConfig({ description: e.target.value })}
+              />
+            </div>
+            <div className="flex flex-col gap-2">
+              <Label className="flex items-center gap-1">
+                {t("Team.selectTeam")}
+                <span className="text-xs text-muted-foreground">
+                  {t("Common.optional")}
+                </span>
+              </Label>
+              <TeamSelect
+                value={config.teamId}
+                onChange={(val) => setConfig({ teamId: val })}
               />
             </div>
           </div>

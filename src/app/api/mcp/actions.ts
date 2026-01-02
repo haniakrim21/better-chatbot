@@ -3,7 +3,11 @@ import { mcpClientsManager } from "lib/ai/mcp/mcp-manager";
 import { z } from "zod";
 
 import { McpServerTable } from "lib/db/pg/schema.pg";
-import { mcpOAuthRepository, mcpRepository } from "lib/db/repository";
+import {
+  mcpOAuthRepository,
+  mcpRepository,
+  userRepository,
+} from "lib/db/repository";
 import {
   canCreateMCP,
   canManageMCPServer,
@@ -19,8 +23,10 @@ export async function selectMcpClientsAction() {
   }
 
   // Get all MCP servers the user can access (their own + shared)
+  const teamIds = await userRepository.getTeamsByUserId(currentUser.id);
   const accessibleServers = await mcpRepository.selectAllForUser(
     currentUser.id,
+    teamIds,
   );
   const accessibleIds = new Set(accessibleServers.map((s) => s.id));
 

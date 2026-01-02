@@ -9,8 +9,28 @@ import { Button } from "ui/button";
 import { Badge } from "ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "ui/avatar";
 import { ArrowUpRight, User, Download, MessageSquare } from "lucide-react";
-import * as Icons from "lucide-react";
 import { cn } from "lib/utils";
+import dynamic from "next/dynamic";
+import dynamicIconImports from "lucide-react/dynamicIconImports";
+
+// Dynamic Icon Component
+const DynamicIcon = ({
+  name,
+  className,
+  style,
+}: {
+  name: string;
+  className?: string;
+  style?: React.CSSProperties;
+}) => {
+  const IconName = name as keyof typeof dynamicIconImports;
+  const LucideIcon = dynamic(dynamicIconImports[IconName], {
+    loading: () => <div className={cn("bg-muted animate-pulse", className)} />,
+    ssr: false,
+  });
+
+  return <LucideIcon className={className} style={style} />;
+};
 
 interface DiscoverCardProps {
   id: string;
@@ -86,9 +106,7 @@ export function DiscoverCard({
         setIsLoading(false);
       }
     }
-    // If no action but we have a link, standard Link behavior handles it (if we didn't use this handler)
-    // But since we are attaching this to onClick, if onAction is undefined, we let the event bubble
-    // to the Link (if we used Link). However, we are going to use Button onClick for everything to be safe.
+    // If no action but we have a link, standard Link behavior handles it
     else if (targetLink) {
       e.preventDefault();
       router.push(targetLink);
@@ -200,16 +218,17 @@ export function DiscoverCard({
         return renderImage(typedIcon.value);
       }
       if (typedIcon.type === "lucide") {
-        // Convert kebab-case to PascalCase for Lucide (e.g. 'book-open' -> 'BookOpen')
-        const iconName = typedIcon.value
-          .split("-")
-          .map((part) => part.charAt(0).toUpperCase() + part.slice(1))
-          .join("");
+        // Convert PascalCase/camelCase/kebab-case to kebab-case for importation
+        // e.g. "BookOpen" -> "book-open"
+        const iconValue = typedIcon.value
+          .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
+          .toLowerCase();
 
-        const IconComponent = (Icons as any)[iconName];
-        if (IconComponent) {
+        // Check if it's a valid icon name
+        if (iconValue in dynamicIconImports) {
           return (
-            <IconComponent
+            <DynamicIcon
+              name={iconValue}
               className="size-6"
               style={{ color: (typedIcon as any).color }}
             />

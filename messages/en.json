@@ -812,5 +812,10 @@
     "publicDescription": "Featured for all users to use",
     "featured": "Featured",
     "featuredDescription": "Featured for all users to use"
+  },
+  "Team": {
+    "selectTeam": "Select Team",
+    "personal": "Personal",
+    "team": "Team"
   }
 }

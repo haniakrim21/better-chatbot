@@ -53,12 +53,14 @@ export const pgMcpRepository: MCPRepository = {
       .select()
       .from(McpServerTable)
       .where(
-        or(
-          eq(McpServerTable.visibility, "public"),
-          teamIds && teamIds.length > 0
-            ? inArray(McpServerTable.teamId, teamIds)
-            : undefined,
-        ),
+        teamIds
+          ? or(
+              eq(McpServerTable.visibility, "public"),
+              teamIds.length > 0
+                ? inArray(McpServerTable.teamId, teamIds)
+                : undefined,
+            )
+          : undefined,
       );
     return results.map((result) => ({
       ...result,

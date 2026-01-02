@@ -25,12 +25,13 @@ import {
 import { Alert, AlertDescription, AlertTitle } from "ui/alert";
 import { z } from "zod";
 import { useTranslations } from "next-intl";
-import { existMcpClientByServerNameAction } from "@/app/api/mcp/actions";
+import { TeamSelect } from "./team-select";
 
 interface MCPEditorProps {
   initialConfig?: MCPServerConfig;
   name?: string;
   id?: string;
+  teamId?: string | null;
 }
 
 const STDIO_ARGS_ENV_PLACEHOLDER = `/** STDIO Example */
@@ -54,6 +55,7 @@ export default function MCPEditor({
   initialConfig,
   name: initialName,
   id,
+  teamId: initialTeamId,
 }: MCPEditorProps) {
   const t = useTranslations();
   const shouldInsert = useMemo(() => isNull(id), [id]);
@@ -66,6 +68,7 @@ export default function MCPEditor({
 
   // State for form fields
   const [name, setName] = useState<string>(initialName ?? "");
+  const [teamId, setTeamId] = useState<string | null>(initialTeamId || null);
   const router = useRouter();
   const [config, setConfig] = useState<MCPServerConfig>(
     initialConfig as MCPServerConfig,
@@ -158,6 +161,7 @@ export default function MCPEditor({
             name,
             config,
             id,
+            teamId,
           }),
         }),
       )
@@ -307,6 +311,17 @@ export default function MCPEditor({
               </div>
             </div>
           </div>
+        </div>
+
+        {/* Team Selection */}
+        <div className="space-y-2">
+          <Label className="flex items-center gap-1">
+            {t("Team.selectTeam")}
+            <span className="text-xs text-muted-foreground">
+              {t("Common.optional")}
+            </span>
+          </Label>
+          <TeamSelect value={teamId} onChange={setTeamId} />
         </div>
 
         {/* Save button */}

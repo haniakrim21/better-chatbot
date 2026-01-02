@@ -18,6 +18,27 @@ import { AgentSummary } from "app-types/agent";
 import { MCPServerInfo } from "app-types/mcp";
 import { MCPIcon } from "ui/mcp-icon";
 import Link from "next/link";
+import dynamic from "next/dynamic";
+import dynamicIconImports from "lucide-react/dynamicIconImports";
+
+// Dynamic Icon Component
+const DynamicIcon = ({
+  name,
+  className,
+  style,
+}: {
+  name: string;
+  className?: string;
+  style?: React.CSSProperties;
+}) => {
+  const IconName = name as keyof typeof dynamicIconImports;
+  const LucideIcon = dynamic(dynamicIconImports[IconName], {
+    loading: () => <div className={cn("bg-muted animate-pulse", className)} />,
+    ssr: false, // Client-side only to avoid hydration mismatches with icons
+  });
+
+  return <LucideIcon className={className} style={style} />;
+};
 
 export interface ShareableIcon {
   value?: string;
@@ -71,15 +92,84 @@ export function ShareableCard({
           <CardTitle className="flex gap-3 items-stretch min-w-0">
             <div
               style={{ backgroundColor: item.icon?.style?.backgroundColor }}
-              className="p-2 rounded-lg flex items-center justify-center ring ring-background border shrink-0"
+              className="p-2 rounded-lg flex items-center justify-center ring ring-background border shrink-0 overflow-hidden"
             >
               {type === "mcp" ? (
                 <MCPIcon className="fill-white size-6" />
               ) : (
-                <Avatar className="size-6">
-                  <AvatarImage src={item.icon?.value} />
-                  <AvatarFallback />
-                </Avatar>
+                (() => {
+                  const icon = (item as AgentSummary | WorkflowSummary).icon;
+                  if (!icon) {
+                    return (
+                      <Avatar className="size-6">
+                        <AvatarImage src={undefined} />
+                        <AvatarFallback>
+                          {item.name.substring(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    );
+                  }
+
+                  if (icon.type === "image") {
+                    return (
+                      <Avatar className="size-6">
+                        <AvatarImage src={icon.value} />
+                        <AvatarFallback>
+                          {item.name.substring(0, 2).toUpperCase()}
+                        </AvatarFallback>
+                      </Avatar>
+                    );
+                  }
+
+                  if (icon.type === "lucide") {
+                    // Convert PascalCase/camelCase/kebab-case to kebab-case for importation
+                    // e.g. "BookOpen" -> "book-open"
+                    const iconValue = icon.value
+                      .replace(/([a-z0-9])([A-Z])/g, "$1-$2")
+                      .toLowerCase();
+
+                    // Check if it's a valid icon name
+                    if (iconValue in dynamicIconImports) {
+                      return (
+                        <DynamicIcon
+                          name={iconValue}
+                          className="size-6"
+                          style={{ color: (icon as any).color }}
+                        />
+                      );
+                    }
+                    return <span className="text-xl">?</span>;
+                  }
+
+                  if (icon.type === "emoji") {
+                    // Check if emoji value is actually a URL (backward compatibility or misuse)
+                    const val = icon.value;
+                    const isUrl =
+                      val.startsWith("http") ||
+                      val.startsWith("data:") ||
+                      val.startsWith("/");
+
+                    if (isUrl) {
+                      return (
+                        <Avatar className="size-6">
+                          <AvatarImage src={val} />
+                          <AvatarFallback>
+                            {item.name.substring(0, 2).toUpperCase()}
+                          </AvatarFallback>
+                        </Avatar>
+                      );
+                    }
+                    return <span className="text-xl">{icon.value}</span>;
+                  }
+
+                  return (
+                    <Avatar className="size-6">
+                      <AvatarFallback>
+                        {item.name.substring(0, 2).toUpperCase()}
+                      </AvatarFallback>
+                    </Avatar>
+                  );
+                })()
               )}
             </div>
 

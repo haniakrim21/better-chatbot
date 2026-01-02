@@ -1,5 +1,5 @@
 import { getSession } from "auth/server";
-import { workflowRepository } from "lib/db/repository";
+import { userRepository, workflowRepository } from "lib/db/repository";
 import { canCreateWorkflow, canEditWorkflow } from "lib/auth/permissions";
 
 export async function GET() {
@@ -7,7 +7,11 @@ export async function GET() {
   if (!session) {
     return Response.json([]);
   }
-  const workflows = await workflowRepository.selectAll(session.user.id);
+  const teamIds = await userRepository.getTeamsByUserId(session.user.id);
+  const workflows = await workflowRepository.selectAll(
+    session.user.id,
+    teamIds,
+  );
   return Response.json(workflows);
 }
 
@@ -20,6 +24,7 @@ export async function POST(request: Request) {
     isPublished,
     visibility,
     noGenerateInputNode,
+    teamId,
   } = await request.json();
 
   const session = await getSession();
@@ -65,6 +70,7 @@ export async function POST(request: Request) {
       visibility,
       icon,
       userId: session.user.id,
+      teamId: teamId || null,
     },
     noGenerateInputNode,
   );

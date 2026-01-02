@@ -7,11 +7,11 @@ import { ArrowLeft, Settings } from "lucide-react";
 import { redirect, notFound } from "next/navigation";
 import { TeamMemberList } from "@/components/teams/team-member-list";
 
-export default async function TeamDetailsPage({
-  params,
-}: {
-  params: { id: string };
+export default async function TeamDetailsPage(props: {
+  params: Promise<{ id: string }>;
 }) {
+  const params = await props.params;
+
   const session = await getSession();
   if (!session) {
     redirect("/sign-in");
@@ -81,7 +81,7 @@ export default async function TeamDetailsPage({
           <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
             <h3 className="font-semibold mb-2">Team Resources</h3>
             <p className="text-sm text-muted-foreground mb-4">
-              Agents and Knowledge Bases shared with this team.
+              Resources shared with this team.
             </p>
             <div className="space-y-2">
               <Button
@@ -96,9 +96,25 @@ export default async function TeamDetailsPage({
                 className="w-full justify-start"
                 asChild
               >
+                <Link href={`/workflow?team=${team.id}`}>
+                  View Team Workflows
+                </Link>
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                asChild
+              >
                 <Link href={`/knowledge?team=${team.id}`}>
                   View Team Knowledge
                 </Link>
+              </Button>
+              <Button
+                variant="outline"
+                className="w-full justify-start"
+                asChild
+              >
+                <Link href={`/mcp?team=${team.id}`}>View Team MCPs</Link>
               </Button>
             </div>
           </div>

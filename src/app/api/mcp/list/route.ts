@@ -1,6 +1,6 @@
 import { MCPServerInfo } from "app-types/mcp";
 import { mcpClientsManager } from "lib/ai/mcp/mcp-manager";
-import { mcpRepository } from "lib/db/repository";
+import { mcpRepository, userRepository } from "lib/db/repository";
 import { getCurrentUser } from "lib/auth/permissions";
 
 export async function GET() {
@@ -10,8 +10,10 @@ export async function GET() {
     return Response.json({ error: "Unauthorized" }, { status: 401 });
   }
 
+  const teamIds = await userRepository.getTeamsByUserId(currentUser.id);
+
   const [servers, memoryClients] = await Promise.all([
-    mcpRepository.selectAllForUser(currentUser.id),
+    mcpRepository.selectAllForUser(currentUser.id, teamIds),
     mcpClientsManager.getClients(),
   ]);
 
@@ -45,6 +47,8 @@ export async function GET() {
     const isOwner = server.userId === currentUser.id;
     const mcpInfo: MCPServerInfo = {
       ...server,
+      description: server.description ?? undefined,
+      tags: server.tags ?? undefined,
       // Hide config from non-owners to prevent credential exposure
       config: isOwner ? server.config : undefined,
       enabled: info?.enabled ?? true,
