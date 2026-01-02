@@ -1,6 +1,4 @@
-"use client";
-
-import { Button } from "ui/button"; // verify path
+import { Button } from "ui/button";
 import {
   Card,
   CardContent,
@@ -10,15 +8,19 @@ import {
 } from "ui/card";
 import Link from "next/link";
 import { PlusIcon, Database } from "lucide-react";
+import { getKnowledgeBases } from "@/lib/knowledge/actions";
+import { getSession } from "@/lib/auth/server";
+import { formatDistanceToNow } from "date-fns";
 
-// Mock data for UI dev before actions integration if needed,
-// but we will assume data is passed or fetched via client/server component pattern.
-// Being a client page, we might fetch via useEffect or use a server component wrapper.
-// Let's make this a Server Component if possible, but "use client" is safer for interactivity.
-// Actually, standard Next.js app router: Page is Server Component.
+export default async function KnowledgePage() {
+  const session = await getSession();
 
-// I will make the Page a Server Component and a Client Component for the list/interactions.
-export default function KnowledgePage() {
+  if (!session?.user?.id) {
+    return <div>Unauthorized</div>;
+  }
+
+  const kbs = await getKnowledgeBases(session.user.id);
+
   return (
     <div className="p-6 space-y-6">
       <div className="flex justify-between items-center">
@@ -36,25 +38,41 @@ export default function KnowledgePage() {
       </div>
 
       <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-3">
-        {/* List KBs here. For now placeholder */}
-        <Card>
-          <CardHeader>
-            <CardTitle className="flex items-center gap-2">
-              <Database className="h-5 w-5" />
-              Default KB
-            </CardTitle>
-            <CardDescription>Main knowledge base</CardDescription>
-          </CardHeader>
-          <CardContent>
-            <p className="text-sm text-muted-foreground">0 Documents</p>
-            <Link
-              href="/knowledge/demo-id"
-              className="text-primary hover:underline mt-2 block"
-            >
-              View Documents
-            </Link>
-          </CardContent>
-        </Card>
+        {kbs.length === 0 ? (
+          <Card className="col-span-full border-dashed p-8 text-center text-muted-foreground">
+            No knowledge bases found. Create one to get started.
+          </Card>
+        ) : (
+          kbs.map((kb) => (
+            <Card key={kb.id} className="hover:bg-muted/50 transition-colors">
+              <CardHeader>
+                <CardTitle className="flex items-center gap-2">
+                  <Database className="h-5 w-5 text-primary" />
+                  {kb.name}
+                </CardTitle>
+                <CardDescription className="line-clamp-2">
+                  {kb.description || "No description"}
+                </CardDescription>
+              </CardHeader>
+              <CardContent>
+                <div className="flex justify-between items-center text-sm text-muted-foreground">
+                  <span>{kb.teamId ? "Team Shared" : "Private"}</span>
+                  <span>
+                    {kb.createdAt
+                      ? formatDistanceToNow(new Date(kb.createdAt)) + " ago"
+                      : ""}
+                  </span>
+                </div>
+                <Link
+                  href={`/knowledge/${kb.id}`}
+                  className="text-primary hover:underline mt-4 block font-medium"
+                >
+                  View Documents
+                </Link>
+              </CardContent>
+            </Card>
+          ))
+        )}
       </div>
     </div>
   );

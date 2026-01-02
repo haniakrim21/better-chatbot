@@ -107,6 +107,8 @@ export const DocumentTable = pgTable("document", {
   })
     .notNull()
     .default("pending"),
+  parentId: uuid("parent_id"), // Self-reference added below manually if needed or via relations
+  isFolder: boolean("is_folder").notNull().default(false),
   error: text("error"),
   createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),

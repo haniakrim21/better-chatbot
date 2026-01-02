@@ -4,11 +4,14 @@ import { pgDb as db } from "@/lib/db/pg/db.pg";
 import {
   KnowledgeBaseTable,
   DocumentTable,
+  DocumentChunkTable,
   TeamMemberTable,
   TeamTable,
 } from "@/lib/db/pg/schema.pg";
+import { generateEmbeddings } from "@/lib/rag/embeddings";
+import { chunkText } from "@/lib/rag/process-document";
 import { revalidatePath } from "next/cache";
-import { eq, desc, or, and, inArray } from "drizzle-orm";
+import { eq, desc, or, and, inArray, sql } from "drizzle-orm";
 
 export async function getKnowledgeBases(userId: string) {
   const userTeamIds = db
@@ -95,10 +98,130 @@ export async function deleteKnowledgeBase(id: string, userId: string) {
   }
 }
 
-export async function getDocuments(knowledgeBaseId: string) {
+export async function getDocuments(
+  knowledgeBaseId: string,
+  parentId?: string | null,
+) {
+  const conditions = [eq(DocumentTable.knowledgeBaseId, knowledgeBaseId)];
+
+  if (parentId) {
+    conditions.push(eq(DocumentTable.parentId, parentId));
+  } else {
+    // If no parentId is provided, fetch root items (parentId is null)
+    conditions.push(sql`${DocumentTable.parentId} IS NULL`);
+  }
+
   return await db
     .select()
     .from(DocumentTable)
-    .where(eq(DocumentTable.knowledgeBaseId, knowledgeBaseId))
-    .orderBy(desc(DocumentTable.createdAt));
+    .where(and(...conditions))
+    .orderBy(desc(DocumentTable.isFolder), desc(DocumentTable.createdAt));
+}
+
+export async function createFolder(
+  knowledgeBaseId: string,
+  name: string,
+  parentId?: string | null,
+) {
+  const session = await getSession();
+  if (!session) throw new Error("Unauthorized");
+
+  await db.insert(DocumentTable).values({
+    knowledgeBaseId,
+    name,
+    type: "folder",
+    isFolder: true,
+    parentId: parentId || null,
+    size: 0,
+    status: "completed",
+  });
+  revalidatePath(`/knowledge/${knowledgeBaseId}`);
+}
+
+export async function createFile(
+  knowledgeBaseId: string,
+  name: string,
+  content: string,
+  parentId?: string | null,
+) {
+  const session = await getSession();
+  if (!session) throw new Error("Unauthorized");
+
+  // Create Document entry
+  const [doc] = await db
+    .insert(DocumentTable)
+    .values({
+      knowledgeBaseId,
+      name,
+      type: "text/plain",
+      isFolder: false,
+      parentId: parentId || null,
+      size: Buffer.byteLength(content, "utf-8"),
+      status: "processing",
+    })
+    .returning();
+
+  try {
+    const chunks = chunkText(content);
+    const embeddings = await generateEmbeddings(chunks);
+
+    const chunkRecords = chunks.map((chunkContent, i) => ({
+      documentId: doc.id,
+      content: chunkContent,
+      embedding: embeddings[i],
+      metadata: { index: i },
+    }));
+
+    if (chunkRecords.length > 0) {
+      await db.insert(DocumentChunkTable).values(chunkRecords);
+    }
+
+    await db
+      .update(DocumentTable)
+      .set({ status: "completed" })
+      .where(eq(DocumentTable.id, doc.id));
+  } catch (error) {
+    console.error("Failed to embed created file", error);
+    await db
+      .update(DocumentTable)
+      .set({
+        status: "error",
+        error: error instanceof Error ? error.message : "Embedding failed",
+      })
+      .where(eq(DocumentTable.id, doc.id));
+  }
+
+  revalidatePath(`/knowledge/${knowledgeBaseId}`);
+}
+
+export async function getKnowledgeBase(id: string, userId: string) {
+  // Fetch KB and check permissions
+  // Logic similarities to deleteKnowledgeBase but for read access
+  const userTeamIds = db
+    .select({ teamId: TeamMemberTable.teamId })
+    .from(TeamMemberTable)
+    .where(eq(TeamMemberTable.userId, userId));
+
+  const [kb] = await db
+    .select()
+    .from(KnowledgeBaseTable)
+    .where(
+      and(
+        eq(KnowledgeBaseTable.id, id),
+        or(
+          eq(KnowledgeBaseTable.userId, userId),
+          inArray(KnowledgeBaseTable.teamId, userTeamIds),
+        ),
+      ),
+    );
+
+  return kb;
+}
+
+export async function getDocument(id: string) {
+  const [doc] = await db
+    .select()
+    .from(DocumentTable)
+    .where(eq(DocumentTable.id, id));
+  return doc;
 }
