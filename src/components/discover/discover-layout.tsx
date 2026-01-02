@@ -5,8 +5,8 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { useTranslations } from "next-intl";
 import { BackgroundPaths } from "ui/background-paths";
-import { Tabs, TabsList, TabsTrigger } from "ui/tabs";
 import { cn } from "lib/utils";
+import { motion } from "framer-motion";
 
 interface DiscoverLayoutProps {
   children: React.ReactNode;
@@ -20,10 +20,22 @@ export function DiscoverLayout({ children }: DiscoverLayoutProps) {
     if (pathname.includes("/discover/agents")) return "agents";
     if (pathname.includes("/discover/mcp")) return "mcp";
     if (pathname.includes("/discover/workflows")) return "workflows";
-
     if (pathname.includes("/discover/models")) return "models";
     return "featured";
   };
+
+  const currentTab = getTabValue();
+
+  const tabs = [
+    { id: "featured", label: t("Discover.tabs.featured"), href: "/discover" },
+    {
+      id: "agents",
+      label: t("Discover.tabs.agents"),
+      href: "/discover/agents",
+    },
+    { id: "mcp", label: t("Discover.tabs.mcp"), href: "/discover/mcp" },
+    { id: "workflows", label: "Workflows", href: "/discover/workflows" },
+  ];
 
   return (
     <div className="relative flex flex-col min-h-screen w-full bg-background/95">
@@ -41,62 +53,38 @@ export function DiscoverLayout({ children }: DiscoverLayoutProps) {
           </p>
         </div>
 
-        <Tabs value={getTabValue()} className="w-full relative z-10">
-          <TabsList className="bg-transparent p-0 h-auto gap-4">
-            <TabsTrigger
-              value="featured"
-              asChild
-              className={cn(
-                "px-0 pb-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-all duration-200 text-lg hover:text-foreground/80",
-              )}
-            >
-              <Link href="/discover" className="cursor-pointer">
-                {t("Discover.tabs.featured")}
-              </Link>
-            </TabsTrigger>
-
-            <TabsTrigger
-              value="agents"
-              asChild
-              className={cn(
-                "px-0 pb-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-all duration-200 text-lg hover:text-foreground/80",
-              )}
-            >
-              <Link href="/discover/agents" className="cursor-pointer">
-                {t("Discover.tabs.agents")}
-              </Link>
-            </TabsTrigger>
-
-            <TabsTrigger
-              value="mcp"
-              asChild
-              className={cn(
-                "px-0 pb-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-all duration-200 text-lg hover:text-foreground/80",
-              )}
-            >
-              <Link href="/discover/mcp" className="cursor-pointer">
-                {t("Discover.tabs.mcp")}
-              </Link>
-            </TabsTrigger>
-
-            <TabsTrigger
-              value="workflows"
-              asChild
-              className={cn(
-                "px-0 pb-2 rounded-none border-b-2 border-transparent data-[state=active]:border-primary data-[state=active]:bg-transparent data-[state=active]:shadow-none transition-all duration-200 text-lg hover:text-foreground/80",
-              )}
-            >
-              <Link href="/discover/workflows" className="cursor-pointer">
-                Workflows
-              </Link>
-            </TabsTrigger>
-
-            {/* Future Models Tab */}
-            {/* <Link href="/discover/models">
-                 <TabsTrigger value="models">{t("Discover.Tabs.Models")}</TabsTrigger>
-             </Link> */}
-          </TabsList>
-        </Tabs>
+        <div className="w-full relative z-10">
+          <div className="flex items-center gap-1 bg-muted/30 p-1 rounded-xl w-fit border border-border/40 backdrop-blur-sm">
+            {tabs.map((tab) => {
+              const isActive = currentTab === tab.id;
+              return (
+                <Link
+                  key={tab.id}
+                  href={tab.href}
+                  className={cn(
+                    "relative px-4 py-2 rounded-lg text-sm font-medium transition-colors outline-none focus-visible:ring-2 focus-visible:ring-ring/50",
+                    isActive
+                      ? "text-foreground"
+                      : "text-muted-foreground hover:text-foreground/80",
+                  )}
+                >
+                  {isActive && (
+                    <motion.div
+                      layoutId="active-discover-tab"
+                      className="absolute inset-0 bg-background shadow-sm rounded-lg border border-border/50"
+                      transition={{
+                        type: "spring",
+                        stiffness: 400,
+                        damping: 30,
+                      }}
+                    />
+                  )}
+                  <span className="relative z-10">{tab.label}</span>
+                </Link>
+              );
+            })}
+          </div>
+        </div>
 
         <div className="mt-4 relative z-10 animate-in fade-in-50 slide-in-from-bottom-4 duration-500">
           {children}
