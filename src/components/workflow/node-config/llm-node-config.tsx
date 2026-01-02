@@ -94,7 +94,7 @@ export const LLMNodeDataConfig = memo(function ({
   }, []);
 
   const isStructuredOutput = useMemo(() => {
-    return data.outputSchema.properties?.answer?.type != "string";
+    return data.outputSchema?.properties?.answer?.type != "string";
   }, [data.outputSchema]);
 
   return (
@@ -150,7 +150,7 @@ export const LLMNodeDataConfig = memo(function ({
         </Tooltip>
       </div>
       <div className="flex items-center flex-wrap gap-1">
-        {Object.keys(data.outputSchema.properties).flatMap((key) => {
+        {Object.keys(data.outputSchema?.properties || {}).flatMap((key) => {
           if (
             key === "answer" &&
             data.outputSchema.properties[key].type === "object"
@@ -292,7 +292,7 @@ export const LLMNodeDataStack = memo(function ({
 }: { data: LLMNodeData }) {
   if (!data.model) return null;
   const isTextResponse =
-    data.outputSchema.properties?.answer?.type === "string";
+    data.outputSchema?.properties?.answer?.type === "string";
   return (
     <div className="flex flex-col gap-1 px-4 mt-4">
       <div className="border bg-input text-[10px] rounded px-2 py-1 flex items-center gap-1">

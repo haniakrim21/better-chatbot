@@ -83,7 +83,9 @@ export const pgWorkflowRepository: WorkflowRepository = {
           eq(WorkflowTable.isPublished, true),
           or(
             eq(WorkflowTable.userId, userId),
-            inArray(WorkflowTable.teamId, teamIds),
+            teamIds.length > 0
+              ? inArray(WorkflowTable.teamId, teamIds)
+              : undefined,
             not(eq(WorkflowTable.visibility, "private")),
           ),
         ),
@@ -119,7 +121,9 @@ export const pgWorkflowRepository: WorkflowRepository = {
         or(
           inArray(WorkflowTable.visibility, ["public", "readonly"]),
           eq(WorkflowTable.userId, userId),
-          inArray(WorkflowTable.teamId, teamIds),
+          teamIds.length > 0
+            ? inArray(WorkflowTable.teamId, teamIds)
+            : undefined,
         ),
       )
       .orderBy(desc(WorkflowTable.createdAt));
