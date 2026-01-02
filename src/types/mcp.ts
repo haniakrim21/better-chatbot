@@ -60,21 +60,33 @@ export type MCPServerInfo = {
       backgroundColor?: string;
     };
   };
+  tags?: string[];
+  usageCount?: number;
 };
 
 export type McpServerInsert = {
   name: string;
+  description?: string | null;
   config: MCPServerConfig;
   id?: string;
   userId: string;
   visibility?: "public" | "private";
+  tags?: string[] | null;
+  usageCount?: number;
+  enabled?: boolean;
 };
 export type McpServerSelect = {
   name: string;
+  description?: string | null;
   config: MCPServerConfig;
   id: string;
   userId: string;
   visibility: "public" | "private";
+  userName?: string | null;
+  userAvatar?: string | null;
+  tags?: string[] | null;
+  usageCount?: number;
+  enabled: boolean;
 };
 
 export type VercelAIMcpTool = Tool & {
@@ -93,7 +105,9 @@ export interface MCPRepository {
   selectAllForUser(userId: string): Promise<McpServerSelect[]>;
   deleteById(id: string): Promise<void>;
   existsByServerName(name: string): Promise<boolean>;
+
   updateVisibility(id: string, visibility: "public" | "private"): Promise<void>;
+  incrementUsage(id: string): Promise<void>;
 }
 
 export const McpToolCustomizationZodSchema = z.object({

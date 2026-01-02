@@ -156,6 +156,16 @@
     "nodesArranged": "Layout applied successfully",
     "visibilityUpdated": "Visibility updated successfully"
   },
+  "Discover": {
+    "title": "Discover",
+    "subtitle": "Explore and activate powerful AI agents and plugins from the community.",
+    "tabs": {
+      "featured": "Featured",
+      "agents": "Agents",
+      "mcp": "Plugins",
+      "models": "Models"
+    }
+  },
   "Auth": {
     "SignIn": {
       "title": "Welcome Back",

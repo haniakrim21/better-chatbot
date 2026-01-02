@@ -91,6 +91,20 @@ export function AppSidebarMenus() {
         <SidebarMenu>
           <Tooltip>
             <SidebarMenuItem>
+              <Link href="/discover">
+                <SidebarMenuButton className="font-semibold">
+                  <div className="size-4 flex items-center justify-center">
+                    <span className="text-sm">🧭</span>
+                  </div>
+                  {t("Discover.title")}
+                </SidebarMenuButton>
+              </Link>
+            </SidebarMenuItem>
+          </Tooltip>
+        </SidebarMenu>
+        <SidebarMenu>
+          <Tooltip>
+            <SidebarMenuItem>
               <Link href="/workflow">
                 <SidebarMenuButton className="font-semibold">
                   <Waypoints className="size-4" />

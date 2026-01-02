@@ -2,14 +2,44 @@ import ChatBot from "@/components/chat-bot";
 import { generateUUID } from "lib/utils";
 import { getSession } from "auth/server";
 import { redirect } from "next/navigation";
+import { pgAgentRepository } from "lib/db/pg/repositories/agent-repository.pg";
+import { CoreMessage } from "ai";
 
 export const dynamic = "force-dynamic";
 
-export default async function HomePage() {
+interface HomePageProps {
+  searchParams: Promise<{ [key: string]: string | string[] | undefined }>;
+}
+
+export default async function HomePage(props: HomePageProps) {
+  const searchParams = await props.searchParams;
   const session = await getSession();
   if (!session) {
     redirect("/sign-in");
   }
-  const id = generateUUID();
-  return <ChatBot initialMessages={[]} threadId={id} key={id} />;
+  const threadId = generateUUID();
+  const initialMessages: CoreMessage[] = [];
+
+  const agentId = searchParams?.agentId as string;
+  let agent = null;
+
+  if (agentId) {
+    agent = await pgAgentRepository.selectAgentById(agentId, session.user.id);
+    if (agent && agent.instructions) {
+      initialMessages.push({
+        role: "system",
+        content: `You are an AI assistant named "${agent.name}". ${agent.description ? `Description: ${agent.description}. ` : ""}Instructions: ${agent.instructions}`,
+      });
+    }
+  }
+
+  return (
+    <ChatBot
+      initialMessages={initialMessages}
+      threadId={threadId}
+      key={threadId}
+      agentName={agent?.name}
+      agentAvatar={agent?.icon}
+    />
+  );
 }

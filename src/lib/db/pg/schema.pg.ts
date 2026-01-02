@@ -182,6 +182,8 @@ export const AgentTable = pgTable("agent", {
   })
     .notNull()
     .default("private"),
+  tags: json("tags").$type<string[]>(),
+  usageCount: integer("usage_count").notNull().default(0),
   createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
@@ -211,6 +213,7 @@ export const BookmarkTable = pgTable(
 export const McpServerTable = pgTable("mcp_server", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
   name: text("name").notNull(),
+  description: text("description"),
   config: json("config").notNull().$type<MCPServerConfig>(),
   enabled: boolean("enabled").notNull().default(true),
   userId: uuid("user_id")
@@ -221,6 +224,8 @@ export const McpServerTable = pgTable("mcp_server", {
   })
     .notNull()
     .default("private"),
+  tags: json("tags").$type<string[]>(),
+  usageCount: integer("usage_count").notNull().default(0),
   createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });

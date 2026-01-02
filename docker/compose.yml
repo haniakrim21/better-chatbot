@@ -8,6 +8,7 @@ services:
     environment:
       - NO_HTTPS=1
       # Override DB and Redis hosts to point to docker service names
+      - POSTGRES_URL=postgresql://postgres:postgres@postgres:5432/better_chatbot
       - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/better_chatbot
       - REDIS_URL=redis://redis:6379
       - KV_URL=redis://redis:6379

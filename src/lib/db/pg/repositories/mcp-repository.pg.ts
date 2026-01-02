@@ -1,6 +1,6 @@
 import { pgDb as db } from "../db.pg";
 import { McpServerTable, UserTable } from "../schema.pg";
-import { eq, or, desc } from "drizzle-orm";
+import { eq, or, desc, sql } from "drizzle-orm";
 import { generateUUID } from "lib/utils";
 import type { MCPRepository } from "app-types/mcp";
 
@@ -14,6 +14,8 @@ export const pgMcpRepository: MCPRepository = {
         config: server.config,
         userId: server.userId,
         visibility: server.visibility ?? "private",
+        tags: server.tags,
+        usageCount: server.usageCount ?? 0,
         enabled: true,
         createdAt: new Date(),
         updatedAt: new Date(),
@@ -27,7 +29,10 @@ export const pgMcpRepository: MCPRepository = {
       })
       .returning();
 
-    return result;
+    return {
+      ...result,
+      tags: result.tags ?? undefined,
+    };
   },
 
   async selectById(id) {
@@ -35,12 +40,19 @@ export const pgMcpRepository: MCPRepository = {
       .select()
       .from(McpServerTable)
       .where(eq(McpServerTable.id, id));
-    return result;
+    if (!result) return null;
+    return {
+      ...result,
+      tags: result.tags ?? undefined,
+    };
   },
 
   async selectAll() {
     const results = await db.select().from(McpServerTable);
-    return results;
+    return results.map((result) => ({
+      ...result,
+      tags: result.tags ?? undefined,
+    }));
   },
 
   async selectAllForUser(userId) {
@@ -57,6 +69,8 @@ export const pgMcpRepository: MCPRepository = {
         updatedAt: McpServerTable.updatedAt,
         userName: UserTable.name,
         userAvatar: UserTable.image,
+        tags: McpServerTable.tags,
+        usageCount: McpServerTable.usageCount,
       })
       .from(McpServerTable)
       .leftJoin(UserTable, eq(McpServerTable.userId, UserTable.id))
@@ -67,7 +81,12 @@ export const pgMcpRepository: MCPRepository = {
         ),
       )
       .orderBy(desc(McpServerTable.createdAt));
-    return results;
+    return results.map((result) => ({
+      ...result,
+      tags: result.tags ?? undefined,
+      userName: result.userName ?? undefined,
+      userAvatar: result.userAvatar ?? undefined,
+    }));
   },
 
   async updateVisibility(id, visibility) {
@@ -86,7 +105,11 @@ export const pgMcpRepository: MCPRepository = {
       .select()
       .from(McpServerTable)
       .where(eq(McpServerTable.name, name));
-    return result;
+    if (!result) return null;
+    return {
+      ...result,
+      tags: result.tags ?? undefined,
+    };
   },
   async existsByServerName(name) {
     const [result] = await db
@@ -95,5 +118,13 @@ export const pgMcpRepository: MCPRepository = {
       .where(eq(McpServerTable.name, name));
 
     return !!result;
+  },
+  async incrementUsage(id) {
+    await db
+      .update(McpServerTable)
+      .set({
+        usageCount: sql`${McpServerTable.usageCount} + 1`,
+      })
+      .where(eq(McpServerTable.id, id));
   },
 };

@@ -15,13 +15,21 @@ function getGreetingByTime() {
   return "goodEvening";
 }
 
-export const ChatGreeting = () => {
+interface ChatGreetingProps {
+  agentName?: string;
+  agentAvatar?: any; // Allow object
+}
+
+export const ChatGreeting = ({ agentName, agentAvatar }: ChatGreetingProps) => {
   const { data: user } = useSWR<BasicUser>(`/api/user/details`, fetcher, {
     revalidateOnMount: false,
   });
   const t = useTranslations("Chat.Greeting");
 
   const word = useMemo(() => {
+    if (agentName) {
+      return `Welcome to ${agentName}. How can I help you today?`;
+    }
     if (!user?.name) return "";
     const words = [
       t(getGreetingByTime(), { name: user.name }),
@@ -33,7 +41,7 @@ export const ChatGreeting = () => {
       t("whatAreYouThinking", { name: user.name }),
     ];
     return words[Math.floor(Math.random() * words.length)];
-  }, [user?.name]);
+  }, [user?.name, agentName]);
 
   return (
     <motion.div
@@ -44,7 +52,20 @@ export const ChatGreeting = () => {
       exit={{ opacity: 0 }}
       transition={{ delay: 0.3 }}
     >
-      <div className="rounded-xl p-6 flex flex-col gap-2 leading-relaxed text-start">
+      <div className="rounded-xl p-6 flex flex-col items-start gap-4 leading-relaxed text-start">
+        {agentAvatar && (
+          <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 text-4xl">
+            {agentAvatar.type === "emoji" ? (
+              <span>{agentAvatar.value}</span>
+            ) : agentAvatar.type === "image" ? (
+              <img
+                src={agentAvatar.value}
+                alt={agentName}
+                className="w-full h-full object-cover rounded-2xl"
+              />
+            ) : null}
+          </div>
+        )}
         <h1 className="text-2xl md:text-3xl">
           {word ? <FlipWords words={[word]} className="text-primary" /> : ""}
         </h1>

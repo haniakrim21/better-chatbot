@@ -21,7 +21,9 @@ export const pgAgentRepository: AgentRepository = {
         userId: agent.userId,
         teamId: agent.teamId,
         instructions: agent.instructions,
+        tags: agent.tags,
         visibility: agent.visibility || "private",
+        usageCount: 0,
         createdAt: new Date(),
         updatedAt: new Date(),
       })
@@ -32,6 +34,8 @@ export const pgAgentRepository: AgentRepository = {
       description: result.description ?? undefined,
       icon: result.icon ?? undefined,
       instructions: result.instructions ?? {},
+      tags: result.tags ?? undefined,
+      usageCount: result.usageCount ?? 0,
     };
   },
 
@@ -54,6 +58,8 @@ export const pgAgentRepository: AgentRepository = {
         visibility: AgentTable.visibility,
         createdAt: AgentTable.createdAt,
         updatedAt: AgentTable.updatedAt,
+        tags: AgentTable.tags,
+        usageCount: AgentTable.usageCount,
         isBookmarked: sql<boolean>`${BookmarkTable.id} IS NOT NULL`,
       })
       .from(AgentTable)
@@ -84,6 +90,8 @@ export const pgAgentRepository: AgentRepository = {
       description: result.description ?? undefined,
       icon: result.icon ?? undefined,
       instructions: result.instructions ?? {},
+      tags: result.tags ?? undefined,
+      usageCount: result.usageCount ?? 0,
       isBookmarked: result.isBookmarked ?? false,
     };
   },
@@ -116,6 +124,8 @@ export const pgAgentRepository: AgentRepository = {
       description: result.description ?? undefined,
       icon: result.icon ?? undefined,
       instructions: result.instructions ?? {},
+      tags: result.tags ?? undefined,
+      usageCount: result.usageCount ?? 0,
       userName: result.userName ?? undefined,
       userAvatar: result.userAvatar ?? undefined,
       isBookmarked: false, // Always false for owned agents
@@ -215,6 +225,8 @@ export const pgAgentRepository: AgentRepository = {
       description: result.description ?? undefined,
       icon: result.icon ?? undefined,
       instructions: result.instructions ?? {},
+      tags: result.tags ?? undefined,
+      usageCount: result.usageCount ?? 0,
     };
   },
 
@@ -320,6 +332,8 @@ export const pgAgentRepository: AgentRepository = {
         visibility: AgentTable.visibility,
         createdAt: AgentTable.createdAt,
         updatedAt: AgentTable.updatedAt,
+        tags: AgentTable.tags,
+        usageCount: AgentTable.usageCount,
         userName: UserTable.name,
         userAvatar: UserTable.image,
         isBookmarked: sql<boolean>`CASE WHEN ${BookmarkTable.id} IS NOT NULL THEN true ELSE false END`,
@@ -347,6 +361,8 @@ export const pgAgentRepository: AgentRepository = {
       ...result,
       description: result.description ?? undefined,
       icon: result.icon ?? undefined,
+      tags: result.tags ?? undefined,
+      usageCount: result.usageCount ?? 0,
       userName: result.userName ?? undefined,
       userAvatar: result.userAvatar ?? undefined,
     }));
@@ -388,5 +404,12 @@ export const pgAgentRepository: AgentRepository = {
 
     if (agent.visibility === "public" && !destructive) return true;
     return false;
+  },
+
+  async incrementUsage(id) {
+    await db
+      .update(AgentTable)
+      .set({ usageCount: sql`${AgentTable.usageCount} + 1` })
+      .where(eq(AgentTable.id, id));
   },
 };

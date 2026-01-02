@@ -48,9 +48,16 @@ import { useGenerateThreadTitle } from "@/hooks/queries/use-generate-thread-titl
 interface Props {
   threadId: string;
   initialMessages: any[];
+  agentName?: string;
+  agentAvatar?: any;
 }
 
-export default function ChatBot({ threadId, initialMessages }: Props) {
+export default function ChatBot({
+  threadId,
+  initialMessages,
+  agentName,
+  agentAvatar,
+}: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const { uploadFiles } = useThreadFileUploader(threadId);
@@ -231,10 +238,12 @@ export default function ChatBot({ threadId, initialMessages }: Props) {
     [status],
   );
 
-  const emptyMessage = useMemo(
-    () => messages.length === 0 && !error,
-    [messages.length, error],
-  );
+  const emptyMessage = useMemo(() => {
+    if (error) return false;
+    if (messages.length === 0) return true;
+    if (messages.length === 1 && messages[0].role === "system") return true;
+    return false;
+  }, [messages, error]);
 
   const isInitialThreadEntry = useMemo(
     () =>
@@ -360,7 +369,7 @@ export default function ChatBot({ threadId, initialMessages }: Props) {
           </div>
         )}
         {emptyMessage ? (
-          <ChatGreeting />
+          <ChatGreeting agentName={agentName} agentAvatar={agentAvatar} />
         ) : (
           <>
             <div

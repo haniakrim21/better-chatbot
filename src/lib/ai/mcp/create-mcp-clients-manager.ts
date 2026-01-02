@@ -91,11 +91,16 @@ export class MCPClientsManager {
           await this.storage.init(this);
           const configs = await this.storage.loadAll();
           await Promise.all(
-            configs.map(({ id, name, config }) =>
-              this.addClient(id, name, config).catch(() => {
-                `ignore error`;
-              }),
-            ),
+            configs
+              .filter((c) => c.enabled !== false)
+              .map(({ id, name, config }) =>
+                this.addClient(id, name, config).catch((error) => {
+                  this.logger.error(
+                    `Failed to initialize client ${name}:`,
+                    error,
+                  );
+                }),
+              ),
           );
         }
       })
@@ -172,9 +177,28 @@ export class MCPClientsManager {
       const entity = await this.storage.save(server);
       id = entity.id;
     }
-    await this.addClient(id, server.name, server.config).catch((err) => {
-      if (!server.id) {
-        void this.removeClient(id);
+    await this.addClient(id, server.name, server.config).catch(async (err) => {
+      // If connection fails, disable the server instead of deleting it
+      // unless it really didn't have an ID (which shouldn't happen with DB storage easily)
+      if (this.storage) {
+        this.logger.warn(
+          `Failed to connect to new MCP client ${server.name}, disabling it. Error: ${err.message}`,
+        );
+        // We know 'id' is the persisted ID now.
+        // We need to update it to be disabled.
+        // The `save` method usually handles update if ID exists, or we might need `storage.save` with updated fields.
+        // McpServerTable.$inferInsert usually allows all fields.
+        await this.storage.save({
+          ...server,
+          id,
+          enabled: false,
+          tags: server.tags ?? undefined,
+        });
+      } else {
+        // Memory storage backup behavior
+        if (!server.id) {
+          void this.removeClient(id);
+        }
       }
       throw err;
     });

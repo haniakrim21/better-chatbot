@@ -186,3 +186,41 @@ export async function shareMcpServerAction(
 
   return { success: true };
 }
+
+export async function installMcpServerAction(id: string) {
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    throw new Error("You must be logged in to install MCP servers");
+  }
+
+  // Fetch the server to be installed
+  const server = await mcpRepository.selectById(id);
+  if (!server) {
+    throw new Error("MCP server not found");
+  }
+
+  // Check if user already owns it (optional: prevent installing own server?)
+  // If they own it, creating a duplicate might be intended or not.
+  // Generally "Install" implies getting it from store.
+  // If I already have it, maybe I just want to enable it?
+  // For now, allow duplication but maybe warn? Or just append "copy".
+
+  // Create a copy for the current user
+  const newServer = {
+    name: server.name, // Potential name conflict handling if strictly required
+    config: server.config,
+    userId: currentUser.id,
+    visibility: "private" as const,
+    tags: server.tags || [],
+    usageCount: 0,
+    enabled: true,
+  };
+
+  // Persist the new client (this will generate a new ID)
+  await mcpClientsManager.persistClient(newServer);
+
+  // Increment usage count of the original server
+  await mcpRepository.incrementUsage(id);
+
+  return { success: true };
+}

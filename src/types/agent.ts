@@ -28,6 +28,7 @@ export const AgentCreateSchema = z
     userId: z.string(),
     teamId: z.string().nullable().optional(),
     instructions: AgentInstructionsSchema,
+    tags: z.array(z.string()).optional(),
     visibility: VisibilitySchema.optional().default("private"),
   })
   .strip();
@@ -44,6 +45,7 @@ export const AgentUpdateSchema = z
       .optional(),
     instructions: AgentInstructionsSchema.optional(),
     teamId: z.string().nullable().optional(),
+    tags: z.array(z.string()).optional(),
     visibility: VisibilitySchema.optional(),
   })
   .strip();
@@ -69,6 +71,8 @@ export type AgentSummary = {
   userName?: string;
   userAvatar?: string;
   isBookmarked?: boolean;
+  tags?: string[];
+  usageCount?: number;
 };
 
 export type Agent = AgentSummary & {
@@ -101,6 +105,8 @@ export type AgentRepository = {
     userId: string,
     destructive?: boolean,
   ): Promise<boolean>;
+
+  incrementUsage(id: string): Promise<void>;
 };
 
 export const AgentGenerateSchema = z.object({
