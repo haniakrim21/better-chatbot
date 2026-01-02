@@ -1,5 +1,6 @@
 services:
   better-chatbot:
+    container_name: better_chatbot_app
     build:
       context: ..
       dockerfile: ./docker/Dockerfile
