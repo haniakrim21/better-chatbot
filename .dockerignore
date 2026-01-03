@@ -3,6 +3,9 @@
 # dependencies
 Dockerfile
 compose.yml
+.git
+.vscode
+.idea
 /node_modules
 /.pnp
 .pnp.*
