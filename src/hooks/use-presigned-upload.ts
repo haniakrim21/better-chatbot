@@ -191,8 +191,11 @@ export function useFileUpload() {
           size: result.metadata?.size,
         };
       } catch (error: unknown) {
-        const message =
-          error instanceof Error ? error.message : "Upload failed";
+        let message = error instanceof Error ? error.message : "Upload failed";
+        if (message === "Failed to fetch" || message.includes("NetworkError")) {
+          message =
+            "Upload failed. If the file was modified, please select it again.";
+        }
         toast.error(message);
         return;
       } finally {

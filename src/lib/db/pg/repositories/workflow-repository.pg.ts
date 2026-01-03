@@ -77,7 +77,7 @@ export const pgWorkflowRepository: WorkflowRepository = {
         updatedAt: WorkflowTable.updatedAt,
       })
       .from(WorkflowTable)
-      .innerJoin(UserTable, eq(WorkflowTable.userId, UserTable.id))
+      .leftJoin(UserTable, eq(WorkflowTable.userId, UserTable.id))
       .where(
         and(
           eq(WorkflowTable.isPublished, true),
@@ -109,7 +109,7 @@ export const pgWorkflowRepository: WorkflowRepository = {
         schema: WorkflowNodeDataTable.nodeConfig,
       })
       .from(WorkflowTable)
-      .innerJoin(UserTable, eq(WorkflowTable.userId, UserTable.id))
+      .leftJoin(UserTable, eq(WorkflowTable.userId, UserTable.id))
       .leftJoin(
         WorkflowNodeDataTable,
         and(

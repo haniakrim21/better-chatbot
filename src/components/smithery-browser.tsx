@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import { useState } from "react";
 import { featuredSmitheryMcps, SmitheryMVP } from "@/data/smithery";
 import {
   Card,
@@ -33,24 +33,17 @@ export function SmitheryBrowser() {
       const args = parts.slice(1); // remove 'npx'
 
       // Construct configuration
-      const config = JSON.stringify(
-        {
-          mcpServers: {
-            [mcp.name.toLowerCase().replace(/\s+/g, "-")]: {
-              command: "npx",
-              args: args,
-            },
-          },
-        },
-        null,
-        2,
-      );
+      const config = {
+        command: "npx",
+        args: args,
+      };
 
       await saveMcpClientAction({
         name: mcp.name,
         config: config,
         visibility: "private",
         enabled: true,
+        userId: "",
       });
 
       toast.success(t("MCP.configurationSavedSuccessfully"));

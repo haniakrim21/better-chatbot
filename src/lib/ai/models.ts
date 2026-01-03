@@ -229,6 +229,8 @@ export const getFilePartSupportedMimeTypes = (model: LanguageModel) => {
   return staticFilePartSupportByModel.get(model) ?? [];
 };
 
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
+
 const fallbackModel = staticModels.openai["gpt-4o"];
 
 export const customModelProvider = {
@@ -244,7 +246,26 @@ export const customModelProvider = {
   })),
   getModel: (model?: ChatModel): LanguageModel => {
     if (!model) return fallbackModel;
-    return allModels[model.provider]?.[model.model] || fallbackModel;
+
+    // Static lookup
+    const staticMatch = allModels[model.provider]?.[model.model];
+    if (staticMatch) return staticMatch;
+
+    // Dynamic Hugging Face lookup
+    if (model.provider === "Hugging Face" && process.env.HUGGINGFACE_API_KEY) {
+      try {
+        const hfProvider = createOpenAICompatible({
+          name: "Hugging Face",
+          apiKey: process.env.HUGGINGFACE_API_KEY,
+          baseURL: "https://router.huggingface.co/v1", // Verified endpoint
+        });
+        return hfProvider(model.model);
+      } catch (e) {
+        console.error("Failed to create dynamic HF model", e);
+      }
+    }
+
+    return fallbackModel;
   },
 };
 

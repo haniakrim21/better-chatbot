@@ -13,11 +13,11 @@ beforeAll(async () => {
 });
 
 describe("customModelProvider file support metadata", () => {
-  it("includes default file support for OpenAI gpt-4.1", () => {
+  it("includes default file support for OpenAI gpt-4o", () => {
     const { customModelProvider, getFilePartSupportedMimeTypes } = modelsModule;
     const model = customModelProvider.getModel({
       provider: "openai",
-      model: "gpt-4.1",
+      model: "gpt-4o",
     });
     expect(getFilePartSupportedMimeTypes(model)).toEqual(
       Array.from(OPENAI_FILE_MIME_TYPES),
@@ -27,7 +27,7 @@ describe("customModelProvider file support metadata", () => {
       (item) => item.provider === "openai",
     );
     const metadata = openaiProvider?.models.find(
-      (item) => item.name === "gpt-4.1",
+      (item) => item.name === "gpt-4o",
     );
 
     expect(metadata?.supportedFileMimeTypes).toEqual(

@@ -22,6 +22,7 @@ import {
   generateImageWithXAI,
   GeneratedImageResult,
   generateImageWithNanoBanana,
+  generateImageWithHuggingFace,
 } from "lib/ai/image/generate-image";
 
 export const updateUserImageAction = validatedActionWithUserManagePermission(
@@ -229,7 +230,7 @@ export const updateUserPasswordAction = validatedActionWithUserManagePermission(
   },
 );
 
-type ImageProvider = "openai" | "xai" | "google";
+type ImageProvider = "openai" | "xai" | "google" | "huggingface";
 
 interface GenerateAvatarResult {
   success: boolean;
@@ -287,6 +288,11 @@ Generate a profile picture that fulfills the user's request while maintaining th
           prompt: enhancedPrompt,
         });
         break;
+      case "huggingface":
+        response = await generateImageWithHuggingFace({
+          prompt: enhancedPrompt,
+        });
+        break;
       default:
         return {
           success: false,
@@ -317,6 +323,79 @@ Generate a profile picture that fulfills the user's request while maintaining th
     };
   } catch (error) {
     logger.error("Failed to generate avatar image:", error);
+    return {
+      success: false,
+      error:
+        error instanceof Error ? error.message : "Failed to generate image",
+    };
+  }
+}
+// ... existing code ...
+
+/**
+ * Server Action to generate generic image using AI
+ */
+export async function generateGenericImageAction(
+  provider: ImageProvider,
+  prompt: string,
+  model?: string,
+): Promise<GenerateAvatarResult> {
+  try {
+    if (!prompt.trim()) {
+      return {
+        success: false,
+        error: "Prompt is required",
+      };
+    }
+
+    let response: GeneratedImageResult;
+
+    switch (provider) {
+      case "openai":
+        response = await generateImageWithOpenAI({ prompt });
+        break;
+      case "xai":
+        response = await generateImageWithXAI({ prompt });
+        break;
+      case "google":
+        response = await generateImageWithNanoBanana({ prompt });
+        break;
+      case "huggingface":
+        response = await generateImageWithHuggingFace(
+          { prompt },
+          model, // Pass the dynamic model ID
+        );
+        break;
+      default:
+        return {
+          success: false,
+          error: "Invalid provider",
+        };
+    }
+
+    if (!response || response.images.length === 0) {
+      return {
+        success: false,
+        error: "No image generated",
+      };
+    }
+
+    const image = response.images[0];
+
+    if (!image.base64) {
+      return {
+        success: false,
+        error: "No image data received",
+      };
+    }
+
+    return {
+      success: true,
+      base64: image.base64,
+      mimeType: image.mimeType || "image/png",
+    };
+  } catch (error) {
+    logger.error("Failed to generate image:", error);
     return {
       success: false,
       error:

@@ -44,7 +44,7 @@ interface DiscoverCardProps {
   };
   tags?: string[];
   usageCount: number;
-  onAction?: () => Promise<void> | void;
+  onAction?: () => Promise<unknown> | void;
   className?: string;
   customActionLink?: string;
   customActionLabel?: string;

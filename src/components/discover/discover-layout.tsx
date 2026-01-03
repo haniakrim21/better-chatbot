@@ -20,6 +20,7 @@ export function DiscoverLayout({ children }: DiscoverLayoutProps) {
     if (pathname.includes("/discover/agents")) return "agents";
     if (pathname.includes("/discover/mcp")) return "mcp";
     if (pathname.includes("/discover/workflows")) return "workflows";
+    if (pathname.includes("/discover/huggingface")) return "huggingface";
     if (pathname.includes("/discover/models")) return "models";
     return "featured";
   };
@@ -35,6 +36,7 @@ export function DiscoverLayout({ children }: DiscoverLayoutProps) {
     },
     { id: "mcp", label: t("Discover.tabs.mcp"), href: "/discover/mcp" },
     { id: "workflows", label: "Workflows", href: "/discover/workflows" },
+    { id: "huggingface", label: "Hugging Face", href: "/discover/huggingface" },
   ];
 
   return (

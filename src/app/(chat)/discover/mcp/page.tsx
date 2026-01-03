@@ -5,6 +5,8 @@ import { pgMcpRepository } from "lib/db/pg/repositories/mcp-repository.pg";
 import { getCurrentUser } from "lib/auth/permissions";
 import { installMcpServerAction } from "@/app/api/mcp/actions";
 
+export const dynamic = "force-dynamic";
+
 export default async function DiscoverMcpPage() {
   const user = await getCurrentUser();
   const userId = user?.id || "";

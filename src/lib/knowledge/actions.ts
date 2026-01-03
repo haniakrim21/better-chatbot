@@ -14,32 +14,46 @@ import { revalidatePath } from "next/cache";
 import { eq, desc, or, and, inArray, sql } from "drizzle-orm";
 
 export async function getKnowledgeBases(userId: string) {
-  const userTeamIds = db
-    .select({ teamId: TeamMemberTable.teamId })
-    .from(TeamMemberTable)
-    .where(eq(TeamMemberTable.userId, userId));
+  console.log("Fetching knowledge bases for user:", userId);
+  try {
+    const teamMembers = await db
+      .select({ teamId: TeamMemberTable.teamId })
+      .from(TeamMemberTable)
+      .where(eq(TeamMemberTable.userId, userId));
 
-  return await db
-    .select({
-      id: KnowledgeBaseTable.id,
-      name: KnowledgeBaseTable.name,
-      description: KnowledgeBaseTable.description,
-      userId: KnowledgeBaseTable.userId,
-      teamId: KnowledgeBaseTable.teamId,
-      createdAt: KnowledgeBaseTable.createdAt,
-      updatedAt: KnowledgeBaseTable.updatedAt,
-      // Optional: Join with Team to get team name if needed
-      teamName: TeamTable.name,
-    })
-    .from(KnowledgeBaseTable)
-    .leftJoin(TeamTable, eq(KnowledgeBaseTable.teamId, TeamTable.id))
-    .where(
-      or(
-        eq(KnowledgeBaseTable.userId, userId),
-        inArray(KnowledgeBaseTable.teamId, userTeamIds),
-      ),
-    )
-    .orderBy(desc(KnowledgeBaseTable.createdAt));
+    const teamIds = teamMembers.map((t) => t.teamId);
+    console.log("User team IDs:", teamIds);
+
+    const results = await db
+      .select({
+        id: KnowledgeBaseTable.id,
+        name: KnowledgeBaseTable.name,
+        description: KnowledgeBaseTable.description,
+        userId: KnowledgeBaseTable.userId,
+        teamId: KnowledgeBaseTable.teamId,
+        createdAt: KnowledgeBaseTable.createdAt,
+        updatedAt: KnowledgeBaseTable.updatedAt,
+        // Optional: Join with Team to get team name if needed
+        teamName: TeamTable.name,
+      })
+      .from(KnowledgeBaseTable)
+      .leftJoin(TeamTable, eq(KnowledgeBaseTable.teamId, TeamTable.id))
+      .where(
+        teamIds.length > 0
+          ? or(
+              eq(KnowledgeBaseTable.userId, userId),
+              inArray(KnowledgeBaseTable.teamId, teamIds),
+            )
+          : eq(KnowledgeBaseTable.userId, userId),
+      )
+      .orderBy(desc(KnowledgeBaseTable.createdAt));
+
+    console.log("Found KBs:", results.length);
+    return results;
+  } catch (error) {
+    console.error("Error in getKnowledgeBases:", error);
+    throw error;
+  }
 }
 
 import { getSession } from "@/lib/auth/server";
@@ -197,10 +211,12 @@ export async function createFile(
 export async function getKnowledgeBase(id: string, userId: string) {
   // Fetch KB and check permissions
   // Logic similarities to deleteKnowledgeBase but for read access
-  const userTeamIds = db
+  const teamMembers = await db
     .select({ teamId: TeamMemberTable.teamId })
     .from(TeamMemberTable)
     .where(eq(TeamMemberTable.userId, userId));
+
+  const teamIds = teamMembers.map((t) => t.teamId);
 
   const [kb] = await db
     .select()
@@ -208,10 +224,12 @@ export async function getKnowledgeBase(id: string, userId: string) {
     .where(
       and(
         eq(KnowledgeBaseTable.id, id),
-        or(
-          eq(KnowledgeBaseTable.userId, userId),
-          inArray(KnowledgeBaseTable.teamId, userTeamIds),
-        ),
+        teamIds.length > 0
+          ? or(
+              eq(KnowledgeBaseTable.userId, userId),
+              inArray(KnowledgeBaseTable.teamId, teamIds),
+            )
+          : eq(KnowledgeBaseTable.userId, userId),
       ),
     );
 

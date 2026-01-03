@@ -109,12 +109,14 @@ export const pgAgentRepository: AgentRepository = {
         visibility: AgentTable.visibility,
         createdAt: AgentTable.createdAt,
         updatedAt: AgentTable.updatedAt,
+        tags: AgentTable.tags,
+        usageCount: AgentTable.usageCount,
         userName: UserTable.name,
         userAvatar: UserTable.image,
         isBookmarked: sql<boolean>`false`,
       })
       .from(AgentTable)
-      .innerJoin(UserTable, eq(AgentTable.userId, UserTable.id))
+      .leftJoin(UserTable, eq(AgentTable.userId, UserTable.id))
       .where(eq(AgentTable.userId, userId))
       .orderBy(desc(AgentTable.createdAt));
 
@@ -339,7 +341,7 @@ export const pgAgentRepository: AgentRepository = {
         isBookmarked: sql<boolean>`CASE WHEN ${BookmarkTable.id} IS NOT NULL THEN true ELSE false END`,
       })
       .from(AgentTable)
-      .innerJoin(UserTable, eq(AgentTable.userId, UserTable.id))
+      .leftJoin(UserTable, eq(AgentTable.userId, UserTable.id))
       .leftJoin(
         BookmarkTable,
         and(

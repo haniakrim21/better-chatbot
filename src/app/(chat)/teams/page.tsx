@@ -12,6 +12,8 @@ import Link from "next/link";
 import { PlusIcon, Users } from "lucide-react";
 import { redirect } from "next/navigation";
 
+export const dynamic = "force-dynamic";
+
 export default async function TeamsPage() {
   const session = await getSession();
   if (!session) {

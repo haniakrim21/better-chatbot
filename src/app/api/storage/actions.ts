@@ -8,6 +8,7 @@ import { IS_VERCEL_ENV } from "lib/const";
  * Used by clients to determine upload strategy.
  */
 export async function getStorageInfoAction() {
+  console.log("getStorageInfoAction called. Driver:", storageDriver);
   return {
     type: storageDriver,
     supportsDirectUpload:

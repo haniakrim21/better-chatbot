@@ -12,6 +12,8 @@ import { getKnowledgeBases } from "@/lib/knowledge/actions";
 import { getSession } from "@/lib/auth/server";
 import { formatDistanceToNow } from "date-fns";
 
+export const dynamic = "force-dynamic";
+
 export default async function KnowledgePage() {
   const session = await getSession();
 
@@ -19,7 +21,14 @@ export default async function KnowledgePage() {
     return <div>Unauthorized</div>;
   }
 
-  const kbs = await getKnowledgeBases(session.user.id);
+  type KnowledgeBase = Awaited<ReturnType<typeof getKnowledgeBases>>[number];
+  let kbs: KnowledgeBase[] = [];
+  try {
+    kbs = await getKnowledgeBases(session.user.id);
+  } catch (error) {
+    console.error("Failed to fetch knowledge bases:", error);
+    // You might want to return an error UI here, but for now let's just show empty
+  }
 
   return (
     <div className="p-6 space-y-6">

@@ -10,6 +10,7 @@ export type FileStorageDriver = "vercel-blob" | "s3" | "local";
 
 const resolveDriver = (): FileStorageDriver => {
   const candidate = process.env.FILE_STORAGE_TYPE;
+  console.log("Resolving Storage Driver. Env FILE_STORAGE_TYPE:", candidate);
 
   const normalized = candidate?.trim().toLowerCase();
   if (
@@ -21,6 +22,9 @@ const resolveDriver = (): FileStorageDriver => {
     return normalized;
   }
 
+  console.warn(
+    `Invalid or missing FILE_STORAGE_TYPE ('${candidate}'). Defaulting to 'vercel-blob'.`,
+  );
   // Default to Vercel Blob
   return "vercel-blob";
 };

@@ -33,7 +33,7 @@ export default () => {
           "192.168.8.190:3000",
           "192.168.8.190:3001",
         ],
-        bodySizeLimit: "2mb",
+        bodySizeLimit: "10mb",
       },
     },
   };

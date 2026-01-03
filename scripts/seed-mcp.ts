@@ -128,6 +128,14 @@ const PUBLIC_MCPS = [
     tags: ["official", "utility", "time"],
     icon: { type: "emoji", value: "⏰" },
   },
+  {
+    name: "Docker",
+    description: "Manage Docker containers, images, and volumes.",
+    command: "npx",
+    args: ["-y", "@smithery/cli", "run", "@smithery/docker"],
+    tags: ["official", "devops", "container"],
+    icon: { type: "emoji", value: "🐳" },
+  },
 ];
 
 async function main() {

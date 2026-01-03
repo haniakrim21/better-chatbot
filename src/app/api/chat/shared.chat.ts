@@ -240,7 +240,11 @@ export const workflowToVercelAITool = ({
 
   const tool = createTool({
     description: `${name} ${description?.trim().slice(0, 50)}`,
-    inputSchema: jsonSchema(schema),
+    inputSchema: jsonSchema({
+      properties: {},
+      ...schema,
+      type: "object",
+    }),
     execute(query, { toolCallId, abortSignal }) {
       const history: VercelAIWorkflowToolStreaming[] = [];
       const toolResult = VercelAIWorkflowToolStreamingResultTag.create({

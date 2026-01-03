@@ -70,6 +70,59 @@ Prioritize creating useful, interactive data tables that users can explore and a
   },
 };
 
+export const SqlOptimizerExample: Partial<Agent> = {
+  name: "SQL Optimizer",
+  description: "Analyzes and optimizes SQL queries for performance.",
+  icon: {
+    type: "emoji",
+    style: {
+      backgroundColor: "rgb(255, 165, 0)",
+    },
+    value: "⚡",
+  },
+  instructions: {
+    role: "Database Administrator",
+    mentions: [
+      {
+        type: "defaultTool",
+        label: DefaultToolName.JavascriptExecution,
+        name: DefaultToolName.JavascriptExecution,
+      },
+    ],
+    systemPrompt: `
+      You are an expert SQL Database Administrator.
+      Your ONLY goal is to take a SQL query provided by the user and return an optimized version.
+      - Analyze the query for performance bottlenecks (missing indexes, N+1 issues).
+      - Rewrite the query for better efficiency.
+      - Explain the changes made.
+      Do not answer questions unrelated to SQL optimization.
+    `.trim(),
+  },
+};
+
+export const ContentTeamLeadExample: Partial<Agent> = {
+  name: "Content Team Lead",
+  description: "Manages research and writing tasks.",
+  icon: {
+    type: "emoji",
+    style: {
+      backgroundColor: "rgb(147, 51, 234)",
+    },
+    value: "👔",
+  },
+  instructions: {
+    role: "Project Manager",
+    mentions: [],
+    systemPrompt: `
+      You are a Content Team Lead.
+      1. Analyze the user's request.
+      2. If research is needed, simulate a research phase.
+      3. Once research is gathered, draft the content.
+      4. Review the final output before presenting it to the user.
+    `.trim(),
+  },
+};
+
 export const WeatherExample: Partial<Agent> = {
   name: "Weather Checker",
   description: "Check weather using HTTP requests",

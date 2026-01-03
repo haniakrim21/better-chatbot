@@ -9,14 +9,16 @@ services:
     environment:
       - NO_HTTPS=1
       # Override DB and Redis hosts to point to docker service names
-      - POSTGRES_URL=postgresql://postgres:postgres@postgres:5432/better_chatbot
-      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/better_chatbot
+      - POSTGRES_URL=postgresql://your_username:your_password@postgres:5432/your_database_name
+      - DATABASE_URL=postgresql://your_username:your_password@postgres:5432/your_database_name
       - REDIS_URL=redis://redis:6379
       - KV_URL=redis://redis:6379
     env_file:
       - ../.env
     networks:
       - better-chatbot-networks
+    volumes:
+      - uploads_data:/app/public/uploads
     depends_on:
       postgres:
         condition: service_healthy
@@ -27,9 +29,9 @@ services:
   postgres:
     image: pgvector/pgvector:pg17
     environment:
-      POSTGRES_USER: postgres
-      POSTGRES_PASSWORD: postgres
-      POSTGRES_DB: better_chatbot
+      POSTGRES_USER: your_username
+      POSTGRES_PASSWORD: your_password
+      POSTGRES_DB: your_database_name
     ports:
       - "5432:5432"
     networks:
@@ -44,7 +46,7 @@ services:
     restart: unless-stopped
 
   redis:
-    image: redis:7-alpine
+    image: redis:alpine
     ports:
       - "6379:6379"
     networks:
@@ -60,8 +62,11 @@ services:
 
 volumes:
   postgres_data:
+    external: true
+    name: better-chatbot-data
   redis_data:
-
+  uploads_data:
+    name: better-chatbot-uploads
 
 networks:
   better-chatbot-networks:

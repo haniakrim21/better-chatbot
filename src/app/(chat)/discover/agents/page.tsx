@@ -4,6 +4,8 @@ import { pgAgentRepository } from "lib/db/pg/repositories/agent-repository.pg";
 import { getCurrentUser } from "lib/auth/permissions";
 import { incrementAgentUsageAction } from "@/app/api/agent/actions";
 
+export const dynamic = "force-dynamic";
+
 export default async function DiscoverAgentsPage() {
   const user = await getCurrentUser();
   const userId = user?.id || "";

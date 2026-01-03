@@ -3,6 +3,8 @@ import { DiscoverCard } from "@/components/discover/discover-card";
 import { pgWorkflowRepository } from "lib/db/pg/repositories/workflow-repository.pg";
 import { getCurrentUser } from "lib/auth/permissions";
 
+export const dynamic = "force-dynamic";
+
 export default async function DiscoverWorkflowsPage() {
   const user = await getCurrentUser();
   const userId = user?.id || "";

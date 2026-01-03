@@ -216,6 +216,7 @@ describe("MCPClientsManager", () => {
         ...serverToSave,
         id: "new-server-id",
         visibility: "private" as const,
+        enabled: true,
       });
 
       await manager.persistClient(serverToSave);

@@ -194,11 +194,15 @@ function fillMcpServerTable(
   return {
     ...server,
     id: server.name,
+    description: server.description ?? null,
     userId: server.userId || "file-based-user",
     visibility: server.visibility || "private",
     enabled: true,
     createdAt: new Date(),
     updatedAt: new Date(),
+    teamId: server.teamId ?? null,
+    tags: server.tags ?? null,
+    usageCount: server.usageCount ?? 0,
   };
 }
 

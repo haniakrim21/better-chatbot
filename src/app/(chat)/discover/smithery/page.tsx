@@ -1,10 +1,7 @@
 import { DiscoverLayout } from "@/components/discover/discover-layout";
 import { SmitheryBrowser } from "@/components/smithery-browser";
-import { getTranslations } from "next-intl/server";
 
 export default async function SmitheryPage() {
-  const _t = await getTranslations();
-
   return (
     <DiscoverLayout>
       <div className="flex flex-col gap-6 animate-in fade-in slide-in-from-bottom-4 duration-700">

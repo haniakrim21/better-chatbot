@@ -50,6 +50,7 @@ interface Props {
   initialMessages: any[];
   agentName?: string;
   agentAvatar?: any;
+  initialModel?: ChatModel;
 }
 
 export default function ChatBot({
@@ -57,6 +58,7 @@ export default function ChatBot({
   initialMessages,
   agentName,
   agentAvatar,
+  initialModel,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
@@ -297,10 +299,13 @@ export default function ChatBot({
 
   useEffect(() => {
     appStoreMutate({ currentThreadId: threadId });
+    if (initialModel) {
+      appStoreMutate({ chatModel: initialModel });
+    }
     return () => {
       appStoreMutate({ currentThreadId: null });
     };
-  }, [threadId]);
+  }, [threadId, initialModel]);
 
   useEffect(() => {
     if (pendingThreadMention && threadId) {
@@ -456,7 +461,11 @@ function DeleteThreadPopup({
   threadId,
   onClose,
   open,
-}: { threadId: string; onClose: () => void; open: boolean }) {
+}: {
+  threadId: string;
+  onClose: () => void;
+  open: boolean;
+}) {
   const t = useTranslations();
   const [isDeleting, setIsDeleting] = useState(false);
   const router = useRouter();

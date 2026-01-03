@@ -4,14 +4,18 @@ import { serverFileStorage, storageDriver } from "lib/file-storage";
 import { checkStorageAction } from "../actions";
 
 export async function POST(request: Request) {
+  console.log("Upload API request received. URL:", request.url);
   const session = await getSession();
+  console.log("Upload API. Session ID:", session?.user?.id);
 
   if (!session?.user?.id) {
+    console.log("Unauthorized access attempt");
     return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
   }
 
   // Check storage configuration first
   const storageCheck = await checkStorageAction();
+  console.log("Storage check:", storageCheck);
   if (!storageCheck.isValid) {
     return NextResponse.json(
       {
@@ -44,13 +48,22 @@ export async function POST(request: Request) {
       contentType: file.type || "application/octet-stream",
     });
 
+    console.log("Upload result:", result);
+
     return NextResponse.json({
       success: true,
       key: result.key,
       url: result.sourceUrl,
       metadata: result.metadata,
     });
-  } catch (error) {
+  } catch (error: any) {
+    if (error.code === "ECONNRESET" || error.message?.includes("aborted")) {
+      console.warn("Upload aborted by client");
+      return NextResponse.json(
+        { error: "Upload aborted" },
+        { status: 499 }, // Client Closed Request
+      );
+    }
     console.error("Failed to upload file", error);
     return NextResponse.json(
       { error: "Failed to upload file" },

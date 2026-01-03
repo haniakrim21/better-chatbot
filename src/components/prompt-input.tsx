@@ -289,7 +289,7 @@ export default function PromptInput({
       addMention({
         type: "workflow",
         name: workflow.name,
-        icon: workflow.icon,
+        icon: workflow.icon as any,
         workflowId: workflow.id,
         description: workflow.description,
       });

@@ -104,6 +104,7 @@ describe("DB-based MCP Config Storage", () => {
         ...serverToSave,
         userId: "test-user-id",
         visibility: "private" as const,
+        enabled: true,
       });
 
       const serverWithUserId = {

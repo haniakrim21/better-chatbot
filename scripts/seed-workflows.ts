@@ -1326,6 +1326,30 @@ async function main() {
 
     // --- Personal Productivity ---
     {
+      name: "Sequential Processing",
+      description: "Linear process: Summarize -> Translate -> Output",
+      icon: {
+        type: "emoji",
+        value: "➡️",
+        style: {
+          backgroundColor: "oklch(50% 0.1 200)",
+        },
+      },
+      tags: ["example", "sequential"],
+    },
+    {
+      name: "Parallel Processing",
+      description: "Parallel tasks: Sentiment & Keyword Extraction",
+      icon: {
+        type: "emoji",
+        value: "🔀",
+        style: {
+          backgroundColor: "oklch(60% 0.15 150)",
+        },
+      },
+      tags: ["example", "parallel"],
+    },
+    {
       name: "Daily Briefing",
       description:
         "Compile calendar, weather, and top tasks into a morning briefing.",

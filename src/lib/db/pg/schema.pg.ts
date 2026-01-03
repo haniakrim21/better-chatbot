@@ -122,7 +122,7 @@ export const DocumentChunkTable = pgTable(
       .notNull()
       .references(() => DocumentTable.id, { onDelete: "cascade" }),
     content: text("content").notNull(),
-    embedding: vector("embedding", { dimensions: 1536 }),
+    embedding: vector("embedding", { dimensions: 384 }), // HuggingFace all-MiniLM-L6-v2 standard
     metadata: json("metadata"),
     createdAt: timestamp("created_at")
       .notNull()

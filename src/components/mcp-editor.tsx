@@ -26,6 +26,7 @@ import { Alert, AlertDescription, AlertTitle } from "ui/alert";
 import { z } from "zod";
 import { useTranslations } from "next-intl";
 import { TeamSelect } from "./team-select";
+import { existMcpClientByServerNameAction } from "@/app/api/mcp/actions";
 
 interface MCPEditorProps {
   initialConfig?: MCPServerConfig;
