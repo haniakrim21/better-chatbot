@@ -1,5 +1,4 @@
 import {
-  convertToModelMessages,
   createUIMessageStream,
   createUIMessageStreamResponse,
   smoothStream,
@@ -7,12 +6,11 @@ import {
   streamText,
   Tool,
   UIMessage,
+  CoreMessage,
 } from "ai";
 
 import { customModelProvider, isToolCallUnsupportedModel } from "lib/ai/models";
-
 import { mcpClientsManager } from "lib/ai/mcp/mcp-manager";
-
 import { agentRepository, chatRepository } from "lib/db/repository";
 import { userRepository } from "lib/db/repository";
 import { pgDb as db } from "lib/db/pg/db.pg";
@@ -293,20 +291,20 @@ export async function POST(request: Request) {
             "text" in lastUserMessage.parts[0]
           ) {
             // Verify access to knowledge base
-            const [hasAccess] = await db
-              .select({ id: KnowledgeBaseTable.id })
+            const [hasAccess] = await (db
+              .select({ id: KnowledgeBaseTable.id as any })
               .from(KnowledgeBaseTable)
               .where(
                 and(
-                  eq(KnowledgeBaseTable.id, knowledgeBaseId),
+                  eq(KnowledgeBaseTable.id as any, knowledgeBaseId),
                   or(
-                    eq(KnowledgeBaseTable.userId, session.user.id),
+                    eq(KnowledgeBaseTable.userId as any, session.user.id),
                     teamIds.length > 0
-                      ? inArray(KnowledgeBaseTable.teamId, teamIds)
+                      ? inArray(KnowledgeBaseTable.teamId as any, teamIds)
                       : undefined,
                   ),
-                ),
-              );
+                ) as any,
+              ) as any);
 
             if (!hasAccess) {
               logger.warn(
@@ -401,7 +399,7 @@ export async function POST(request: Request) {
         const result = streamText({
           model,
           system: systemPrompt,
-          messages: convertToModelMessages(messages),
+          messages: convertToCoreMessages(messages),
           experimental_transform: smoothStream({ chunking: "word" }),
           maxRetries: 2,
           tools: vercelAITooles,
@@ -464,4 +462,71 @@ export async function POST(request: Request) {
     logger.error(error);
     return Response.json({ message: error.message }, { status: 500 });
   }
+}
+
+function convertToCoreMessages(messages: any[]): CoreMessage[] {
+  const coreMessages: CoreMessage[] = [];
+
+  for (const message of messages) {
+    if (message.role === "user") {
+      coreMessages.push({
+        role: "user",
+        content: message.parts
+          .map((part: any) => {
+            if (part.type === "text") {
+              return { type: "text", text: part.text };
+            } else if (part.type === "image") {
+              return { type: "image", image: part.url || "" };
+            } else if (part.type === "file") {
+              return {
+                type: "file",
+                data: part.url,
+                mimeType: "application/octet-stream",
+              };
+            }
+            return null;
+          })
+          .filter(
+            (p: any) => p !== null && (p.type !== "text" || p.text !== ""),
+          ) as any,
+      });
+    } else if (message.role === "assistant") {
+      coreMessages.push({
+        role: "assistant",
+        content: message.parts
+          .map((part: any) => {
+            if (part.type === "text") {
+              return { type: "text", text: part.text };
+            } else if (part.type === "tool-invocation") {
+              return {
+                type: "tool-call",
+                toolCallId: part.toolCallId,
+                toolName: part.toolName,
+                args: part.args,
+              };
+            }
+            return null;
+          })
+          .filter((p: any) => p !== null) as any,
+      });
+    } else if (
+      message.role === "data" &&
+      message.parts.some((p: any) => p.type === "tool-invocation")
+    ) {
+      const toolResults = message.parts
+        .filter((p: any) => p.type === "tool-invocation")
+        .map((p: any) => ({
+          type: "tool-result",
+          toolCallId: p.toolCallId,
+          toolName: p.toolName,
+          result: "result" in p ? p.result : undefined,
+        })) as any;
+
+      coreMessages.push({
+        role: "tool",
+        content: toolResults,
+      });
+    }
+  }
+  return coreMessages;
 }
