@@ -21,7 +21,7 @@ import {
 import { Tooltip, TooltipContent, TooltipTrigger } from "ui/tooltip";
 import { Button } from "ui/button";
 import { Badge } from "ui/badge";
-import { Markdown } from "./markdown";
+import { Markdown } from "@/components/markdown";
 import { cn, safeJSONParse, truncateString } from "lib/utils";
 import JsonView from "ui/json-view";
 import { useMemo, useState, memo, useEffect, useRef, useCallback } from "react";
@@ -30,7 +30,7 @@ import type { UseChatHelpers } from "@ai-sdk/react";
 import { useCopy } from "@/hooks/use-copy";
 
 import { AnimatePresence, motion } from "framer-motion";
-import { SelectModel } from "./select-model";
+import { SelectModel } from "@/components/select-model";
 import {
   deleteMessageAction,
   deleteMessagesByChatIdAfterTimestampAction,
@@ -58,7 +58,7 @@ import {
   isShortcutEvent,
 } from "lib/keyboard-shortcuts";
 
-import { WorkflowInvocation } from "./tool-invocation/workflow-invocation";
+import { WorkflowInvocation } from "@/components/tool-invocation/workflow-invocation";
 import dynamic from "next/dynamic";
 import { notify } from "lib/notify";
 import { ModelProviderIcon } from "ui/model-provider-icon";
@@ -661,7 +661,10 @@ const loading = memo(function Loading() {
 });
 
 const PieChart = dynamic(
-  () => import("./tool-invocation/pie-chart").then((mod) => mod.PieChart),
+  () =>
+    import("@/components/tool-invocation/pie-chart").then(
+      (mod) => mod.PieChart,
+    ),
   {
     ssr: false,
     loading,
@@ -669,7 +672,10 @@ const PieChart = dynamic(
 );
 
 const BarChart = dynamic(
-  () => import("./tool-invocation/bar-chart").then((mod) => mod.BarChart),
+  () =>
+    import("@/components/tool-invocation/bar-chart").then(
+      (mod) => mod.BarChart,
+    ),
   {
     ssr: false,
     loading,
@@ -677,7 +683,10 @@ const BarChart = dynamic(
 );
 
 const LineChart = dynamic(
-  () => import("./tool-invocation/line-chart").then((mod) => mod.LineChart),
+  () =>
+    import("@/components/tool-invocation/line-chart").then(
+      (mod) => mod.LineChart,
+    ),
   {
     ssr: false,
     loading,
@@ -686,7 +695,7 @@ const LineChart = dynamic(
 
 const InteractiveTable = dynamic(
   () =>
-    import("./tool-invocation/interactive-table").then(
+    import("@/components/tool-invocation/interactive-table").then(
       (mod) => mod.InteractiveTable,
     ),
   {
@@ -697,7 +706,7 @@ const InteractiveTable = dynamic(
 
 const WebSearchToolInvocation = dynamic(
   () =>
-    import("./tool-invocation/web-search").then(
+    import("@/components/tool-invocation/web-search").then(
       (mod) => mod.WebSearchToolInvocation,
     ),
   {
@@ -708,7 +717,9 @@ const WebSearchToolInvocation = dynamic(
 
 const CodeExecutor = dynamic(
   () =>
-    import("./tool-invocation/code-executor").then((mod) => mod.CodeExecutor),
+    import("@/components/tool-invocation/code-executor").then(
+      (mod) => mod.CodeExecutor,
+    ),
   {
     ssr: false,
     loading,
@@ -717,7 +728,7 @@ const CodeExecutor = dynamic(
 
 const ImageGeneratorToolInvocation = dynamic(
   () =>
-    import("./tool-invocation/image-generator").then(
+    import("@/components/tool-invocation/image-generator").then(
       (mod) => mod.ImageGeneratorToolInvocation,
     ),
   {

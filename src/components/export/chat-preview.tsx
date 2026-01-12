@@ -2,7 +2,7 @@ import {
   ChatExportCommentWithUser,
   ChatExportWithUser,
 } from "app-types/chat-export";
-import { PreviewMessage } from "../message";
+import { PreviewMessage } from "@/features/chat/components/message";
 import { Avatar, AvatarFallback, AvatarImage } from "ui/avatar";
 import { Tooltip, TooltipContent, TooltipTrigger } from "ui/tooltip";
 import { formatDate } from "date-fns";
@@ -13,7 +13,10 @@ import Comments from "./comments";
 export default function ChatPreview({
   thread,
   comments,
-}: { thread: ChatExportWithUser; comments: ChatExportCommentWithUser[] }) {
+}: {
+  thread: ChatExportWithUser;
+  comments: ChatExportCommentWithUser[];
+}) {
   return (
     <div
       className="flex flex-col min-w-0 h-full relative"

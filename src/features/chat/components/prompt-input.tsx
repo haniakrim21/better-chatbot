@@ -16,14 +16,14 @@ import {
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Button } from "ui/button";
 import { UIMessage, UseChatHelpers } from "@ai-sdk/react";
-import { SelectModel } from "./select-model";
+import { SelectModel } from "@/components/select-model";
 import { appStore, UploadedFile } from "@/app/store";
 import { useShallow } from "zustand/shallow";
 import { ChatMention, ChatModel } from "app-types/chat";
 import dynamic from "next/dynamic";
-import { ToolModeDropdown } from "./tool-mode-dropdown";
+import { ToolModeDropdown } from "@/components/tool-mode-dropdown";
 
-import { ToolSelectDropdown } from "./tool-select-dropdown";
+import { ToolSelectDropdown } from "@/components/tool-select-dropdown";
 import { Tooltip, TooltipContent, TooltipTrigger } from "ui/tooltip";
 import { useTranslations } from "next-intl";
 import { Editor } from "@tiptap/react";
@@ -32,7 +32,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "ui/avatar";
 import equal from "lib/equal";
 import { MCPIcon } from "ui/mcp-icon";
 import { DefaultToolName } from "lib/ai/tools";
-import { DefaultToolIcon } from "./default-tool-icon";
+import { DefaultToolIcon } from "@/components/default-tool-icon";
 import { OpenAIIcon } from "ui/openai-icon";
 import { GrokIcon } from "ui/grok-icon";
 import { ClaudeIcon } from "ui/claude-icon";
@@ -73,8 +73,8 @@ interface PromptInputProps {
   onFocus?: () => void;
 }
 
-import { VoiceToTextButton } from "./chat/voice-to-text-button";
-import { PromptEnhancer } from "./chat/prompt-enhancer";
+import { VoiceToTextButton } from "@/features/chat/components/voice-to-text-button";
+import { PromptEnhancer } from "@/features/chat/components/prompt-enhancer";
 
 const ChatMentionInput = dynamic(() => import("./chat-mention-input"), {
   ssr: false,

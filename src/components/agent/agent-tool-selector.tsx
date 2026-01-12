@@ -7,7 +7,7 @@ import { DefaultToolName } from "lib/ai/tools";
 import { cn, noop } from "lib/utils";
 import equal from "lib/equal";
 import { ChevronDownIcon, HammerIcon, Loader, XIcon } from "lucide-react";
-import { ChatMentionInputSuggestion } from "@/components/chat-mention-input";
+import { ChatMentionInputSuggestion } from "@/features/chat/components/chat-mention-input";
 import { DefaultToolIcon } from "@/components/default-tool-icon";
 import { MCPIcon } from "ui/mcp-icon";
 import { Avatar, AvatarFallback, AvatarImage } from "ui/avatar";

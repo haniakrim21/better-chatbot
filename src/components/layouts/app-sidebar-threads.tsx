@@ -10,7 +10,7 @@ import {
 } from "ui/sidebar";
 import { SidebarGroupContent, SidebarMenu, SidebarMenuItem } from "ui/sidebar";
 import { SidebarGroup } from "ui/sidebar";
-import { ThreadDropdown } from "../thread-dropdown";
+import { ThreadDropdown } from "@/features/chat/components/thread-dropdown";
 import { ChevronDown, ChevronUp, MoreHorizontal, Trash } from "lucide-react";
 import { useMounted } from "@/hooks/use-mounted";
 import { appStore } from "@/app/store";

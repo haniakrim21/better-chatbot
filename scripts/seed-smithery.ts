@@ -1,28 +1,24 @@
-import { drizzle } from "drizzle-orm/node-postgres";
-import { Pool } from "pg";
+import { pgDb as db } from "../src/lib/db/pg/db.pg";
 import * as schema from "../src/lib/db/pg/schema.pg";
 import { eq } from "drizzle-orm";
 import { MCPServerConfig } from "../src/types/mcp";
 import "dotenv/config";
 
-const pool = new Pool({
-  connectionString: process.env.POSTGRES_URL,
-});
-
-const db = drizzle(pool, { schema });
-
 async function main() {
   console.log("Seeding Smithery MCPs...");
 
   const targetEmail = "haniakrim@gmail.com";
-  const user = await db.query.UserTable.findFirst({
+  let user = await db.query.UserTable.findFirst({
     where: eq(schema.UserTable.email, targetEmail),
   });
 
   if (!user) {
-    console.error(
-      `User ${targetEmail} not found. functionality requires a valid user to own the seed data.`,
-    );
+    console.log(`User ${targetEmail} not found. Trying to find any user...`);
+    user = await db.query.UserTable.findFirst();
+  }
+
+  if (!user) {
+    console.error(`No users found to own the seed data.`);
     process.exit(1);
   }
 

@@ -14,7 +14,7 @@ const KeyboardShortcutsPopup = dynamic(
 
 const ChatPreferencesPopup = dynamic(
   () =>
-    import("@/components/chat-preferences-popup").then(
+    import("@/features/chat/components/chat-preferences-popup").then(
       (mod) => mod.ChatPreferencesPopup,
     ),
   {
@@ -23,7 +23,10 @@ const ChatPreferencesPopup = dynamic(
 );
 
 const ChatBotVoice = dynamic(
-  () => import("@/components/chat-bot-voice").then((mod) => mod.ChatBotVoice),
+  () =>
+    import("@/features/chat/components/chat-bot-voice").then(
+      (mod) => mod.ChatBotVoice,
+    ),
   {
     ssr: false,
   },
@@ -31,7 +34,7 @@ const ChatBotVoice = dynamic(
 
 const ChatBotTemporary = dynamic(
   () =>
-    import("@/components/chat-bot-temporary").then(
+    import("@/features/chat/components/chat-bot-temporary").then(
       (mod) => mod.ChatBotTemporary,
     ),
   {

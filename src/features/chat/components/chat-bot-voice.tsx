@@ -44,7 +44,11 @@ import { OpenAIIcon } from "ui/openai-icon";
 import { Tooltip, TooltipContent, TooltipTrigger } from "ui/tooltip";
 import { ToolMessagePart } from "./message-parts";
 
-import { EnabledTools, EnabledToolsDropdown } from "./enabled-tools-dropdown";
+import {
+  EnabledTools,
+  EnabledToolsDropdown,
+} from "@/components/enabled-tools-dropdown";
+
 import { appStore } from "@/app/store";
 import { useShallow } from "zustand/shallow";
 import { useTranslations } from "next-intl";

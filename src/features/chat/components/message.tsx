@@ -18,7 +18,7 @@ import { ChevronDown, ChevronUp, TriangleAlertIcon } from "lucide-react";
 import { Button } from "ui/button";
 import { useTranslations } from "next-intl";
 import { ChatMetadata } from "app-types/chat";
-import { ThesysRenderer } from "./thesys-renderer";
+import { ThesysRenderer } from "@/components/thesys-renderer";
 
 interface Props {
   message: UIMessage;

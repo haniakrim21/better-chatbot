@@ -11,9 +11,8 @@ import React, {
 import { CheckIcon, HammerIcon, SearchIcon } from "lucide-react";
 import { MCPIcon } from "ui/mcp-icon";
 
+import MentionInput from "@/components/mention-input";
 import { ChatMention } from "app-types/chat";
-
-import MentionInput from "./mention-input";
 import { useTranslations } from "next-intl";
 import { Popover, PopoverContent, PopoverTrigger } from "ui/popover";
 
@@ -24,7 +23,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "ui/avatar";
 import { Editor } from "@tiptap/react";
 import { DefaultToolName } from "lib/ai/tools";
 import { Tooltip, TooltipContent, TooltipTrigger } from "ui/tooltip";
-import { DefaultToolIcon } from "./default-tool-icon";
+import { DefaultToolIcon } from "@/components/default-tool-icon";
 import equal from "lib/equal";
 import { EMOJI_DATA } from "lib/const";
 import { useIsMobile } from "@/hooks/use-mobile";
@@ -67,7 +66,10 @@ export default function ChatMentionInput({
     ({
       text,
       mentions,
-    }: { text: string; mentions: { label: string; id: string }[] }) => {
+    }: {
+      text: string;
+      mentions: { label: string; id: string }[];
+    }) => {
       onChange(text);
       const mentionsIds = mentions.map((mention) => mention.id);
       const parsedMentions = mentionsIds.map(

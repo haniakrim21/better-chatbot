@@ -1,5 +1,5 @@
 import { selectThreadWithMessagesAction } from "@/app/api/chat/actions";
-import ChatBot from "@/components/chat-bot";
+import ChatBot from "@/features/chat/components/chat-bot";
 
 import { ChatMessage, ChatThread } from "app-types/chat";
 import { redirect, RedirectType } from "next/navigation";
@@ -12,7 +12,9 @@ const fetchThread = async (
 
 export default async function Page({
   params,
-}: { params: Promise<{ thread: string }> }) {
+}: {
+  params: Promise<{ thread: string }>;
+}) {
   const { thread: threadId } = await params;
 
   const thread = await fetchThread(threadId);

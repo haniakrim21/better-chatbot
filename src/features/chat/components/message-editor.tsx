@@ -1,7 +1,7 @@
 "use client";
 
 import type { UIMessage } from "ai";
-import { Button } from "./ui/button";
+
 import {
   type Dispatch,
   type SetStateAction,
@@ -9,7 +9,8 @@ import {
   useMemo,
   useEffect,
 } from "react";
-import { Textarea } from "./ui/textarea";
+import { Button } from "@/components/ui/button";
+import { Textarea } from "@/components/ui/textarea";
 import { deleteMessagesByChatIdAfterTimestampAction } from "@/app/api/chat/actions";
 import type { UseChatHelpers } from "@ai-sdk/react";
 import { useTranslations } from "next-intl";

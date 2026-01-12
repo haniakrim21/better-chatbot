@@ -14,7 +14,9 @@ vi.mock("@aws-sdk/client-s3", () => {
     constructor(public input: any) {}
   }
   return {
-    S3Client: vi.fn().mockImplementation(() => ({ send: sendMock })),
+    S3Client: vi.fn(function () {
+      return { send: sendMock };
+    }),
     PutObjectCommand: class extends BaseCmd {},
     GetObjectCommand: class extends BaseCmd {},
     DeleteObjectCommand: class extends BaseCmd {},

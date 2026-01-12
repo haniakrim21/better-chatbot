@@ -12,7 +12,7 @@ import { Button } from "ui/button";
 import { Separator } from "ui/separator";
 
 import { useEffect, useMemo } from "react";
-import { ThreadDropdown } from "../thread-dropdown";
+import { ThreadDropdown } from "@/features/chat/components/thread-dropdown";
 import { appStore } from "@/app/store";
 import { usePathname, useSearchParams } from "next/navigation";
 import { useShallow } from "zustand/shallow";
@@ -20,6 +20,7 @@ import { getShortcutKeyList, Shortcuts } from "lib/keyboard-shortcuts";
 import { useTranslations } from "next-intl";
 import { TextShimmer } from "ui/text-shimmer";
 import { buildReturnUrl } from "lib/admin/navigation-utils";
+
 import { BackButton } from "@/components/layouts/back-button";
 
 export function AppHeader() {

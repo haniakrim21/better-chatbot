@@ -16,12 +16,14 @@ vi.mock("./mcp-tool-id", () => ({
 }));
 
 vi.mock("lib/utils", () => ({
-  Locker: vi.fn(() => ({
-    lock: vi.fn(),
-    unlock: vi.fn(),
-    wait: vi.fn(),
-    isLocked: false,
-  })),
+  Locker: vi.fn(function () {
+    return {
+      lock: vi.fn(),
+      unlock: vi.fn(),
+      wait: vi.fn(),
+      isLocked: false,
+    };
+  }),
   generateUUID: vi.fn(() => "mock-uuid-12345678"),
 }));
 

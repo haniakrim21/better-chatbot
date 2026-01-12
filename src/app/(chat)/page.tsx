@@ -1,4 +1,4 @@
-import ChatBot from "@/components/chat-bot";
+import ChatBot from "@/features/chat/components/chat-bot";
 import { generateUUID } from "lib/utils";
 import { getSession } from "auth/server";
 import { redirect } from "next/navigation";
