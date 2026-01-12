@@ -15,8 +15,14 @@
       "!**/public",
       "!**/docker",
       "!**/dist/**",
-      "!**/*.d.ts"
+      "!**/*.d.ts",
+      "!src/app/globals.css"
     ]
+  },
+  "css": {
+    "parser": {
+      "cssModules": true
+    }
   },
   "formatter": {
     "enabled": true,

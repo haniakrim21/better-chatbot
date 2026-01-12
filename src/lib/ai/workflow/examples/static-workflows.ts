@@ -1,4 +1,4 @@
-import { DBEdge, DBNode } from "app-types/workflow";
+import { DBEdge } from "app-types/workflow";
 import { generateUUID } from "lib/utils";
 
 // --- HELPERS ---

@@ -16,17 +16,8 @@ export function ThesysProvider({ children }: { children: React.ReactNode }) {
     setMounted(true);
   }, []);
 
-  if (!mounted) {
-    // Return children wrapped in a default provider or null to avoid flicker?
-    // Better to render with default (system) or just children.
-    // However, the SDK might need the provider context to function at all.
-    return <ThemeProvider mode="system">{children}</ThemeProvider>;
-  }
+  if (!mounted) return <div className="fixed inset-0 bg-background" />;
 
   // Cast resolvedTheme to be compatible with SDK's expected mode string
-  return (
-    <ThemeProvider mode={resolvedTheme as "light" | "dark" | "system"}>
-      {children}
-    </ThemeProvider>
-  );
+  return <ThemeProvider mode={resolvedTheme as any}>{children}</ThemeProvider>;
 }
