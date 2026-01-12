@@ -443,6 +443,49 @@ export function decodeHtmlEntities(str: string): string {
 export function cleanThesysTitle(title: string | undefined | null): string {
   if (!title) return "";
   if (title.includes('<content thesys="true">')) {
+    try {
+      const contentMatch = title.match(
+        /<content thesys="true">([\s\S]*?)<\/content>/,
+      );
+      if (contentMatch && contentMatch[1]) {
+        const decoded = decodeHtmlEntities(contentMatch[1]);
+        const json = JSON.parse(decoded);
+
+        // Helper to traverse and find title
+        const findTitle = (node: any): string | null => {
+          if (!node) return null;
+
+          // Check direct props
+          if (node.props?.title) return node.props.title;
+
+          // Check specific Header component
+          if (node.component === "Header" && node.props?.title) {
+            return node.props.title;
+          }
+
+          // Check root component if it has a component property (wrapper)
+          if (node.component && typeof node.component === "object") {
+            const found = findTitle(node.component);
+            if (found) return found;
+          }
+
+          // Check children
+          if (Array.isArray(node.props?.children)) {
+            for (const child of node.props.children) {
+              const found = findTitle(child);
+              if (found) return found;
+            }
+          }
+
+          return null;
+        };
+
+        const extractedTitle = findTitle(json.component);
+        if (extractedTitle) return extractedTitle;
+      }
+    } catch (e) {
+      console.error("Failed to parse Thesys title", e);
+    }
     return "Interactive Component";
   }
   return title;
