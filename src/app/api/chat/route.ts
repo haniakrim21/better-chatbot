@@ -6,7 +6,6 @@ import {
   streamText,
   Tool,
   UIMessage,
-  CoreMessage,
 } from "ai";
 
 import { customModelProvider, isToolCallUnsupportedModel } from "lib/ai/models";
@@ -464,8 +463,8 @@ export async function POST(request: Request) {
   }
 }
 
-function convertToCoreMessages(messages: any[]): CoreMessage[] {
-  const coreMessages: CoreMessage[] = [];
+function convertToCoreMessages(messages: any[]): any[] {
+  const coreMessages: any[] = [];
 
   for (const message of messages) {
     if (message.role === "user") {

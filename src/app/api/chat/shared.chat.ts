@@ -241,7 +241,6 @@ export const workflowToVercelAITool = ({
   const tool = createTool({
     description: `${name} ${description?.trim().slice(0, 50)}`,
     inputSchema: jsonSchema({
-      properties: {},
       ...schema,
       type: "object",
     }),

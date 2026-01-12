@@ -28,7 +28,7 @@ export type ImageToolResult = {
 export const nanoBananaTool = createTool({
   name: ImageToolName,
   description: `Generate, edit, or composite images based on the conversation context. This tool automatically analyzes recent messages to create images without requiring explicit input parameters. It includes all user-uploaded images from the recent conversation and only the most recent AI-generated image to avoid confusion. Use the 'mode' parameter to specify the operation type: 'create' for new images, 'edit' for modifying existing images, or 'composite' for combining multiple images. Use this when the user requests image creation, modification, or visual content generation.`,
-  inputSchema: z.object({
+  parameters: z.object({
     mode: z
       .enum(["create", "edit", "composite"])
       .optional()
@@ -37,7 +37,8 @@ export const nanoBananaTool = createTool({
         "Image generation mode: 'create' for new images, 'edit' for modifying existing images, 'composite' for combining multiple images",
       ),
   }),
-  execute: async ({ mode }, { messages, abortSignal }) => {
+  execute: async ({ mode }: any, context: any) => {
+    const { messages, abortSignal } = context;
     try {
       let hasFoundImage = false;
 
@@ -111,12 +112,12 @@ export const nanoBananaTool = createTool({
       throw e;
     }
   },
-});
+} as any);
 
 export const openaiImageTool = createTool({
   name: ImageToolName,
   description: `Generate, edit, or composite images based on the conversation context. This tool automatically analyzes recent messages to create images without requiring explicit input parameters. It includes all user-uploaded images from the recent conversation and only the most recent AI-generated image to avoid confusion. Use the 'mode' parameter to specify the operation type: 'create' for new images, 'edit' for modifying existing images, or 'composite' for combining multiple images. Use this when the user requests image creation, modification, or visual content generation.`,
-  inputSchema: z.object({
+  parameters: z.object({
     mode: z
       .enum(["create", "edit", "composite"])
       .optional()
@@ -125,7 +126,8 @@ export const openaiImageTool = createTool({
         "Image generation mode: 'create' for new images, 'edit' for modifying existing images, 'composite' for combining multiple images",
       ),
   }),
-  execute: async ({ mode }, { messages, abortSignal }) => {
+  execute: async ({ mode }: any, context: any) => {
+    const { messages, abortSignal } = context;
     const apiKey = process.env.OPENAI_API_KEY;
     if (!apiKey) {
       throw new Error("OPENAI_API_KEY is not set");
@@ -192,12 +194,12 @@ export const openaiImageTool = createTool({
       guide: "",
     };
   },
-});
+} as any);
 
 function convertToImageToolPartToImagePart(part: ToolResultPart): ImagePart[] {
   if (part.toolName !== ImageToolName) return [];
-  if (!toAny(part).output?.value?.images?.length) return [];
-  const result = part.output.value as ImageToolResult;
+  if (!(toAny(part).output as any)?.value?.images?.length) return [];
+  const result = (part.output as any).value as ImageToolResult;
   return result.images.map((image) => ({
     type: "image",
     image: image.url,
@@ -207,8 +209,8 @@ function convertToImageToolPartToImagePart(part: ToolResultPart): ImagePart[] {
 
 function convertToImageToolPartToFilePart(part: ToolResultPart): FilePart[] {
   if (part.toolName !== ImageToolName) return [];
-  if (!toAny(part).output?.value?.images?.length) return [];
-  const result = part.output.value as ImageToolResult;
+  if (!(toAny(part).output as any)?.value?.images?.length) return [];
+  const result = (part.output as any).value as ImageToolResult;
   return result.images.map((image) => ({
     type: "file",
     mediaType: image.mimeType!,

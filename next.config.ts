@@ -19,8 +19,8 @@ export default () => {
       NO_HTTPS: process.env.NO_HTTPS,
     },
     experimental: {
-      taint: true,
-      authInterrupts: true,
+      taint: false,
+      authInterrupts: false,
       serverActions: {
         allowedOrigins: [
           "localhost:3000",

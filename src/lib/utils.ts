@@ -429,3 +429,21 @@ export const booleanCoerced = z
     if (val === "true" || val === true || val === "1" || val === 1) return true;
     return false;
   });
+
+export function decodeHtmlEntities(str: string): string {
+  if (!str) return "";
+  return str
+    .replace(/&quot;/g, '"')
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&amp;/g, "&")
+    .replace(/&#39;/g, "'");
+}
+
+export function cleanThesysTitle(title: string | undefined | null): string {
+  if (!title) return "";
+  if (title.includes('<content thesys="true">')) {
+    return "Interactive Component";
+  }
+  return title;
+}

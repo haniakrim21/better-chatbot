@@ -36,7 +36,7 @@ import { useMemo, useState } from "react";
 import { useTranslations } from "next-intl";
 import { TextShimmer } from "ui/text-shimmer";
 import { Tooltip, TooltipContent, TooltipTrigger } from "ui/tooltip";
-import { deduplicateByKey, groupBy } from "lib/utils";
+import { deduplicateByKey, groupBy, cleanThesysTitle } from "lib/utils";
 import { ChatThread } from "app-types/chat";
 
 type ThreadGroup = {
@@ -253,7 +253,7 @@ export function AppSidebarThreads() {
                         <ThreadDropdown
                           side="right"
                           threadId={thread.id}
-                          beforeTitle={thread.title}
+                          beforeTitle={cleanThesysTitle(thread.title)}
                         >
                           <div className="flex items-center data-[state=open]:bg-input! group-hover/thread:bg-input! rounded-lg">
                             <Tooltip delayDuration={1000}>
@@ -271,18 +271,20 @@ export function AppSidebarThreads() {
                                       thread.id,
                                     ) ? (
                                       <TextShimmer className="truncate min-w-0">
-                                        {thread.title || "New Chat"}
+                                        {cleanThesysTitle(thread.title) ||
+                                          "New Chat"}
                                       </TextShimmer>
                                     ) : (
                                       <p className="truncate min-w-0">
-                                        {thread.title || "New Chat"}
+                                        {cleanThesysTitle(thread.title) ||
+                                          "New Chat"}
                                       </p>
                                     )}
                                   </Link>
                                 </SidebarMenuButton>
                               </TooltipTrigger>
                               <TooltipContent className="max-w-[200px] p-4 break-all overflow-y-auto max-h-[200px]">
-                                {thread.title || "New Chat"}
+                                {cleanThesysTitle(thread.title) || "New Chat"}
                               </TooltipContent>
                             </Tooltip>
 

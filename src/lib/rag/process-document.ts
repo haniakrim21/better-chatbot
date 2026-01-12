@@ -1,7 +1,6 @@
-// @ts-ignore
-import * as pdfParse from "pdf-parse";
-
 export async function parsePDF(buffer: Buffer): Promise<string> {
+  // @ts-ignore
+  const pdfParse = (await import("pdf-parse")).default;
   const pdf = (pdfParse as any).default || pdfParse;
   const data = await pdf(buffer);
   return data.text;

@@ -513,7 +513,9 @@ export function ChatBotVoice() {
 
 function ConversationView({
   messages,
-}: { messages: UIMessageWithCompleted[] }) {
+}: {
+  messages: UIMessageWithCompleted[];
+}) {
   const ref = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -578,7 +580,7 @@ function ConversationView({
                   return (
                     <ToolMessagePart
                       key={index}
-                      part={part}
+                      part={part as any}
                       showActions={false}
                       messageId={message.id}
                       isLast={part.state.startsWith("input")}

@@ -1007,41 +1007,43 @@ export const ToolMessagePart = memo(
                 />
               </div>
               <div className="w-full flex flex-col gap-2">
-                <div
-                  className={cn(
-                    "min-w-0 w-full p-4 rounded-lg bg-card px-4 border text-xs transition-colors fade-300",
-                    !isExpanded && "hover:bg-secondary cursor-pointer",
-                  )}
-                  onClick={() => {
-                    if (!isExpanded) {
-                      setExpanded(true);
-                    }
-                  }}
-                >
-                  <div className="flex items-center">
-                    <h5 className="text-muted-foreground font-medium select-none transition-colors">
-                      Request
-                    </h5>
-                    <div className="flex-1" />
-                    {copiedInput ? (
-                      <Check className="size-3" />
-                    ) : (
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="size-3 text-muted-foreground"
-                        onClick={() => copyInput(JSON.stringify(input))}
-                      >
-                        <Copy className="size-3" />
-                      </Button>
+                {!isWorkflowTool && (
+                  <div
+                    className={cn(
+                      "min-w-0 w-full p-4 rounded-lg bg-card px-4 border text-xs transition-colors fade-300",
+                      !isExpanded && "hover:bg-secondary cursor-pointer",
+                    )}
+                    onClick={() => {
+                      if (!isExpanded) {
+                        setExpanded(true);
+                      }
+                    }}
+                  >
+                    <div className="flex items-center">
+                      <h5 className="text-muted-foreground font-medium select-none transition-colors">
+                        Request
+                      </h5>
+                      <div className="flex-1" />
+                      {copiedInput ? (
+                        <Check className="size-3" />
+                      ) : (
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="size-3 text-muted-foreground"
+                          onClick={() => copyInput(JSON.stringify(input))}
+                        >
+                          <Copy className="size-3" />
+                        </Button>
+                      )}
+                    </div>
+                    {isExpanded && (
+                      <div className="p-2 max-h-[300px] overflow-y-auto ">
+                        <JsonView data={input} />
+                      </div>
                     )}
                   </div>
-                  {isExpanded && (
-                    <div className="p-2 max-h-[300px] overflow-y-auto ">
-                      <JsonView data={input} />
-                    </div>
-                  )}
-                </div>
+                )}
                 {!result ? null : isWorkflowTool ? (
                   <WorkflowInvocation
                     result={result as VercelAIWorkflowToolStreamingResult}

@@ -5,6 +5,8 @@ import { getWeatherEdges, getWeatherNodes } from "./get-weather";
 import { sequentialEdges, sequentialNodes } from "./sequential-processing";
 import { parallelEdges, parallelNodes } from "./parallel-processing";
 
+import { contentCreationEdges, contentCreationNodes } from "./content-creation";
+
 export const GetWeather = (): {
   workflow: Partial<DBWorkflow>;
   nodes: Partial<DBNode>[];
@@ -27,6 +29,34 @@ export const GetWeather = (): {
     },
     nodes: getWeatherNodes,
     edges: getWeatherEdges.map((edge) => ({
+      ...edge,
+      id: generateUUID(),
+    })),
+  };
+};
+
+export const ContentCreation = (): {
+  workflow: Partial<DBWorkflow>;
+  nodes: Partial<DBNode>[];
+  edges: Partial<DBEdge>[];
+} => {
+  return {
+    workflow: {
+      description:
+        "Generate a blog post from a topic: Plan -> Write -> Preview",
+      name: "Content Creation",
+      isPublished: true,
+      visibility: "private",
+      icon: {
+        type: "emoji",
+        value: "✍️",
+        style: {
+          backgroundColor: "oklch(65% 0.2 290)",
+        },
+      },
+    },
+    nodes: contentCreationNodes,
+    edges: contentCreationEdges.map((edge) => ({
       ...edge,
       id: generateUUID(),
     })),

@@ -49,15 +49,16 @@ export function findAccessibleNodeIds({
 }
 
 export function findJsonSchemaByPath(
-  schema: ObjectJsonSchema7,
+  schema: ObjectJsonSchema7 | undefined,
   path: string[],
 ): JSONSchema7 | undefined {
+  if (!schema || !schema.properties) return undefined;
   const [key, ...rest] = path;
   if (rest.length === 0) {
     return schema.properties?.[key] as JSONSchema7;
   }
   return findJsonSchemaByPath(
-    schema.properties![key] as ObjectJsonSchema7,
+    schema.properties[key] as ObjectJsonSchema7,
     rest,
   );
 }

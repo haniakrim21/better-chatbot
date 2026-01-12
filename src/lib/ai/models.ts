@@ -222,7 +222,7 @@ export const isToolCallUnsupportedModel = (model: LanguageModel) => {
 };
 
 const isImageInputUnsupportedModel = (model: LanguageModelV2) => {
-  return !Object.values(staticSupportImageInputModels).includes(model);
+  return !Object.values(staticSupportImageInputModels).includes(model as any);
 };
 
 export const getFilePartSupportedMimeTypes = (model: LanguageModel) => {
@@ -245,6 +245,24 @@ export const customModelProvider = {
     hasAPIKey: checkProviderAPIKey(provider as keyof typeof staticModels),
   })),
   getModel: (model?: ChatModel): LanguageModel => {
+    // 1. Global Override: Thesys.dev
+    if (process.env.THESYS_API_KEY) {
+      try {
+        const thesysProvider = createOpenAICompatible({
+          name: "thesys",
+          apiKey: process.env.THESYS_API_KEY,
+          baseURL: process.env.THESYS_BASE_URL || "https://api.thesys.dev/v1",
+        });
+        // We pass the requested model ID, but Thesys might ignore it or route it.
+        // If no model is requested, we default to 'gpt-4o' as a safe placeholder for Thesys.
+        // Thesys requires specific model IDs, so we default to a known valid one.
+        const defaultThesysModel = "c1/openai/gpt-5/v-20251230";
+        return thesysProvider(defaultThesysModel);
+      } catch (e) {
+        console.error("Failed to create Thesys model", e);
+      }
+    }
+
     if (!model) return fallbackModel;
 
     // Static lookup

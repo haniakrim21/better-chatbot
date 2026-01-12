@@ -18,6 +18,7 @@ import { ChevronDown, ChevronUp, TriangleAlertIcon } from "lucide-react";
 import { Button } from "ui/button";
 import { useTranslations } from "next-intl";
 import { ChatMetadata } from "app-types/chat";
+import { ThesysRenderer } from "./thesys-renderer";
 
 interface Props {
   message: UIMessage;
@@ -51,7 +52,7 @@ const PurePreviewMessage = ({
   const isUserMessage = useMemo(() => message.role === "user", [message.role]);
   const partsForDisplay = useMemo(
     () =>
-      message.parts.filter(
+      (message.parts || []).filter(
         (part) => !(part.type === "text" && (part as any).ingestionPreview),
       ),
     [message.parts],
@@ -102,6 +103,30 @@ const PurePreviewMessage = ({
             }
 
             if (part.type === "text" && !isUserMessage) {
+              const trimmedText = part.text.trim();
+              if (trimmedText.startsWith('<content thesys="true">')) {
+                return (
+                  <ThesysRenderer
+                    key={key}
+                    content={part.text}
+                    isStreaming={isLoading && isLastMessage && isLastPart}
+                    onAction={(action) => {
+                      if (sendMessage) {
+                        // Assuming action has a label or value to send
+                        const messageToSend =
+                          action.label ||
+                          action.value ||
+                          JSON.stringify(action);
+                        sendMessage({
+                          content: messageToSend,
+                          role: "user",
+                        } as any);
+                      }
+                    }}
+                  />
+                );
+              }
+
               return (
                 <AssistMessagePart
                   threadId={threadId}
@@ -142,7 +167,7 @@ const PurePreviewMessage = ({
                   }
                   addToolResult={addToolResult}
                   key={key}
-                  part={part}
+                  part={part as any}
                   setMessages={setMessages}
                 />
               );
@@ -190,10 +215,13 @@ export const PreviewMessage = memo(
     if (!equal(prevProps.message.metadata, nextProps.message.metadata))
       return false;
 
-    if (prevProps.message.parts.length !== nextProps.message.parts.length) {
+    const prevParts = prevProps.message.parts || [];
+    const nextParts = nextProps.message.parts || [];
+
+    if (prevParts.length !== nextParts.length) {
       return false;
     }
-    if (!equal(prevProps.message.parts, nextProps.message.parts)) {
+    if (!equal(prevParts, nextParts)) {
       return false;
     }
 

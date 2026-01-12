@@ -4,7 +4,7 @@ import { useState } from "react";
 import { useSearchParams } from "next/navigation";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Textarea } from "@/components/ui/textarea";
+
 import { generateGenericImageAction } from "@/app/api/user/actions";
 import { Loader2, Download, ImageIcon } from "lucide-react";
 import { toast } from "sonner";

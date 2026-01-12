@@ -3,7 +3,6 @@ import { generateUUID } from "lib/utils";
 import { getSession } from "auth/server";
 import { redirect } from "next/navigation";
 import { pgAgentRepository } from "lib/db/pg/repositories/agent-repository.pg";
-import { CoreMessage } from "ai";
 import { Agent } from "app-types/agent";
 
 export const dynamic = "force-dynamic";
@@ -19,7 +18,7 @@ export default async function HomePage(props: HomePageProps) {
     redirect("/sign-in");
   }
   const threadId = generateUUID();
-  const initialMessages: CoreMessage[] = [];
+  const initialMessages: any[] = [];
 
   const agentId = searchParams?.agentId as string;
   let agent: Agent | null = null;

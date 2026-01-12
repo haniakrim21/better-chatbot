@@ -153,7 +153,7 @@ export default function ChatBot({
         }
         const lastMessage = messages.at(-1)!;
         // Filter out UI-only parts (e.g., source-url) so the model doesn't receive unknown parts
-        const attachments: ChatAttachment[] = lastMessage.parts.reduce(
+        const attachments: ChatAttachment[] = (lastMessage?.parts || []).reduce(
           (acc: ChatAttachment[], part: any) => {
             if (part?.type === "file") {
               acc.push({
@@ -177,7 +177,9 @@ export default function ChatBot({
 
         const sanitizedLastMessage = {
           ...lastMessage,
-          parts: lastMessage.parts.filter((p: any) => p?.type !== "source-url"),
+          parts: (lastMessage.parts || []).filter(
+            (p: any) => p?.type !== "source-url",
+          ),
         } as typeof lastMessage;
         const hasFilePart = lastMessage.parts?.some(
           (p) => (p as any)?.type === "file",
@@ -338,7 +340,7 @@ export default function ChatBot({
       e.stopPropagation();
       if (isLastMessageCopy) {
         const lastMessage = messages.at(-1);
-        const lastMessageText = lastMessage!.parts
+        const lastMessageText = (lastMessage?.parts || [])
           .filter((part): part is TextUIPart => part.type == "text")
           ?.at(-1)?.text;
         if (!lastMessageText) return;

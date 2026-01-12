@@ -228,18 +228,34 @@ npm install -g pnpm
 
 ### Quick Start (Docker Compose Version) 🐳
 
-```bash
-# 1. Install dependencies
-pnpm i
+### Quick Start (Docker Compose Version) 🐳
 
-# 2. Enter only the LLM PROVIDER API key(s) you want to use in the .env file at the project root.
-# Example: The app works with just OPENAI_API_KEY filled in.
-# (The .env file is automatically created when you run pnpm i.)
+**Prerequisites:** [Docker](https://www.docker.com/) and [Docker Compose](https://docs.docker.com/compose/) installed.
 
-# 3. Build and start all services (including PostgreSQL) with Docker Compose
-pnpm docker-compose:up
+1.  **Dependencies & Environment**:
+    ```bash
+    # Install dependencies (mainly to generate the .env file and install scripts)
+    pnpm i
+    
+    # OR manually create .env:
+    cp .env.example .env
+    ```
 
-```
+2.  **Configuration**:
+    Edit `.env` and add at least one API Key (e.g., `OPENAI_API_KEY`).
+
+3.  **Run with Docker**:
+    You can use the helper script or run docker compose directly.
+
+    ```bash
+    # Helper script (requires pnpm)
+    pnpm docker-compose:up
+
+    # OR Standard Docker Compose command
+    docker compose -f docker/compose.yml up -d --build
+    ```
+
+    The app will be available at [http://localhost:3000](http://localhost:3000).
 
 ### Quick Start (Local Version) 🚀
 

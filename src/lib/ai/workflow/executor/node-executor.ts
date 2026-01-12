@@ -102,8 +102,18 @@ export const llmNodeExecutor: NodeExecutor<LLMNodeData> = async ({
     }),
   );
 
-  const isTextResponse =
-    node.outputSchema.properties?.answer?.type === "string";
+  // Resolve the target output property schema (answer or legacy response)
+  const outputPropertySchema =
+    node.outputSchema.properties?.answer ||
+    node.outputSchema.properties?.response;
+
+  if (!outputPropertySchema) {
+    throw new Error(
+      "Detailed output schema missing 'answer' or 'response' property",
+    );
+  }
+
+  const isTextResponse = outputPropertySchema.type === "string";
 
   state.setInput(node.id, {
     chatModel: node.model,
@@ -114,20 +124,22 @@ export const llmNodeExecutor: NodeExecutor<LLMNodeData> = async ({
   if (isTextResponse) {
     const response = await generateText({
       model,
-      messages: convertToModelMessages(messages),
+      messages: await convertToModelMessages(messages),
     });
     return {
       output: {
         totalTokens: response.usage.totalTokens,
         answer: response.text,
+        // Include legacy response field for backward compatibility
+        response: response.text,
       },
     };
   }
 
   const response = await generateObject({
     model,
-    messages: convertToModelMessages(messages),
-    schema: jsonSchemaToZod(node.outputSchema.properties.answer),
+    messages: await convertToModelMessages(messages),
+    schema: jsonSchemaToZod(outputPropertySchema),
     maxRetries: 3,
   });
 
