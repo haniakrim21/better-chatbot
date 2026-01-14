@@ -269,6 +269,15 @@ export const customModelProvider = {
     const staticMatch = allModels[model.provider]?.[model.model];
     if (staticMatch) return staticMatch;
 
+    // Dynamic Ollama lookup
+    if (model.provider === "ollama") {
+      try {
+        return ollama(model.model);
+      } catch (e) {
+        console.error("Failed to create dynamic Ollama model", e);
+      }
+    }
+
     // Dynamic Hugging Face lookup
     if (model.provider === "Hugging Face" && process.env.HUGGINGFACE_API_KEY) {
       try {
