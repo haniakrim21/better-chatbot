@@ -51,6 +51,7 @@ interface Props {
   agentName?: string;
   agentAvatar?: any;
   initialModel?: ChatModel;
+  isEmbedded?: boolean;
 }
 
 export default function ChatBot({
@@ -59,6 +60,7 @@ export default function ChatBot({
   agentName,
   agentAvatar,
   initialModel,
+  isEmbedded = false,
 }: Props) {
   const containerRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
@@ -147,7 +149,7 @@ export default function ChatBot({
     sendAutomaticallyWhen: lastAssistantMessageIsCompleteWithToolCalls,
     transport: new DefaultChatTransport({
       prepareSendMessagesRequest: ({ messages, body, id }) => {
-        if (window.location.pathname !== `/chat/${threadId}`) {
+        if (!isEmbedded && window.location.pathname !== `/chat/${threadId}`) {
           console.log("replace-state");
           window.history.replaceState({}, "", `/chat/${threadId}`);
         }

@@ -3,6 +3,7 @@ export enum AppDefaultToolkit {
   WebSearch = "webSearch",
   Http = "http",
   Code = "code",
+  Workflow = "workflow",
 }
 
 export enum DefaultToolName {
@@ -15,6 +16,11 @@ export enum DefaultToolName {
   Http = "http",
   JavascriptExecution = "mini-javascript-execution",
   PythonExecution = "python-execution",
+  ListWorkflows = "list-workflows",
+  GetWorkflowStructure = "get-workflow-structure",
+  CreateWorkflow = "create-workflow",
+  UpdateWorkflowStructure = "update-workflow-structure",
+  DeleteWorkflow = "delete-workflow",
 }
 
 export const SequentialThinkingToolName = "sequential-thinking";

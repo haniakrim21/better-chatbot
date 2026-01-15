@@ -32,6 +32,11 @@ import { createDebounce, fetcher, generateUUID } from "lib/utils";
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
 import { safe } from "ts-safe";
+import ChatBot from "@/features/chat/components/chat-bot";
+import { Agent } from "app-types/agent";
+import { Button } from "ui/button";
+import { Bot, ChevronDown } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 const nodeTypes = {
   default: DefaultNode,
@@ -49,15 +54,20 @@ export default function Workflow({
   initialEdges,
   workflowId,
   hasEditAccess,
+  agent,
 }: {
   workflowId: string;
   initialNodes: UINode[];
   hasEditAccess?: boolean;
   initialEdges: Edge[];
+  agent?: Agent | undefined;
 }) {
   const { init, addProcess, processIds } = useWorkflowStore();
   const [nodes, setNodes] = useState<UINode[]>(initialNodes);
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
+  const [isChatOpen, setIsChatOpen] = useState(false);
+
+  // ... (existing useMemo and hooks)
 
   const isProcessing = useMemo(
     () => processIds.length > 0,
@@ -79,6 +89,8 @@ export default function Workflow({
   const editable = useMemo(() => {
     return !isProcessing && hasEditAccess && !workflow?.isPublished;
   }, [isProcessing, hasEditAccess, workflow?.isPublished]);
+
+  // ... (save function and other handlers remain same)
 
   const save = async () => {
     if (workflow?.isPublished) return;
@@ -274,6 +286,21 @@ export default function Workflow({
     init(workflow, hasEditAccess);
   }, [workflow, hasEditAccess]);
 
+  const threadId = useMemo(() => generateUUID(), []);
+
+  const initialMessages = useMemo(() => {
+    if (agent && agent.instructions) {
+      return [
+        {
+          id: generateUUID(),
+          role: "system",
+          content: `You are an AI assistant named "${agent.name}". ${agent.description ? `Description: ${agent.description}. ` : ""}Instructions: ${agent.instructions}`,
+        },
+      ];
+    }
+    return [];
+  }, [agent]);
+
   return (
     <div className="w-full h-full relative text-de text-gree-4">
       <ReactFlow
@@ -308,6 +335,62 @@ export default function Workflow({
             />
           )}
         </Panel>
+
+        {/* Chat Assistant Panel */}
+        {agent && (
+          <Panel
+            position="bottom-right"
+            className="z-50! flex flex-col items-end pointer-events-auto"
+          >
+            <AnimatePresence>
+              {isChatOpen && (
+                <motion.div
+                  initial={{ opacity: 0, scale: 0.9, y: 20 }}
+                  animate={{ opacity: 1, scale: 1, y: 0 }}
+                  exit={{ opacity: 0, scale: 0.9, y: 20 }}
+                  className="w-[400px] h-[500px] bg-background border rounded-xl shadow-2xl mb-4 overflow-hidden flex flex-col"
+                >
+                  <div className="flex items-center justify-between p-3 border-b bg-muted/50">
+                    <div className="flex items-center gap-2">
+                      <Bot className="size-4" />
+                      <span className="font-semibold text-sm">
+                        {agent.name}
+                      </span>
+                    </div>
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      className="h-6 w-6"
+                      onClick={() => setIsChatOpen(false)}
+                    >
+                      <ChevronDown className="size-4" />
+                    </Button>
+                  </div>
+                  <div className="flex-1 overflow-hidden relative">
+                    <ChatBot
+                      threadId={threadId}
+                      initialMessages={initialMessages}
+                      agentName={agent.name}
+                      agentAvatar={agent.icon}
+                      isEmbedded={true}
+                    />
+                  </div>
+                </motion.div>
+              )}
+            </AnimatePresence>
+
+            {!isChatOpen && (
+              <Button
+                onClick={() => setIsChatOpen(true)}
+                className="rounded-full h-12 w-12 shadow-lg"
+                size="icon"
+              >
+                <Bot className="size-6" />
+              </Button>
+            )}
+          </Panel>
+        )}
+
         <Panel
           position="top-left"
           className="h-full w-full m-0! pointer-events-none!"

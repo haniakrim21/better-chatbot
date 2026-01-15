@@ -12,46 +12,6 @@ import { xai } from "@ai-sdk/xai";
 
 // Helper to convert Blob to Base64
 
-import { HfInference } from "@huggingface/inference";
-
-export async function generateImageWithHuggingFace(
-  options: GenerateImageOptions,
-  model: string = "black-forest-labs/FLUX.1-schnell",
-): Promise<GeneratedImageResult> {
-  const apiKey = process.env.HUGGINGFACE_API_KEY;
-  if (!apiKey) {
-    throw new Error("HUGGINGFACE_API_KEY is not set");
-  }
-
-  const hf = new HfInference(apiKey);
-
-  try {
-    const blob = (await hf.textToImage({
-      model: model,
-      inputs: options.prompt,
-    })) as unknown as Blob;
-
-    const arrayBuffer = await blob.arrayBuffer();
-    const buffer = Buffer.from(arrayBuffer);
-    const base64 = buffer.toString("base64");
-    const mimeType = blob.type || "image/jpeg";
-
-    return {
-      images: [
-        {
-          base64,
-          mimeType,
-        },
-      ],
-    };
-  } catch (error) {
-    const authStatus = apiKey ? "Key Present" : "Key Missing";
-    throw new Error(
-      `HF Gen Failed: ${(error as Error).message} (${authStatus})`,
-    );
-  }
-}
-
 import {
   FilePart,
   ImagePart,

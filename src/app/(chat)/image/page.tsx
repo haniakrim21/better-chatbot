@@ -8,13 +8,11 @@ import { Input } from "@/components/ui/input";
 import { generateGenericImageAction } from "@/app/api/user/actions";
 import { Loader2, Download, ImageIcon } from "lucide-react";
 import { toast } from "sonner";
-import { HuggingFaceIcon } from "@/components/ui/hugging-face-icon";
 
 export default function ImageGeneratorPage() {
   const searchParams = useSearchParams();
-  const modelId =
-    searchParams.get("model") || "black-forest-labs/FLUX.1-schnell";
-  const provider = (searchParams.get("provider") as any) || "huggingface";
+  const modelId = searchParams.get("model") || "dall-e-3";
+  const provider = (searchParams.get("provider") as any) || "openai";
 
   const [prompt, setPrompt] = useState("");
   const [isGenerating, setIsGenerating] = useState(false);
@@ -48,11 +46,7 @@ export default function ImageGeneratorPage() {
     <div className="flex flex-col h-full w-full max-w-4xl mx-auto p-6 gap-8">
       <div className="space-y-2 text-center mt-10">
         <div className="flex items-center justify-center gap-2 text-2xl font-bold">
-          {provider === "huggingface" ? (
-            <HuggingFaceIcon className="w-8 h-8 text-[#FFD21E]" />
-          ) : (
-            <ImageIcon className="w-8 h-8" />
-          )}
+          <ImageIcon className="w-8 h-8" />
           Image Generator
         </div>
         <p className="text-muted-foreground">

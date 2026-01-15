@@ -44,9 +44,6 @@ importers:
       '@google/genai':
         specifier: ^1.34.0
         version: 1.34.0(@modelcontextprotocol/sdk@1.25.1(hono@4.11.3)(zod@4.3.4))
-      '@huggingface/inference':
-        specifier: ^4.13.5
-        version: 4.13.5
       '@modelcontextprotocol/sdk':
         specifier: ^1.25.1
         version: 1.25.1(hono@4.11.3)(zod@4.3.4)
@@ -1339,17 +1336,6 @@ packages:
     engines: {node: '>=18.14.1'}
     peerDependencies:
       hono: ^4
-
-  '@huggingface/inference@4.13.5':
-    resolution: {integrity: sha512-jeRQVwoV2Xx5stHR4wyZPPvhOOm6Hi9B2hsHWWuFJBEoxlFJMbRAsQbTvQrusw2vNBfNHIqb2i9EpelNLOqhvg==}
-    engines: {node: '>=18'}
-
-  '@huggingface/jinja@0.5.3':
-    resolution: {integrity: sha512-asqfZ4GQS0hD876Uw4qiUb7Tr/V5Q+JZuo2L+BtdrD4U40QU58nIRq3ZSgAzJgT874VLjhGVacaYfrdpXtEvtA==}
-    engines: {node: '>=18'}
-
-  '@huggingface/tasks@0.19.74':
-    resolution: {integrity: sha512-2H3v2kkMmvx6reRo18hXWg50NH+0151O8kCkvCiuDobC5RYCIoiLz9Z1PFYXIQAvQpUfZDeeZd87figo/q5gIQ==}
 
   '@humanfs/core@0.19.1':
     resolution: {integrity: sha512-5DyQ4+1JEUzejeK1JGICcideyfUbGixgS9jNgex5nqkW+cY7WZhxBigmieN5Qnw9ZosSNVC9KQKyb+GUaGyKUA==}
@@ -8431,15 +8417,6 @@ snapshots:
   '@hono/node-server@1.19.7(hono@4.11.3)':
     dependencies:
       hono: 4.11.3
-
-  '@huggingface/inference@4.13.5':
-    dependencies:
-      '@huggingface/jinja': 0.5.3
-      '@huggingface/tasks': 0.19.74
-
-  '@huggingface/jinja@0.5.3': {}
-
-  '@huggingface/tasks@0.19.74': {}
 
   '@humanfs/core@0.19.1': {}
 

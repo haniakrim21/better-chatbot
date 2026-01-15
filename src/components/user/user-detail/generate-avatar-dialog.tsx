@@ -25,7 +25,7 @@ import { generateAvatarImageAction } from "@/app/api/user/actions";
 import { OpenAIIcon } from "ui/openai-icon";
 import { GrokIcon } from "ui/grok-icon";
 import { GeminiIcon } from "ui/gemini-icon";
-import { HuggingFaceIcon } from "ui/hugging-face-icon";
+
 import { useTranslations } from "next-intl";
 import { Avatar, AvatarImage, AvatarFallback } from "ui/avatar";
 
@@ -35,7 +35,7 @@ interface GenerateAvatarDialogProps {
   onGenerate: (imageUrl: string) => void;
 }
 
-type ImageProvider = "openai" | "xai" | "google" | "huggingface";
+type ImageProvider = "openai" | "xai" | "google";
 
 export function GenerateAvatarDialog({
   open,
@@ -158,10 +158,6 @@ export function GenerateAvatarDialog({
                 <SelectItem value="google">
                   <GeminiIcon />
                   Google
-                </SelectItem>
-                <SelectItem value="huggingface">
-                  <HuggingFaceIcon className="mr-2 h-4 w-4" />
-                  Hugging Face
                 </SelectItem>
               </SelectContent>
             </Select>

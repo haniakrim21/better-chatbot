@@ -20,7 +20,7 @@ export function DiscoverLayout({ children }: DiscoverLayoutProps) {
     if (pathname.includes("/discover/agents")) return "agents";
     if (pathname.includes("/discover/mcp")) return "mcp";
     if (pathname.includes("/discover/workflows")) return "workflows";
-    if (pathname.includes("/discover/huggingface")) return "huggingface";
+
     if (pathname.includes("/discover/models")) return "models";
     return "featured";
   };
@@ -36,7 +36,6 @@ export function DiscoverLayout({ children }: DiscoverLayoutProps) {
     },
     { id: "mcp", label: t("Discover.tabs.mcp"), href: "/discover/mcp" },
     { id: "workflows", label: "Workflows", href: "/discover/workflows" },
-    { id: "huggingface", label: "Hugging Face", href: "/discover/huggingface" },
   ];
 
   return (
@@ -47,7 +46,7 @@ export function DiscoverLayout({ children }: DiscoverLayoutProps) {
 
       <div className="container mx-auto px-4 py-8 z-10 flex flex-col gap-6">
         <div className="flex flex-col gap-2 relative z-10">
-          <h1 className="text-4xl font-bold tracking-tight bg-gradient-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
+          <h1 className="text-4xl font-bold tracking-tight bg-linear-to-r from-foreground to-foreground/70 bg-clip-text text-transparent">
             {t("Discover.title")}
           </h1>
           <p className="text-lg text-muted-foreground w-full max-w-2xl">

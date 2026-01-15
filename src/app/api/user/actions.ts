@@ -22,7 +22,6 @@ import {
   generateImageWithXAI,
   GeneratedImageResult,
   generateImageWithNanoBanana,
-  generateImageWithHuggingFace,
 } from "lib/ai/image/generate-image";
 
 export const updateUserImageAction = validatedActionWithUserManagePermission(
@@ -230,7 +229,7 @@ export const updateUserPasswordAction = validatedActionWithUserManagePermission(
   },
 );
 
-type ImageProvider = "openai" | "xai" | "google" | "huggingface";
+type ImageProvider = "openai" | "xai" | "google";
 
 interface GenerateAvatarResult {
   success: boolean;
@@ -288,11 +287,7 @@ Generate a profile picture that fulfills the user's request while maintaining th
           prompt: enhancedPrompt,
         });
         break;
-      case "huggingface":
-        response = await generateImageWithHuggingFace({
-          prompt: enhancedPrompt,
-        });
-        break;
+
       default:
         return {
           success: false,
@@ -360,12 +355,7 @@ export async function generateGenericImageAction(
       case "google":
         response = await generateImageWithNanoBanana({ prompt });
         break;
-      case "huggingface":
-        response = await generateImageWithHuggingFace(
-          { prompt },
-          model, // Pass the dynamic model ID
-        );
-        break;
+
       default:
         return {
           success: false,

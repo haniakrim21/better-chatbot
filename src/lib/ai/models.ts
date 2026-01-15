@@ -77,6 +77,7 @@ const staticModels = {
     "gemma3:12b": ollama("gemma3:12b"),
     "qwen3:latest": ollama("qwen3:latest"),
     "tinyllama:latest": ollama("tinyllama:latest"),
+    "nomic-embed-text": ollama.textEmbeddingModel("nomic-embed-text"),
   },
   groq: {
     "kimi-k2-instruct": groq("moonshotai/kimi-k2-instruct"),
@@ -275,20 +276,6 @@ export const customModelProvider = {
         return ollama(model.model);
       } catch (e) {
         console.error("Failed to create dynamic Ollama model", e);
-      }
-    }
-
-    // Dynamic Hugging Face lookup
-    if (model.provider === "Hugging Face" && process.env.HUGGINGFACE_API_KEY) {
-      try {
-        const hfProvider = createOpenAICompatible({
-          name: "Hugging Face",
-          apiKey: process.env.HUGGINGFACE_API_KEY,
-          baseURL: "https://router.huggingface.co/v1", // Verified endpoint
-        });
-        return hfProvider(model.model);
-      } catch (e) {
-        console.error("Failed to create dynamic HF model", e);
       }
     }
 
