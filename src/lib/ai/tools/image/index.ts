@@ -80,12 +80,13 @@ export const nanoBananaTool = createTool({
                 const uploadedImage = await serverFileStorage.upload(
                   Buffer.from(image.base64, "base64"),
                   {
-                    contentType: image.mimeType,
+                    contentType: "image/png",
+                    filename: `image-${Date.now()}.png`,
                   },
                 );
                 return {
                   url: uploadedImage.sourceUrl,
-                  mimeType: image.mimeType,
+                  mimeType: "image/png",
                 };
               } catch (e) {
                 logger.error(e);
@@ -174,12 +175,13 @@ export const openaiImageTool = createTool({
     const base64Image = imageResult.images[0]?.base64;
 
     if (base64Image) {
-      let imageUrl = `data:image/webp;base64,${base64Image}`;
+      let imageUrl = `data:image/png;base64,${base64Image}`;
       try {
         const uploadedImage = await serverFileStorage.upload(
           Buffer.from(base64Image, "base64"),
           {
-            contentType: "image/webp",
+            contentType: "image/png",
+            filename: `image-${Date.now()}.png`,
           },
         );
         imageUrl = uploadedImage.sourceUrl;
@@ -188,7 +190,7 @@ export const openaiImageTool = createTool({
       }
 
       return {
-        images: [{ url: imageUrl, mimeType: "image/webp" }],
+        images: [{ url: imageUrl, mimeType: "image/png" }],
         mode,
         model: "dall-e-3",
         guide:
@@ -209,11 +211,13 @@ function convertToImageToolPartToImagePart(part: ToolResultPart): ImagePart[] {
   if (part.toolName !== ImageToolName) return [];
   if (!(toAny(part).output as any)?.value?.images?.length) return [];
   const result = (part.output as any).value as ImageToolResult;
-  return result.images.map((image) => ({
-    type: "image",
-    image: image.url,
-    mediaType: image.mimeType,
-  }));
+  return result.images
+    .filter((image) => !image.url.startsWith("data:"))
+    .map((image) => ({
+      type: "image",
+      image: image.url,
+      mediaType: image.mimeType,
+    }));
 }
 
 function convertToImageToolPartToFilePart(part: ToolResultPart): FilePart[] {
