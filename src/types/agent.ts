@@ -118,5 +118,6 @@ export const AgentGenerateSchema = z.object({
     .array(z.string())
     .describe("Agent allowed tools name")
     .optional()
+    .nullable()
     .default([]),
 });

@@ -390,10 +390,22 @@ export class ChatService {
         }
         logger.info(`model: ${chatModel?.provider}/${chatModel?.model}`);
 
+        // Truncate messages to prevent context length errors
+        // Keep the most recent messages to stay within context window
+        const MAX_MESSAGES = 15;
+        const truncatedMessages =
+          messages.length > MAX_MESSAGES
+            ? messages.slice(-MAX_MESSAGES)
+            : messages;
+
+        logger.info(
+          `Message truncation: ${messages.length} total messages, using ${truncatedMessages.length} in context`,
+        );
+
         const result = streamText({
           model,
           system: systemPrompt,
-          messages: convertToCoreMessages(messages),
+          messages: convertToCoreMessages(truncatedMessages),
           experimental_transform: smoothStream({ chunking: "word" }),
           maxRetries: 2,
           tools: vercelAITooles,

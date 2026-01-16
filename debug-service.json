@@ -1,0 +1,47 @@
+{
+  "cmd": "",
+  "createdAt": "2026-01-15T00:29:09.620139Z",
+  "deployment": {
+    "autoDeploy": true,
+    "branch": "main",
+    "dockerContext": "/",
+    "dockerfilePath": "docker/Dockerfile",
+    "url": "https://github.com/haniakrim21/better-chatbot"
+  },
+  "env": [
+    { "key": "ANTHROPIC_API_KEY", "secret": true, "value": "" },
+    { "key": "BETTER_AUTH_SECRET", "secret": true, "value": "" },
+    {
+      "key": "BETTER_AUTH_URL",
+      "secret": false,
+      "value": "https://nabdai.sliplane.app"
+    },
+    { "key": "FILE_STORAGE_TYPE", "secret": false, "value": "vercel-blob" },
+    { "key": "GOOGLE_GENERATIVE_AI_API_KEY", "secret": true, "value": "" },
+    { "key": "GROQ_API_KEY", "secret": true, "value": "" },
+    {
+      "key": "GROQ_BASE_URL",
+      "secret": false,
+      "value": "https://api.groq.com/openai/v1"
+    },
+    { "key": "HOST", "secret": false, "value": "0.0.0.0" },
+    { "key": "OPENAI_API_KEY", "secret": true, "value": "" },
+    { "key": "OPENROUTER_API_KEY", "secret": true, "value": "" },
+    { "key": "POSTGRES_URL", "secret": true, "value": "" },
+    { "key": "XAI_API_KEY", "secret": true, "value": "" }
+  ],
+  "healthcheck": "/",
+  "id": "service_3uamp29uw6p4",
+  "name": "NabdAI",
+  "network": {
+    "customDomains": [],
+    "internalDomain": "nabdai.internal",
+    "managedDomain": "nabdai.sliplane.app",
+    "protocol": "http",
+    "public": true
+  },
+  "projectId": "project_ju5iup0kyxfp",
+  "serverId": "server_tq5qvz3jgyab",
+  "status": "live",
+  "volumes": []
+}

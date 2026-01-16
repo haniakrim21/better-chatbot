@@ -1,0 +1,1 @@
+{"name":"General Assistant Agent","description":"An intelligent helper agent designed to assist users with a wide variety of tasks and inquiries, enhancing productivity and decision-making through timely support and information retrieval capabilities."}

@@ -10,25 +10,25 @@ importers:
     dependencies:
       '@ai-sdk/anthropic':
         specifier: ^3.0.2
-        version: 3.0.2(zod@4.3.4)
+        version: 3.0.2(zod@3.25.76)
       '@ai-sdk/google':
         specifier: ^3.0.2
-        version: 3.0.2(zod@4.3.4)
+        version: 3.0.2(zod@3.25.76)
       '@ai-sdk/groq':
         specifier: ^3.0.2
-        version: 3.0.2(zod@4.3.4)
+        version: 3.0.2(zod@3.25.76)
       '@ai-sdk/openai':
         specifier: ^3.0.2
-        version: 3.0.2(zod@4.3.4)
+        version: 3.0.2(zod@3.25.76)
       '@ai-sdk/openai-compatible':
         specifier: ^2.0.2
-        version: 2.0.2(zod@4.3.4)
+        version: 2.0.2(zod@3.25.76)
       '@ai-sdk/react':
         specifier: ^3.0.6
-        version: 3.0.6(react@19.2.3)(zod@4.3.4)
+        version: 3.0.6(react@19.2.3)(zod@3.25.76)
       '@ai-sdk/xai':
         specifier: ^3.0.3
-        version: 3.0.3(zod@4.3.4)
+        version: 3.0.3(zod@3.25.76)
       '@aws-sdk/client-s3':
         specifier: ^3.962.0
         version: 3.962.0
@@ -37,19 +37,19 @@ importers:
         version: 3.962.0
       '@crayonai/react-core':
         specifier: ^0.7.6
-        version: 0.7.6(@crayonai/stream@0.6.4(zod-to-json-schema@3.25.1(zod@4.3.4))(zod@4.3.4))(eventsource-parser@3.0.6)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(tailwind-merge@3.4.0)(tailwindcss-animate@1.0.7(tailwindcss@4.1.18))(tiny-invariant@1.3.3)(zustand@5.0.9(@types/react@19.2.7)(immer@11.1.3)(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3)))
+        version: 0.7.6(@crayonai/stream@0.6.4(zod-to-json-schema@3.25.1(zod@3.25.76))(zod@3.25.76))(eventsource-parser@3.0.6)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(tailwind-merge@3.4.0)(tailwindcss-animate@1.0.7(tailwindcss@4.1.18))(tiny-invariant@1.3.3)(zustand@5.0.9(@types/react@19.2.7)(immer@11.1.3)(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3)))
       '@crayonai/react-ui':
         specifier: ^0.9.11
-        version: 0.9.11(@crayonai/react-core@0.7.6(@crayonai/stream@0.6.4(zod-to-json-schema@3.25.1(zod@4.3.4))(zod@4.3.4))(eventsource-parser@3.0.6)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(tailwind-merge@3.4.0)(tailwindcss-animate@1.0.7(tailwindcss@4.1.18))(tiny-invariant@1.3.3)(zustand@5.0.9(@types/react@19.2.7)(immer@11.1.3)(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3))))(@crayonai/stream@0.6.4(zod-to-json-schema@3.25.1(zod@4.3.4))(zod@4.3.4))(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(zustand@5.0.9(@types/react@19.2.7)(immer@11.1.3)(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3)))
+        version: 0.9.11(@crayonai/react-core@0.7.6(@crayonai/stream@0.6.4(zod-to-json-schema@3.25.1(zod@3.25.76))(zod@3.25.76))(eventsource-parser@3.0.6)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(tailwind-merge@3.4.0)(tailwindcss-animate@1.0.7(tailwindcss@4.1.18))(tiny-invariant@1.3.3)(zustand@5.0.9(@types/react@19.2.7)(immer@11.1.3)(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3))))(@crayonai/stream@0.6.4(zod-to-json-schema@3.25.1(zod@3.25.76))(zod@3.25.76))(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(zustand@5.0.9(@types/react@19.2.7)(immer@11.1.3)(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3)))
       '@google/genai':
         specifier: ^1.34.0
-        version: 1.34.0(@modelcontextprotocol/sdk@1.25.1(hono@4.11.3)(zod@4.3.4))
+        version: 1.34.0(@modelcontextprotocol/sdk@1.25.1(hono@4.11.3)(zod@3.25.76))
       '@modelcontextprotocol/sdk':
         specifier: ^1.25.1
-        version: 1.25.1(hono@4.11.3)(zod@4.3.4)
+        version: 1.25.1(hono@4.11.3)(zod@3.25.76)
       '@openrouter/ai-sdk-provider':
         specifier: ^1.5.4
-        version: 1.5.4(ai@6.0.6(zod@4.3.4))(zod@4.3.4)
+        version: 1.5.4(ai@6.0.6(zod@3.25.76))(zod@3.25.76)
       '@radix-ui/react-accordion':
         specifier: ^1.2.12
         version: 1.2.12(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -106,7 +106,7 @@ importers:
         version: 1.2.8(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@thesysai/genui-sdk':
         specifier: ^0.7.15
-        version: 0.7.15(0556767854bbe0a8fcaefae66fee9a95)
+        version: 0.7.15(34061be51b359012beea5c433f0991bc)
       '@tiptap/extension-mention':
         specifier: ^3.14.0
         version: 3.14.0(@tiptap/core@3.14.0(@tiptap/pm@3.14.0))(@tiptap/pm@3.14.0)(@tiptap/suggestion@3.14.0(@tiptap/core@3.14.0(@tiptap/pm@3.14.0))(@tiptap/pm@3.14.0))
@@ -127,7 +127,7 @@ importers:
         version: 12.10.0(@types/react@19.2.7)(immer@11.1.3)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       ai:
         specifier: ^6.0.6
-        version: 6.0.6(zod@4.3.4)
+        version: 6.0.6(zod@3.25.76)
       bcrypt-ts:
         specifier: ^8.0.0
         version: 8.0.0
@@ -208,7 +208,7 @@ importers:
         version: 1.0.11
       ollama-ai-provider-v2:
         specifier: ^2.0.0
-        version: 2.0.0(ai@6.0.6(zod@4.3.4))(zod@4.3.4)
+        version: 2.0.0(ai@6.0.6(zod@3.25.76))(zod@3.25.76)
       pdf-parse:
         specifier: ^2.4.5
         version: 2.4.5
@@ -270,8 +270,8 @@ importers:
         specifier: ^1.1.2
         version: 1.1.2(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       zod:
-        specifier: ^4.3.4
-        version: 4.3.4
+        specifier: ^3.24.1
+        version: 3.25.76
       zustand:
         specifier: ^5.0.9
         version: 5.0.9(@types/react@19.2.7)(immer@11.1.3)(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3))
@@ -7216,70 +7216,70 @@ packages:
 
 snapshots:
 
-  '@ai-sdk/anthropic@3.0.2(zod@4.3.4)':
+  '@ai-sdk/anthropic@3.0.2(zod@3.25.76)':
     dependencies:
       '@ai-sdk/provider': 3.0.1
-      '@ai-sdk/provider-utils': 4.0.2(zod@4.3.4)
-      zod: 4.3.4
+      '@ai-sdk/provider-utils': 4.0.2(zod@3.25.76)
+      zod: 3.25.76
 
-  '@ai-sdk/gateway@3.0.5(zod@4.3.4)':
+  '@ai-sdk/gateway@3.0.5(zod@3.25.76)':
     dependencies:
       '@ai-sdk/provider': 3.0.1
-      '@ai-sdk/provider-utils': 4.0.2(zod@4.3.4)
+      '@ai-sdk/provider-utils': 4.0.2(zod@3.25.76)
       '@vercel/oidc': 3.0.5
-      zod: 4.3.4
+      zod: 3.25.76
 
-  '@ai-sdk/google@3.0.2(zod@4.3.4)':
+  '@ai-sdk/google@3.0.2(zod@3.25.76)':
     dependencies:
       '@ai-sdk/provider': 3.0.1
-      '@ai-sdk/provider-utils': 4.0.2(zod@4.3.4)
-      zod: 4.3.4
+      '@ai-sdk/provider-utils': 4.0.2(zod@3.25.76)
+      zod: 3.25.76
 
-  '@ai-sdk/groq@3.0.2(zod@4.3.4)':
+  '@ai-sdk/groq@3.0.2(zod@3.25.76)':
     dependencies:
       '@ai-sdk/provider': 3.0.1
-      '@ai-sdk/provider-utils': 4.0.2(zod@4.3.4)
-      zod: 4.3.4
+      '@ai-sdk/provider-utils': 4.0.2(zod@3.25.76)
+      zod: 3.25.76
 
-  '@ai-sdk/openai-compatible@2.0.2(zod@4.3.4)':
+  '@ai-sdk/openai-compatible@2.0.2(zod@3.25.76)':
     dependencies:
       '@ai-sdk/provider': 3.0.1
-      '@ai-sdk/provider-utils': 4.0.2(zod@4.3.4)
-      zod: 4.3.4
+      '@ai-sdk/provider-utils': 4.0.2(zod@3.25.76)
+      zod: 3.25.76
 
-  '@ai-sdk/openai@3.0.2(zod@4.3.4)':
+  '@ai-sdk/openai@3.0.2(zod@3.25.76)':
     dependencies:
       '@ai-sdk/provider': 3.0.1
-      '@ai-sdk/provider-utils': 4.0.2(zod@4.3.4)
-      zod: 4.3.4
+      '@ai-sdk/provider-utils': 4.0.2(zod@3.25.76)
+      zod: 3.25.76
 
-  '@ai-sdk/provider-utils@4.0.2(zod@4.3.4)':
+  '@ai-sdk/provider-utils@4.0.2(zod@3.25.76)':
     dependencies:
       '@ai-sdk/provider': 3.0.1
       '@standard-schema/spec': 1.1.0
       eventsource-parser: 3.0.6
-      zod: 4.3.4
+      zod: 3.25.76
 
   '@ai-sdk/provider@3.0.1':
     dependencies:
       json-schema: 0.4.0
 
-  '@ai-sdk/react@3.0.6(react@19.2.3)(zod@4.3.4)':
+  '@ai-sdk/react@3.0.6(react@19.2.3)(zod@3.25.76)':
     dependencies:
-      '@ai-sdk/provider-utils': 4.0.2(zod@4.3.4)
-      ai: 6.0.6(zod@4.3.4)
+      '@ai-sdk/provider-utils': 4.0.2(zod@3.25.76)
+      ai: 6.0.6(zod@3.25.76)
       react: 19.2.3
       swr: 2.3.8(react@19.2.3)
       throttleit: 2.1.0
     transitivePeerDependencies:
       - zod
 
-  '@ai-sdk/xai@3.0.3(zod@4.3.4)':
+  '@ai-sdk/xai@3.0.3(zod@3.25.76)':
     dependencies:
-      '@ai-sdk/openai-compatible': 2.0.2(zod@4.3.4)
+      '@ai-sdk/openai-compatible': 2.0.2(zod@3.25.76)
       '@ai-sdk/provider': 3.0.1
-      '@ai-sdk/provider-utils': 4.0.2(zod@4.3.4)
-      zod: 4.3.4
+      '@ai-sdk/provider-utils': 4.0.2(zod@3.25.76)
+      zod: 3.25.76
 
   '@alloc/quick-lru@5.2.0': {}
 
@@ -7919,20 +7919,20 @@ snapshots:
       - vitest
       - vue
 
-  '@better-auth/core@1.4.10(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-call@1.1.7(zod@4.3.4))(jose@6.1.3)(kysely@0.28.9)(nanostores@1.1.0)':
+  '@better-auth/core@1.4.10(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-call@1.1.7(zod@3.25.76))(jose@6.1.3)(kysely@0.28.9)(nanostores@1.1.0)':
     dependencies:
       '@better-auth/utils': 0.3.0
       '@better-fetch/fetch': 1.1.21
       '@standard-schema/spec': 1.1.0
-      better-call: 1.1.7(zod@4.3.4)
+      better-call: 1.1.7(zod@3.25.76)
       jose: 6.1.3
       kysely: 0.28.9
       nanostores: 1.1.0
       zod: 4.3.4
 
-  '@better-auth/telemetry@1.4.10(@better-auth/core@1.4.10(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-call@1.1.7(zod@4.3.4))(jose@6.1.3)(kysely@0.28.9)(nanostores@1.1.0))':
+  '@better-auth/telemetry@1.4.10(@better-auth/core@1.4.10(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-call@1.1.7(zod@3.25.76))(jose@6.1.3)(kysely@0.28.9)(nanostores@1.1.0))':
     dependencies:
-      '@better-auth/core': 1.4.10(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-call@1.1.7(zod@4.3.4))(jose@6.1.3)(kysely@0.28.9)(nanostores@1.1.0)
+      '@better-auth/core': 1.4.10(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-call@1.1.7(zod@3.25.76))(jose@6.1.3)(kysely@0.28.9)(nanostores@1.1.0)
       '@better-auth/utils': 0.3.0
       '@better-fetch/fetch': 1.1.21
 
@@ -7994,9 +7994,9 @@ snapshots:
 
   '@chevrotain/utils@11.0.3': {}
 
-  '@crayonai/react-core@0.7.6(@crayonai/stream@0.6.4(zod-to-json-schema@3.25.1(zod@4.3.4))(zod@4.3.4))(eventsource-parser@3.0.6)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(tailwind-merge@3.4.0)(tailwindcss-animate@1.0.7(tailwindcss@4.1.18))(tiny-invariant@1.3.3)(zustand@5.0.9(@types/react@19.2.7)(immer@11.1.3)(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3)))':
+  '@crayonai/react-core@0.7.6(@crayonai/stream@0.6.4(zod-to-json-schema@3.25.1(zod@3.25.76))(zod@3.25.76))(eventsource-parser@3.0.6)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(tailwind-merge@3.4.0)(tailwindcss-animate@1.0.7(tailwindcss@4.1.18))(tiny-invariant@1.3.3)(zustand@5.0.9(@types/react@19.2.7)(immer@11.1.3)(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3)))':
     dependencies:
-      '@crayonai/stream': 0.6.4(zod-to-json-schema@3.25.1(zod@4.3.4))(zod@4.3.4)
+      '@crayonai/stream': 0.6.4(zod-to-json-schema@3.25.1(zod@3.25.76))(zod@3.25.76)
       eventsource-parser: 3.0.6
       react: 19.2.3
       react-dom: 19.2.3(react@19.2.3)
@@ -8006,10 +8006,10 @@ snapshots:
       zod: 3.25.76
       zustand: 5.0.9(@types/react@19.2.7)(immer@11.1.3)(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3))
 
-  '@crayonai/react-ui@0.9.11(@crayonai/react-core@0.7.6(@crayonai/stream@0.6.4(zod-to-json-schema@3.25.1(zod@4.3.4))(zod@4.3.4))(eventsource-parser@3.0.6)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(tailwind-merge@3.4.0)(tailwindcss-animate@1.0.7(tailwindcss@4.1.18))(tiny-invariant@1.3.3)(zustand@5.0.9(@types/react@19.2.7)(immer@11.1.3)(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3))))(@crayonai/stream@0.6.4(zod-to-json-schema@3.25.1(zod@4.3.4))(zod@4.3.4))(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(zustand@5.0.9(@types/react@19.2.7)(immer@11.1.3)(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3)))':
+  '@crayonai/react-ui@0.9.11(@crayonai/react-core@0.7.6(@crayonai/stream@0.6.4(zod-to-json-schema@3.25.1(zod@3.25.76))(zod@3.25.76))(eventsource-parser@3.0.6)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(tailwind-merge@3.4.0)(tailwindcss-animate@1.0.7(tailwindcss@4.1.18))(tiny-invariant@1.3.3)(zustand@5.0.9(@types/react@19.2.7)(immer@11.1.3)(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3))))(@crayonai/stream@0.6.4(zod-to-json-schema@3.25.1(zod@3.25.76))(zod@3.25.76))(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(zustand@5.0.9(@types/react@19.2.7)(immer@11.1.3)(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3)))':
     dependencies:
-      '@crayonai/react-core': 0.7.6(@crayonai/stream@0.6.4(zod-to-json-schema@3.25.1(zod@4.3.4))(zod@4.3.4))(eventsource-parser@3.0.6)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(tailwind-merge@3.4.0)(tailwindcss-animate@1.0.7(tailwindcss@4.1.18))(tiny-invariant@1.3.3)(zustand@5.0.9(@types/react@19.2.7)(immer@11.1.3)(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3)))
-      '@crayonai/stream': 0.6.4(zod-to-json-schema@3.25.1(zod@4.3.4))(zod@4.3.4)
+      '@crayonai/react-core': 0.7.6(@crayonai/stream@0.6.4(zod-to-json-schema@3.25.1(zod@3.25.76))(zod@3.25.76))(eventsource-parser@3.0.6)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(tailwind-merge@3.4.0)(tailwindcss-animate@1.0.7(tailwindcss@4.1.18))(tiny-invariant@1.3.3)(zustand@5.0.9(@types/react@19.2.7)(immer@11.1.3)(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3)))
+      '@crayonai/stream': 0.6.4(zod-to-json-schema@3.25.1(zod@3.25.76))(zod@3.25.76)
       '@floating-ui/react-dom': 2.1.6(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@radix-ui/react-accordion': 1.2.12(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@radix-ui/react-aspect-ratio': 1.1.8(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -8046,13 +8046,13 @@ snapshots:
       - '@types/react-dom'
       - supports-color
 
-  '@crayonai/stream@0.6.4(zod-to-json-schema@3.25.1(zod@4.3.4))(zod@4.3.4)':
+  '@crayonai/stream@0.6.4(zod-to-json-schema@3.25.1(zod@3.25.76))(zod@3.25.76)':
     dependencies:
       best-effort-json-parser: 1.2.1
       eventsource-encoder: 1.0.1
       tiny-invariant: 1.3.3
-      zod: 4.3.4
-      zod-to-json-schema: 3.25.1(zod@4.3.4)
+      zod: 3.25.76
+      zod-to-json-schema: 3.25.1(zod@3.25.76)
 
   '@date-fns/tz@1.4.1': {}
 
@@ -8403,12 +8403,12 @@ snapshots:
     dependencies:
       tslib: 2.8.1
 
-  '@google/genai@1.34.0(@modelcontextprotocol/sdk@1.25.1(hono@4.11.3)(zod@4.3.4))':
+  '@google/genai@1.34.0(@modelcontextprotocol/sdk@1.25.1(hono@4.11.3)(zod@3.25.76))':
     dependencies:
       google-auth-library: 10.5.0
       ws: 8.18.3
     optionalDependencies:
-      '@modelcontextprotocol/sdk': 1.25.1(hono@4.11.3)(zod@4.3.4)
+      '@modelcontextprotocol/sdk': 1.25.1(hono@4.11.3)(zod@3.25.76)
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -8640,7 +8640,7 @@ snapshots:
     dependencies:
       langium: 3.3.1
 
-  '@modelcontextprotocol/sdk@1.25.1(hono@4.11.3)(zod@4.3.4)':
+  '@modelcontextprotocol/sdk@1.25.1(hono@4.11.3)(zod@3.25.76)':
     dependencies:
       '@hono/node-server': 1.19.7(hono@4.11.3)
       ajv: 8.17.1
@@ -8656,8 +8656,8 @@ snapshots:
       json-schema-typed: 8.0.2
       pkce-challenge: 5.0.1
       raw-body: 3.0.2
-      zod: 4.3.4
-      zod-to-json-schema: 3.25.1(zod@4.3.4)
+      zod: 3.25.76
+      zod-to-json-schema: 3.25.1(zod@3.25.76)
     transitivePeerDependencies:
       - hono
       - supports-color
@@ -8763,15 +8763,15 @@ snapshots:
 
   '@nolyfill/is-core-module@1.0.39': {}
 
-  '@openrouter/ai-sdk-provider@1.5.4(ai@6.0.6(zod@4.3.4))(zod@4.3.4)':
+  '@openrouter/ai-sdk-provider@1.5.4(ai@6.0.6(zod@3.25.76))(zod@3.25.76)':
     dependencies:
       '@openrouter/sdk': 0.1.27
-      ai: 6.0.6(zod@4.3.4)
-      zod: 4.3.4
+      ai: 6.0.6(zod@3.25.76)
+      zod: 3.25.76
 
   '@openrouter/sdk@0.1.27':
     dependencies:
-      zod: 4.3.4
+      zod: 3.25.76
 
   '@opentelemetry/api@1.9.0': {}
 
@@ -10050,10 +10050,10 @@ snapshots:
 
   '@tanstack/table-core@8.21.3': {}
 
-  '@thesysai/genui-sdk@0.7.15(0556767854bbe0a8fcaefae66fee9a95)':
+  '@thesysai/genui-sdk@0.7.15(34061be51b359012beea5c433f0991bc)':
     dependencies:
-      '@crayonai/react-core': 0.7.6(@crayonai/stream@0.6.4(zod-to-json-schema@3.25.1(zod@4.3.4))(zod@4.3.4))(eventsource-parser@3.0.6)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(tailwind-merge@3.4.0)(tailwindcss-animate@1.0.7(tailwindcss@4.1.18))(tiny-invariant@1.3.3)(zustand@5.0.9(@types/react@19.2.7)(immer@11.1.3)(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3)))
-      '@crayonai/react-ui': 0.9.11(@crayonai/react-core@0.7.6(@crayonai/stream@0.6.4(zod-to-json-schema@3.25.1(zod@4.3.4))(zod@4.3.4))(eventsource-parser@3.0.6)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(tailwind-merge@3.4.0)(tailwindcss-animate@1.0.7(tailwindcss@4.1.18))(tiny-invariant@1.3.3)(zustand@5.0.9(@types/react@19.2.7)(immer@11.1.3)(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3))))(@crayonai/stream@0.6.4(zod-to-json-schema@3.25.1(zod@4.3.4))(zod@4.3.4))(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(zustand@5.0.9(@types/react@19.2.7)(immer@11.1.3)(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3)))
+      '@crayonai/react-core': 0.7.6(@crayonai/stream@0.6.4(zod-to-json-schema@3.25.1(zod@3.25.76))(zod@3.25.76))(eventsource-parser@3.0.6)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(tailwind-merge@3.4.0)(tailwindcss-animate@1.0.7(tailwindcss@4.1.18))(tiny-invariant@1.3.3)(zustand@5.0.9(@types/react@19.2.7)(immer@11.1.3)(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3)))
+      '@crayonai/react-ui': 0.9.11(@crayonai/react-core@0.7.6(@crayonai/stream@0.6.4(zod-to-json-schema@3.25.1(zod@3.25.76))(zod@3.25.76))(eventsource-parser@3.0.6)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(tailwind-merge@3.4.0)(tailwindcss-animate@1.0.7(tailwindcss@4.1.18))(tiny-invariant@1.3.3)(zustand@5.0.9(@types/react@19.2.7)(immer@11.1.3)(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3))))(@crayonai/stream@0.6.4(zod-to-json-schema@3.25.1(zod@3.25.76))(zod@3.25.76))(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(zustand@5.0.9(@types/react@19.2.7)(immer@11.1.3)(react@19.2.3)(use-sync-external-store@1.6.0(react@19.2.3)))
       '@radix-ui/react-accordion': 1.2.12(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@radix-ui/react-dialog': 1.1.15(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
       '@radix-ui/react-tooltip': 1.2.8(@types/react-dom@19.2.3(@types/react@19.2.7))(@types/react@19.2.7)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)
@@ -10714,13 +10714,13 @@ snapshots:
 
   agent-base@7.1.4: {}
 
-  ai@6.0.6(zod@4.3.4):
+  ai@6.0.6(zod@3.25.76):
     dependencies:
-      '@ai-sdk/gateway': 3.0.5(zod@4.3.4)
+      '@ai-sdk/gateway': 3.0.5(zod@3.25.76)
       '@ai-sdk/provider': 3.0.1
-      '@ai-sdk/provider-utils': 4.0.2(zod@4.3.4)
+      '@ai-sdk/provider-utils': 4.0.2(zod@3.25.76)
       '@opentelemetry/api': 1.9.0
-      zod: 4.3.4
+      zod: 3.25.76
 
   ajv-formats@3.0.1(ajv@8.17.1):
     optionalDependencies:
@@ -10864,8 +10864,8 @@ snapshots:
 
   better-auth@1.4.10(drizzle-kit@0.31.8)(drizzle-orm@0.45.1(@libsql/client@0.15.6)(@opentelemetry/api@1.9.0)(@types/pg@8.16.0)(gel@2.2.0)(kysely@0.28.9)(pg@8.16.3))(next@16.1.1(@babel/core@7.28.5)(@opentelemetry/api@1.9.0)(@playwright/test@1.57.0)(react-dom@19.2.3(react@19.2.3))(react@19.2.3))(pg@8.16.3)(react-dom@19.2.3(react@19.2.3))(react@19.2.3)(vitest@4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)):
     dependencies:
-      '@better-auth/core': 1.4.10(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-call@1.1.7(zod@4.3.4))(jose@6.1.3)(kysely@0.28.9)(nanostores@1.1.0)
-      '@better-auth/telemetry': 1.4.10(@better-auth/core@1.4.10(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-call@1.1.7(zod@4.3.4))(jose@6.1.3)(kysely@0.28.9)(nanostores@1.1.0))
+      '@better-auth/core': 1.4.10(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-call@1.1.7(zod@3.25.76))(jose@6.1.3)(kysely@0.28.9)(nanostores@1.1.0)
+      '@better-auth/telemetry': 1.4.10(@better-auth/core@1.4.10(@better-auth/utils@0.3.0)(@better-fetch/fetch@1.1.21)(better-call@1.1.7(zod@3.25.76))(jose@6.1.3)(kysely@0.28.9)(nanostores@1.1.0))
       '@better-auth/utils': 0.3.0
       '@better-fetch/fetch': 1.1.21
       '@noble/ciphers': 2.1.1
@@ -10884,6 +10884,15 @@ snapshots:
       react: 19.2.3
       react-dom: 19.2.3(react@19.2.3)
       vitest: 4.0.16(@opentelemetry/api@1.9.0)(@types/node@25.0.3)(jiti@2.6.1)(lightningcss@1.30.2)(tsx@4.21.0)(yaml@2.8.2)
+
+  better-call@1.1.7(zod@3.25.76):
+    dependencies:
+      '@better-auth/utils': 0.3.0
+      '@better-fetch/fetch': 1.1.21
+      rou3: 0.7.12
+      set-cookie-parser: 2.7.2
+    optionalDependencies:
+      zod: 3.25.76
 
   better-call@1.1.7(zod@4.3.4):
     dependencies:
@@ -11811,8 +11820,8 @@ snapshots:
       '@babel/parser': 7.28.5
       eslint: 9.39.2(jiti@2.6.1)
       hermes-parser: 0.25.1
-      zod: 4.3.4
-      zod-validation-error: 4.0.2(zod@4.3.4)
+      zod: 3.25.76
+      zod-validation-error: 4.0.2(zod@3.25.76)
     transitivePeerDependencies:
       - supports-color
 
@@ -13459,12 +13468,12 @@ snapshots:
 
   ogl@1.0.11: {}
 
-  ollama-ai-provider-v2@2.0.0(ai@6.0.6(zod@4.3.4))(zod@4.3.4):
+  ollama-ai-provider-v2@2.0.0(ai@6.0.6(zod@3.25.76))(zod@3.25.76):
     dependencies:
       '@ai-sdk/provider': 3.0.1
-      '@ai-sdk/provider-utils': 4.0.2(zod@4.3.4)
-      ai: 6.0.6(zod@4.3.4)
-      zod: 4.3.4
+      '@ai-sdk/provider-utils': 4.0.2(zod@3.25.76)
+      ai: 6.0.6(zod@3.25.76)
+      zod: 3.25.76
 
   on-finished@2.4.1:
     dependencies:
@@ -15032,13 +15041,13 @@ snapshots:
 
   yocto-queue@0.1.0: {}
 
-  zod-to-json-schema@3.25.1(zod@4.3.4):
+  zod-to-json-schema@3.25.1(zod@3.25.76):
     dependencies:
-      zod: 4.3.4
+      zod: 3.25.76
 
-  zod-validation-error@4.0.2(zod@4.3.4):
+  zod-validation-error@4.0.2(zod@3.25.76):
     dependencies:
-      zod: 4.3.4
+      zod: 3.25.76
 
   zod@3.25.76: {}
 

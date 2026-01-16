@@ -1,0 +1,1 @@
+{"name":"Universal Helper Agent","description":"This agent assists users with a wide range of queries, providing reliable information and problem-solving support across various topics and tasks, ensuring user satisfaction and efficiency in achieving goals."}

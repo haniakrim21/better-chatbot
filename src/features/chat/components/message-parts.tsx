@@ -887,7 +887,10 @@ export const ToolMessagePart = memo(
         return <WebSearchToolInvocation part={part} />;
       }
 
-      if (toolName === ImageToolName) {
+      if (
+        toolName === ImageToolName ||
+        toolName.toLowerCase().includes("image")
+      ) {
         return <ImageGeneratorToolInvocation part={part} />;
       }
 

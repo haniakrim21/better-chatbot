@@ -1,0 +1,1 @@
+{"name":"General Helper Agent","description":"A versatile assistant designed to provide information, guidance, and support across various general topics and tasks, enhancing user productivity and knowledge."}

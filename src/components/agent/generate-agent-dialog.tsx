@@ -44,10 +44,13 @@ export function GenerateAgentDialog({
     api: "/api/agent/ai",
     schema: AgentGenerateSchema,
     onFinish(event) {
+      console.log("[DEBUG] onFinish event:", JSON.stringify(event, null, 2));
       if (event.error) {
+        console.error("[DEBUG] onFinish error:", event.error);
         handleErrorWithToast(event.error);
       }
       if (event.object) {
+        console.log("[DEBUG] onFinish object:", event.object);
         onAgentChange(event.object);
         if (event.object.tools && onToolsGenerated) {
           onToolsGenerated(event.object.tools);

@@ -1,0 +1,9 @@
+To design a helper agent, I need to clarify your specific requirements. Could you please provide more details on the following?
+
+1. **Core Intent**: What specific tasks or problems should the helper agent address? 
+2. **Target Audience**: Who will be using this agent? Is it for general assistance, technical help, or something else?
+3. **Preferred Tools**: Are there any specific tools from the available options that you'd like the agent to utilize?
+4. **Output Expectations**: What format do you envision for the agent's responses? 
+5. **Additional Features**: Are there any specific features or functions you require in this helper agent? 
+
+Once I have this information, I can create a tailored agent configuration.

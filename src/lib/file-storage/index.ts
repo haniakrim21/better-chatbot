@@ -22,6 +22,11 @@ const resolveDriver = (): FileStorageDriver => {
     return normalized;
   }
 
+  if (IS_DEV) {
+    console.warn("Dev mode detected. Defaulting file storage to 'local'.");
+    return "local";
+  }
+
   console.warn(
     `Invalid or missing FILE_STORAGE_TYPE ('${candidate}'). Defaulting to 'vercel-blob'.`,
   );
