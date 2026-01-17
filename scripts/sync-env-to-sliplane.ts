@@ -26,6 +26,9 @@ const ENV_KEYS_TO_SYNC = [
   "FILE_BASED_MCP_CONFIG",
 ];
 
+// Keys to preserve even if not in local .env
+const ENV_KEYS_TO_PRESERVE = ["POSTGRES_URL", "DATABASE_URL"];
+
 async function main() {
   console.log("🚀 Syncing Environment to Sliplane...");
 
@@ -82,8 +85,13 @@ async function main() {
     }
 
     // 3. Merge Env Vars
+    // Keep existing vars that are either:
+    // 1. Not in ENV_KEYS_TO_SYNC (so we don't override them)
+    // 2. In ENV_KEYS_TO_PRESERVE (like POSTGRES_URL which is set manually)
     const filteredExisting = existingEnv.filter(
-      (e: any) => !ENV_KEYS_TO_SYNC.includes(e.key),
+      (e: any) =>
+        !ENV_KEYS_TO_SYNC.includes(e.key) ||
+        ENV_KEYS_TO_PRESERVE.includes(e.key),
     );
 
     const mergedEnv = [...filteredExisting, ...newEnvVars];

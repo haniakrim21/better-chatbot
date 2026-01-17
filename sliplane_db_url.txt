@@ -1,0 +1,1 @@
+postgres://postgres:postgres@postgres-ms05.internal:5432/postgres

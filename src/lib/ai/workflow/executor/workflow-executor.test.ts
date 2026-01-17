@@ -67,7 +67,7 @@ vi.mock("./node-executor", async (importOriginal) => {
 
 // Mock other dependencies
 vi.mock("../shared.workflow", () => ({
-  convertDBNodeToUINode: vi.fn().mockImplementation((dbNode) => ({
+  convertDBNodeToUINode: vi.fn().mockImplementation((workflowId, dbNode) => ({
     id: dbNode.id,
     type: "default",
     position: { x: 0, y: 0 },
