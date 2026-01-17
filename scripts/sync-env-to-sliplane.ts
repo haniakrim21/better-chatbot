@@ -8,6 +8,7 @@ const ORG_ID = "org_eo03kcny1dp0";
 const PROJECT_ID = "project_ju5iup0kyxfp";
 const SERVICE_ID = "service_3uamp29uw6p4"; // NabdAI
 
+// Keys we want to ensure are synced from local .env to Sliplane
 const ENV_KEYS_TO_SYNC = [
   "GOOGLE_GENERATIVE_AI_API_KEY",
   "OPENAI_API_KEY",
@@ -17,10 +18,16 @@ const ENV_KEYS_TO_SYNC = [
   "GROQ_API_KEY",
   "GROQ_BASE_URL",
   "EXA_API_KEY",
+  "BRAVE_API_KEY",
+  "GOOGLE_MAPS_API_KEY",
+  "SLACK_BOT_TOKEN",
+  "SLACK_TEAM_ID",
+  "GITHUB_TOKEN",
+  "FILE_BASED_MCP_CONFIG",
 ];
 
 async function main() {
-  console.log("🚀 Syncing AI API Keys to Sliplane...");
+  console.log("🚀 Syncing Environment to Sliplane...");
 
   // 1. Read Local .env
   const envPath = path.resolve(process.cwd(), ".env");
@@ -30,22 +37,20 @@ async function main() {
   }
 
   const localEnvConfig = dotenv.parse(fs.readFileSync(envPath));
-  const newEnvVars = [];
+  const newEnvVars: any[] = [];
 
   for (const key of ENV_KEYS_TO_SYNC) {
-    if (localEnvConfig[key]) {
+    if (localEnvConfig[key] !== undefined) {
       console.log(`Found local key: ${key}`);
       newEnvVars.push({
         key,
         value: localEnvConfig[key],
-        secret: key.includes("KEY") || key.includes("SECRET"), // Auto-detect secret
+        secret:
+          key.includes("KEY") ||
+          key.includes("SECRET") ||
+          key.includes("TOKEN"),
       });
     }
-  }
-
-  if (newEnvVars.length === 0) {
-    console.log("⚠️ No matching API keys found in .env to sync.");
-    return;
   }
 
   const headers = {
@@ -55,7 +60,7 @@ async function main() {
   };
 
   try {
-    // 2. Fetch Current Config to preserve existing
+    // 2. Fetch Current Config
     console.log("Fetching current Service config...");
     const res = await fetch(
       `${API_BASE}/projects/${PROJECT_ID}/services/${SERVICE_ID}`,
@@ -66,19 +71,28 @@ async function main() {
     const service = (await res.json()) as any;
     const existingEnv = service.env || [];
 
+    // Check for POSTGRES_URL in existing env
+    const pgUrl = existingEnv.find((e: any) => e.key === "POSTGRES_URL");
+    if (pgUrl) {
+      console.log("✅ Found POSTGRES_URL in Sliplane environment.");
+      // I'll save this to a temp file so I can use it later to run migrations/seeds
+      fs.writeFileSync("sliplane_db_url.txt", pgUrl.value);
+    } else {
+      console.warn("⚠️ POSTGRES_URL not found in Sliplane environment!");
+    }
+
     // 3. Merge Env Vars
-    // Filter out existing keys that we are about to update
     const filteredExisting = existingEnv.filter(
       (e: any) => !ENV_KEYS_TO_SYNC.includes(e.key),
     );
 
     const mergedEnv = [...filteredExisting, ...newEnvVars];
 
-    console.log(`\nSyncing ${newEnvVars.length} new/updated keys...`);
+    console.log(`\nSyncing ${newEnvVars.length} keys...`);
 
     // 4. Update Service
     const updatePayload = {
-      deployment: service.deployment, // Required to strictly maintain current deployment
+      deployment: service.deployment,
       env: mergedEnv,
     };
 
@@ -98,7 +112,6 @@ async function main() {
     }
 
     console.log("✅ Environment Sync Successful!");
-    console.log("Service is redeploying with the new API keys.");
   } catch (err: any) {
     console.error("❌ Error:", err.message);
   }

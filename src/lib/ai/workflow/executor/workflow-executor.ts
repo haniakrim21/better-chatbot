@@ -126,7 +126,7 @@ export const createWorkflowExecutor = (workflow: {
 
         // Execute the node with current state
         const result = await executor({
-          node: convertDBNodeToUINode(node).data,
+          node: convertDBNodeToUINode(node.workflowId, node).data,
           state,
         });
 

@@ -37,7 +37,9 @@ export default async function WorkflowPage({ params }: Props) {
     false,
   );
 
-  const initialNodes = workflow.nodes.map(convertDBNodeToUINode);
+  const initialNodes = workflow.nodes.map((node) =>
+    convertDBNodeToUINode(id, node),
+  );
   const initialEdges = workflow.edges.map(convertDBEdgeToUIEdge);
 
   // Fetch the Workflow Creator agent
