@@ -128,19 +128,10 @@ export function convertDBNodeToUINode(
   let nodeConfig: any = node.nodeConfig;
   let uiConfig: any = node.uiConfig;
 
-  // Debug logging for production JSON parsing issues
-  console.log(`[Workflow Debug] Processing node ${node.id} (${node.kind})`);
-
   if (typeof nodeConfig === "string") {
     try {
       nodeConfig = JSON.parse(nodeConfig);
-    } catch (e) {
-      console.error(
-        `[Workflow Error] Failed to parse nodeConfig for node ${node.id}:`,
-        e,
-        "Raw Config:",
-        nodeConfig,
-      );
+    } catch (_e) {
       nodeConfig = {};
     }
   }
@@ -148,13 +139,7 @@ export function convertDBNodeToUINode(
   if (typeof uiConfig === "string") {
     try {
       uiConfig = JSON.parse(uiConfig);
-    } catch (e) {
-      console.error(
-        `[Workflow Error] Failed to parse uiConfig for node ${node.id}:`,
-        e,
-        "Raw Config:",
-        uiConfig,
-      );
+    } catch (_e) {
       uiConfig = {};
     }
   }

@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 
 export function Hero() {
   return (
-    <section className="relative overflow-hidden pt-32 pb-16 md:pt-48 md:pb-32">
+    <section className="relative overflow-hidden min-h-screen flex items-center justify-center pt-20 pb-16 md:pt-32 md:pb-32">
       <div className="container px-4 md:px-6">
         <div className="flex flex-col items-center text-center space-y-8">
           <motion.div

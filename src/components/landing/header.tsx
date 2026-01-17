@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { Button } from "@/components/ui/button";
 import { motion } from "framer-motion";
+import { AnimatedLogo } from "@/components/ui/animated-logo";
 
 export function LandingHeader() {
   return (
@@ -12,9 +13,9 @@ export function LandingHeader() {
       className="fixed top-0 left-0 right-0 z-50 bg-background/80 backdrop-blur-md border-b"
     >
       <div className="container flex h-16 items-center justify-between px-4 md:px-6">
-        <Link href="/" className="font-bold text-xl tracking-tight">
-          Nabd
-        </Link>
+        <div className="flex items-center gap-2">
+          <AnimatedLogo />
+        </div>
 
         <nav className="hidden md:flex gap-6 text-sm font-medium">
           <Link

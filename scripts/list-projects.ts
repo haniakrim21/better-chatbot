@@ -1,5 +1,5 @@
 const API_BASE = "https://ctrl.sliplane.io/v0";
-const TOKEN = "api_rw_lqex51ny2gbkyiica2m2xwmm";
+const TOKEN = "api_rw_1gwwmrnkjkc6xlw2agq8r9hf";
 const ORG_ID = "org_eo03kcny1dp0";
 
 async function main() {

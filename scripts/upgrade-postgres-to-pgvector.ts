@@ -1,7 +1,7 @@
 import { createInterface } from "readline";
 
 const API_BASE = "https://ctrl.sliplane.io/v0";
-const TOKEN = "api_rw_lqex51ny2gbkyiica2m2xwmm";
+const TOKEN = "api_rw_1gwwmrnkjkc6xlw2agq8r9hf";
 const ORG_ID = "org_eo03kcny1dp0";
 const PROJECT_ID = "project_ju5iup0kyxfp";
 const POSTGRES_SERVICE_ID = "service_z1a762s8lvta"; // Postgres-Ms05
