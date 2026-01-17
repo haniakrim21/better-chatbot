@@ -121,20 +121,57 @@ export function convertUINodeToDBNode(
   };
 }
 
-export function convertDBNodeToUINode(node: DBNode): UINode {
-  const uiNode: UINode = {
+export function convertDBNodeToUINode(
+  workflowId: string,
+  node: DBNode,
+): UINode {
+  let nodeConfig: any = node.nodeConfig;
+  let uiConfig: any = node.uiConfig;
+
+  // Debug logging for production JSON parsing issues
+  console.log(`[Workflow Debug] Processing node ${node.id} (${node.kind})`);
+
+  if (typeof nodeConfig === "string") {
+    try {
+      nodeConfig = JSON.parse(nodeConfig);
+    } catch (e) {
+      console.error(
+        `[Workflow Error] Failed to parse nodeConfig for node ${node.id}:`,
+        e,
+        "Raw Config:",
+        nodeConfig,
+      );
+      nodeConfig = {};
+    }
+  }
+
+  if (typeof uiConfig === "string") {
+    try {
+      uiConfig = JSON.parse(uiConfig);
+    } catch (e) {
+      console.error(
+        `[Workflow Error] Failed to parse uiConfig for node ${node.id}:`,
+        e,
+        "Raw Config:",
+        uiConfig,
+      );
+      uiConfig = {};
+    }
+  }
+
+  return {
     id: node.id,
-    ...(node.uiConfig as any),
+    type: "default",
+    position: (uiConfig as any)?.position || { x: 0, y: 0 },
     data: {
-      ...(node.nodeConfig as any),
+      ...nodeConfig,
       id: node.id,
+      kind: node.kind as WorkflowNodeData["kind"],
       name: node.name,
-      description: node.description || "",
-      kind: node.kind as any,
+      description: node.description,
     },
-    type: node.uiConfig.type || "default",
+    selected: (uiConfig as any)?.selected || false,
   };
-  return uiNode;
 }
 
 export function convertUIEdgeToDBEdge(
