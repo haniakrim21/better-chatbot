@@ -1,5 +1,8 @@
 // import { Logger } from "drizzle-orm";
-import { drizzle as drizzlePg } from "drizzle-orm/node-postgres";
+import {
+  drizzle as drizzlePg,
+  NodePgDatabase,
+} from "drizzle-orm/node-postgres";
 
 import * as schema from "./schema.pg";
 
@@ -9,26 +12,35 @@ import * as schema from "./schema.pg";
 //   }
 // }
 
-let _pgDb: ReturnType<typeof drizzlePg> | null = null;
+let _pgDb: NodePgDatabase<typeof schema> | null = null;
 
-export const getPgDb = () => {
+function initPgDb(): NodePgDatabase<typeof schema> {
+  if (!process.env.POSTGRES_URL) {
+    throw new Error(
+      "POSTGRES_URL environment variable is not set. Please configure it in your environment.",
+    );
+  }
+  return drizzlePg(process.env.POSTGRES_URL, {
+    schema,
+    //   logger: new MyLogger(),
+  });
+}
+
+export const getPgDb = (): NodePgDatabase<typeof schema> => {
   if (!_pgDb) {
-    if (!process.env.POSTGRES_URL) {
-      throw new Error(
-        "POSTGRES_URL environment variable is not set. Please configure it in your environment.",
-      );
-    }
-    _pgDb = drizzlePg(process.env.POSTGRES_URL, {
-      schema,
-      //   logger: new MyLogger(),
-    });
+    _pgDb = initPgDb();
   }
   return _pgDb;
 };
 
-// For backward compatibility, export a getter
-export const pgDb = new Proxy({} as ReturnType<typeof drizzlePg>, {
-  get(target, prop) {
-    return getPgDb()[prop as keyof ReturnType<typeof drizzlePg>];
+// For backward compatibility - use a getter function that returns the db instance
+export const pgDb: NodePgDatabase<typeof schema> = new Proxy(
+  {} as NodePgDatabase<typeof schema>,
+  {
+    get(_, prop) {
+      const db = getPgDb();
+      const value = db[prop as keyof typeof db];
+      return typeof value === "function" ? value.bind(db) : value;
+    },
   },
-});
+);
