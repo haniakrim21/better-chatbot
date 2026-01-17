@@ -9,6 +9,7 @@ import { appStore } from "@/app/store";
 import { cn, generateUUID, truncateString } from "lib/utils";
 import { ErrorMessage, PreviewMessage } from "./message";
 import { ChatGreeting } from "./chat-greeting";
+import { DefaultToolName } from "lib/ai/tools";
 import { AnimatePresence, motion } from "framer-motion";
 import { useThreadFileUploader } from "@/hooks/use-thread-file-uploader";
 import { useFileDragOverlay } from "@/hooks/use-file-drag-overlay";
@@ -240,7 +241,8 @@ export default function ChatBot({
 
       // Handle draft-content
       const draftTool = toolInvocations.find(
-        (t: any) => t.toolName === "draft-content" && t.state === "result",
+        (t: any) =>
+          t.toolName === DefaultToolName.DraftContent && t.state === "result",
       );
       if (draftTool && "result" in draftTool) {
         const result = draftTool.result as any;
@@ -260,7 +262,8 @@ export default function ChatBot({
       // Handle run-terminal-command
       const terminalTool = toolInvocations.find(
         (t: any) =>
-          t.toolName === "run-terminal-command" && t.state === "result",
+          t.toolName === DefaultToolName.RunTerminalCommand &&
+          t.state === "result",
       );
       if (terminalTool && "result" in terminalTool) {
         if (lastProcessedToolCallId.current === terminalTool.toolCallId) return;
@@ -281,7 +284,8 @@ export default function ChatBot({
 
       // Handle edit-selection
       const editTool = toolInvocations.find(
-        (t: any) => t.toolName === "edit-selection" && t.state === "result",
+        (t: any) =>
+          t.toolName === DefaultToolName.EditSelection && t.state === "result",
       );
       if (editTool && "result" in editTool) {
         if (lastProcessedToolCallId.current === editTool.toolCallId) return;

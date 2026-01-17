@@ -541,4 +541,39 @@ export const CanvasDocumentTable = pgTable("canvas_document", {
   updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
+export const ApiKeyTable = pgTable(
+  "api_key",
+  {
+    id: uuid("id").primaryKey().notNull().defaultRandom(),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => UserTable.id, { onDelete: "cascade" }),
+    provider: text("provider").notNull(),
+    key: text("key").notNull(), // Encrypted
+    label: text("label"),
+    createdAt: timestamp("created_at")
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => [unique().on(table.userId, table.provider)],
+);
+
+export const UsageTrackingTable = pgTable("usage_tracking", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => UserTable.id, { onDelete: "cascade" }),
+  modelId: text("model_id").notNull(),
+  provider: text("provider").notNull(),
+  inputTokens: integer("input_tokens").notNull().default(0),
+  outputTokens: integer("output_tokens").notNull().default(0),
+  totalTokens: integer("total_tokens").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
 export type CanvasDocumentEntity = typeof CanvasDocumentTable.$inferSelect;
+export type ApiKeyEntity = typeof ApiKeyTable.$inferSelect;
+export type UsageTrackingEntity = typeof UsageTrackingTable.$inferSelect;

@@ -13,7 +13,7 @@ import { agentRepository, chatRepository } from "lib/db/repository";
 import { userRepository } from "lib/db/repository";
 import { pgDb as db } from "lib/db/pg/db.pg";
 import { KnowledgeBaseTable } from "lib/db/pg/schema.pg";
-import { and, eq, or, inArray } from "drizzle-orm";
+import { and, eq, or, inArray, sql } from "drizzle-orm";
 import globalLogger from "logger";
 import {
   buildMcpServerCustomizationsSystemPrompt,
@@ -76,7 +76,56 @@ export class ChatService {
       currentSelection,
     } = body;
 
-    const model = customModelProvider.getModel(chatModel);
+    // Fetch user API key if available
+    let apiKey: string | undefined;
+    if (chatModel?.provider) {
+      try {
+        // Import tableSchema to avoid circular dependency issues if any
+        const { ApiKeyTable } = await import("lib/db/pg/schema.pg");
+        const [keyRecord] = await db
+          .select({ key: ApiKeyTable.key })
+          .from(ApiKeyTable)
+          .where(
+            and(
+              eq(ApiKeyTable.userId, session.user.id),
+              eq(ApiKeyTable.provider, chatModel.provider),
+            ),
+          );
+
+        if (keyRecord) {
+          const { decrypt } = await import("lib/encryption");
+          apiKey = decrypt(keyRecord.key);
+        }
+      } catch (error) {
+        logger.error("Failed to fetch/decrypt user API key", error);
+      }
+    }
+
+    // Check Usage Quota if no custom API key is present
+    if (!apiKey) {
+      try {
+        const { UsageTrackingTable } = await import("lib/db/pg/schema.pg");
+        const { DEFAULT_TOKEN_LIMIT } = await import("lib/constants");
+        const [usage] = await db
+          .select({
+            total: sql<number>`sum(${UsageTrackingTable.totalTokens})`,
+          })
+          .from(UsageTrackingTable)
+          .where(eq(UsageTrackingTable.userId, session.user.id));
+
+        const totalUsage = Number(usage?.total || 0);
+        if (totalUsage >= DEFAULT_TOKEN_LIMIT) {
+          throw new Error(
+            `Free usage quota exceeded (${DEFAULT_TOKEN_LIMIT.toLocaleString()} tokens). Please add your own API Key in Settings to continue.`,
+          );
+        }
+      } catch (e: any) {
+        if (e.message.includes("quota exceeded")) throw e;
+        logger.error("Failed to check usage quota", e);
+      }
+    }
+
+    const model = customModelProvider.getModel(chatModel, apiKey);
 
     let thread = await chatRepository.selectThreadDetails(id);
 
@@ -340,7 +389,7 @@ export class ChatService {
         }
 
         if (currentSelection) {
-          context += `\n\n<current_canvas_selection>\n${currentSelection}\n</current_canvas_selection>\n\nThe user has selected the text above in the canvas. Use this as context for their request, especially if they refer to "this" or "selected text". To edit it, use the 'edit-selection' tool.`;
+          context += `\n\n<current_canvas_selection>\n${currentSelection}\n</current_canvas_selection>\n\nThe user has selected the text above in the canvas. Use this as context for their request, especially if they refer to "this" or "selected text". To edit it, use the 'EditSelection' tool.`;
         }
 
         const systemPrompt = mergeSystemPrompt(
@@ -442,6 +491,24 @@ export class ChatService {
 
       generateId: generateUUID,
       onFinish: async ({ responseMessage }) => {
+        // Track Usage from metadata
+        const usage = metadata.usage;
+        if (usage && chatModel) {
+          try {
+            const { UsageTrackingTable } = await import("lib/db/pg/schema.pg");
+            await db.insert(UsageTrackingTable).values({
+              userId: session.user.id,
+              modelId: chatModel.model,
+              provider: chatModel.provider,
+              inputTokens: (usage as any).promptTokens || 0,
+              outputTokens: (usage as any).completionTokens || 0,
+              totalTokens: usage.totalTokens,
+            });
+          } catch (error) {
+            logger.error("Failed to track usage", error);
+          }
+        }
+
         if (responseMessage.id == message.id) {
           await chatRepository.upsertMessage({
             threadId: thread!.id,

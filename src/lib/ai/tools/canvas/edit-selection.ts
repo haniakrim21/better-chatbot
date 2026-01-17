@@ -20,7 +20,7 @@ export const editSelectionTool = tool({
       data: {
         instruction,
         replacement,
-        action: "edit-selection",
+        action: "EditSelection",
       },
     };
   },

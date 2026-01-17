@@ -10,28 +10,28 @@ export enum AppDefaultToolkit {
 }
 
 export enum DefaultToolName {
-  CreatePieChart = "createPieChart",
-  CreateBarChart = "createBarChart",
-  CreateLineChart = "createLineChart",
-  CreateTable = "createTable",
-  WebSearch = "webSearch",
-  WebContent = "webContent",
-  Http = "http",
-  JavascriptExecution = "mini-javascript-execution",
-  PythonExecution = "python-execution",
-  ListWorkflows = "list-workflows",
-  GetWorkflowStructure = "get-workflow-structure",
-  CreateWorkflow = "create-workflow",
-  UpdateWorkflowStructure = "update-workflow-structure",
-  DeleteWorkflow = "delete-workflow",
-  DraftContent = "draftContent",
-  EditSelection = "editSelection",
-  RunTerminalCommand = "runTerminalCommand",
-  RetrieveKnowledge = "retrieveKnowledge",
+  CreatePieChart = "CreatePieChart",
+  CreateBarChart = "CreateBarChart",
+  CreateLineChart = "CreateLineChart",
+  CreateTable = "CreateTable",
+  WebSearch = "WebSearch",
+  WebContent = "WebContent",
+  Http = "Http",
+  JavascriptExecution = "JavascriptExecution",
+  PythonExecution = "PythonExecution",
+  ListWorkflows = "ListWorkflows",
+  GetWorkflowStructure = "GetWorkflowStructure",
+  CreateWorkflow = "CreateWorkflow",
+  UpdateWorkflowStructure = "UpdateWorkflowStructure",
+  DeleteWorkflow = "DeleteWorkflow",
+  DraftContent = "DraftContent",
+  EditSelection = "EditSelection",
+  RunTerminalCommand = "RunTerminalCommand",
+  RetrieveKnowledge = "RetrieveKnowledge",
 }
 
-export const SequentialThinkingToolName = "sequential-thinking";
+export const SequentialThinkingToolName = "SequentialThinking";
 
 // WebContainer Tools
 export * from "./compute/execute";
-export const ImageToolName = "image-manager";
+export const ImageToolName = "ImageManager";

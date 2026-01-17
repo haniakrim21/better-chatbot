@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { isToolUIPart, type UIMessage } from "ai";
 import { memo, useMemo, useState } from "react";
 import equal from "lib/equal";
@@ -254,6 +255,14 @@ export const ErrorMessage = ({
                     ? error.message
                     : truncateString(error.message, maxLength)}
                 </div>
+                {error.message.toLowerCase().includes("quota exceeded") && (
+                  <Link
+                    href="/profile"
+                    className="inline-block mt-2 text-primary hover:underline"
+                  >
+                    Go to Profile Settings &rarr;
+                  </Link>
+                )}
                 {error.message.length > maxLength && (
                   <Button
                     onClick={() => setIsExpanded(!isExpanded)}

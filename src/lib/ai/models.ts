@@ -1,11 +1,15 @@
 import "server-only";
 
 import { createOllama } from "ollama-ai-provider-v2";
-import { openai } from "@ai-sdk/openai";
-import { google } from "@ai-sdk/google";
-import { anthropic } from "@ai-sdk/anthropic";
-import { xai } from "@ai-sdk/xai";
-import { LanguageModelV2, openrouter } from "@openrouter/ai-sdk-provider";
+import { openai, createOpenAI } from "@ai-sdk/openai";
+import { google, createGoogleGenerativeAI } from "@ai-sdk/google";
+import { anthropic, createAnthropic } from "@ai-sdk/anthropic";
+import { xai, createXai } from "@ai-sdk/xai";
+import {
+  LanguageModelV2,
+  openrouter,
+  createOpenRouter,
+} from "@openrouter/ai-sdk-provider";
 import { createGroq } from "@ai-sdk/groq";
 import { LanguageModel } from "ai";
 import {
@@ -245,7 +249,7 @@ export const customModelProvider = {
     })),
     hasAPIKey: checkProviderAPIKey(provider as keyof typeof staticModels),
   })),
-  getModel: (model?: ChatModel): LanguageModel => {
+  getModel: (model?: ChatModel, apiKey?: string): LanguageModel => {
     // 1. Global Override: Thesys.dev
     if (process.env.THESYS_API_KEY) {
       try {
@@ -265,6 +269,32 @@ export const customModelProvider = {
     }
 
     if (!model) return fallbackModel;
+
+    // Use user-provided API key if available
+    if (apiKey) {
+      // NOTE: Checking if createOpenRouter exists safely to avoid runtime crashes if package version is old
+      // We assume it's imported or available if the package supports it.
+      // If strict TS checks fail here, we might need 'as any' casting or conditional method usage.
+
+      switch (model.provider) {
+        case "openai":
+          return createOpenAI({ apiKey })(model.model);
+        case "google":
+          return createGoogleGenerativeAI({ apiKey })(model.model);
+        case "anthropic":
+          return createAnthropic({ apiKey })(model.model);
+        case "xai":
+          return createXai({ apiKey })(model.model);
+        case "groq":
+          return createGroq({ apiKey })(model.model);
+        case "openRouter":
+          // Fallback if createOpenRouter isn't directly exported as expected
+          // but usually openrouter is a customized openai instance
+          return createOpenRouter
+            ? createOpenRouter({ apiKey })(model.model)
+            : openrouter(model.model, { apiKey } as any);
+      }
+    }
 
     // Static lookup
     const staticMatch = allModels[model.provider]?.[model.model];
