@@ -314,10 +314,12 @@ export class ChatService {
                   "@/lib/rag/retrieval"
                 );
                 const query =
-                  messages
-                    .filter((m) => m.role === "user")
-                    .slice(-1)[0]
-                    ?.parts.find((p) => p.type === "text")?.text || "";
+                  (
+                    messages
+                      .filter((m) => m.role === "user")
+                      .slice(-1)[0]
+                      ?.parts.find((p) => p.type === "text") as any
+                  )?.text || "";
                 if (query) {
                   const chunks = await findRelevantChunks(
                     query,
@@ -402,10 +404,17 @@ export class ChatService {
           `Message truncation: ${messages.length} total messages, using ${truncatedMessages.length} in context`,
         );
 
+        const coreMessages = convertToCoreMessages(truncatedMessages);
+        const totalCharCount =
+          systemPrompt.length + JSON.stringify(coreMessages).length;
+        logger.info(
+          `Context summary: SystemPrompt: ${systemPrompt.length} chars, Messages: ${JSON.stringify(coreMessages).length} chars, Total approx: ${totalCharCount} chars`,
+        );
+
         const result = streamText({
           model,
           system: systemPrompt,
-          messages: convertToCoreMessages(truncatedMessages),
+          messages: coreMessages,
           experimental_transform: smoothStream({ chunking: "word" }),
           maxRetries: 2,
           tools: vercelAITooles,
@@ -520,12 +529,33 @@ function convertToCoreMessages(messages: any[]): any[] {
     ) {
       const toolResults = message.parts
         .filter((p: any) => p.type === "tool-invocation")
-        .map((p: any) => ({
-          type: "tool-result",
-          toolCallId: p.toolCallId,
-          toolName: p.toolName,
-          result: "result" in p ? p.result : undefined,
-        })) as any;
+        .map((p: any) => {
+          let result = "result" in p ? p.result : undefined;
+          const toolName = p.toolName?.toLowerCase() || "";
+
+          // Aggressively remove screenshots from context (AI can't use base64 effectively)
+          if (
+            toolName.includes("screenshot") ||
+            toolName.includes("snapshot")
+          ) {
+            result =
+              "[Screenshot/Snapshot data removed from context to save space]";
+          } else if (typeof result === "string" && result.length > 10000) {
+            result = result.slice(0, 10000) + "... [Output truncated]";
+          } else if (result && typeof result === "object") {
+            const str = JSON.stringify(result);
+            if (str.length > 10000) {
+              result = str.slice(0, 10000) + "... [Output truncated]";
+            }
+          }
+
+          return {
+            type: "tool-result",
+            toolCallId: p.toolCallId,
+            toolName: p.toolName,
+            result,
+          };
+        }) as any;
 
       coreMessages.push({
         role: "tool",

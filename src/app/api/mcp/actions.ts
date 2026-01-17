@@ -14,12 +14,27 @@ import {
   canShareMCPServer,
   getCurrentUser,
 } from "lib/auth/permissions";
+import { FILE_BASED_MCP_CONFIG } from "lib/const";
 
 export async function selectMcpClientsAction() {
-  // Get current user to filter MCP servers
   const currentUser = await getCurrentUser();
   if (!currentUser) {
     return [];
+  }
+
+  if (FILE_BASED_MCP_CONFIG) {
+    const list = await mcpClientsManager.getClients();
+    return list.map(({ client, id }) => {
+      const info = client.getInfo();
+      return {
+        ...info,
+        id,
+        userId: "file-based-user",
+        visibility: "private",
+        isOwner: true,
+        canManage: true,
+      };
+    });
   }
 
   // Get all MCP servers the user can access (their own + shared)
@@ -121,6 +136,10 @@ export async function existMcpClientByServerNameAction(serverName: string) {
 }
 
 export async function removeMcpClientAction(id: string) {
+  if (FILE_BASED_MCP_CONFIG) {
+    await mcpClientsManager.removeClient(id);
+    return;
+  }
   // Get the MCP server to check ownership
   const mcpServer = await mcpRepository.selectById(id);
   if (!mcpServer) {
@@ -153,6 +172,9 @@ export async function authorizeMcpClientAction(id: string) {
 }
 
 export async function checkTokenMcpClientAction(id: string) {
+  if (FILE_BASED_MCP_CONFIG) {
+    return false;
+  }
   const session = await mcpOAuthRepository.getAuthenticatedSession(id);
 
   // for wait connect to mcp server
@@ -181,6 +203,9 @@ export async function shareMcpServerAction(
   id: string,
   visibility: "public" | "private",
 ) {
+  if (FILE_BASED_MCP_CONFIG) {
+    throw new Error("Sharing is not supported in file-based mode");
+  }
   // Only admins can feature MCP servers
   const canShare = await canShareMCPServer();
   if (!canShare) {
@@ -194,6 +219,9 @@ export async function shareMcpServerAction(
 }
 
 export async function installMcpServerAction(id: string) {
+  if (FILE_BASED_MCP_CONFIG) {
+    throw new Error("Installation is not supported in file-based mode");
+  }
   const currentUser = await getCurrentUser();
   if (!currentUser) {
     throw new Error("You must be logged in to install MCP servers");

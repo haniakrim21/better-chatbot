@@ -71,10 +71,21 @@ export function filterMCPToolsByMentions(
     {} as Record<string, string[]>,
   );
 
-  return objectFlow(tools).filter((_tool) => {
+  const result = objectFlow(tools).filter((_tool) => {
     if (!metionsByServer[_tool._mcpServerId]) return false;
     return metionsByServer[_tool._mcpServerId].includes(_tool._originToolName);
   });
+
+  const totalSize = Object.values(result).reduce(
+    (acc, t) =>
+      acc + (t.description?.length ?? 0) + JSON.stringify(t.inputSchema).length,
+    0,
+  );
+  logger.info(
+    `[MCP Mentions] Filtered to ${Object.keys(result).length} tools. Total approx size: ${totalSize} chars`,
+  );
+
+  return result;
 }
 
 export function filterMCPToolsByAllowedMCPServers(
@@ -84,12 +95,23 @@ export function filterMCPToolsByAllowedMCPServers(
   if (!allowedMcpServers || Object.keys(allowedMcpServers).length === 0) {
     return {};
   }
-  return objectFlow(tools).filter((_tool) => {
+  const result = objectFlow(tools).filter((_tool) => {
     if (!allowedMcpServers[_tool._mcpServerId]?.tools) return false;
     return allowedMcpServers[_tool._mcpServerId].tools.includes(
       _tool._originToolName,
     );
   });
+
+  const totalSize = Object.values(result).reduce(
+    (acc, t) =>
+      acc + (t.description?.length ?? 0) + JSON.stringify(t.inputSchema).length,
+    0,
+  );
+  logger.info(
+    `[MCP Allowed] Filtered to ${Object.keys(result).length} tools. Total approx size: ${totalSize} chars`,
+  );
+
+  return result;
 }
 
 export function excludeToolExecution(
@@ -137,11 +159,22 @@ export function manualToolExecuteByLastMessage(
           messages: [],
         });
       } else if (VercelAIMcpToolTag.isMaybe(tool)) {
-        return mcpClientsManager.toolCall(
-          tool._mcpServerId,
-          tool._originToolName,
-          input,
+        logger.info(
+          `[MCP Call] server: ${tool._mcpServerId}, tool: ${tool._originToolName}`,
         );
+        logger.info(`[MCP Input] ${JSON.stringify(input)}`);
+        return mcpClientsManager
+          .toolCall(tool._mcpServerId, tool._originToolName, input)
+          .then((result) => {
+            logger.info(
+              `[MCP Result] ${JSON.stringify(result).slice(0, 1000)}...`,
+            );
+            return result;
+          })
+          .catch((err) => {
+            logger.error(`[MCP Error] ${err.message}`);
+            throw err;
+          });
       }
       return tool.execute!(input, {
         toolCallId: part.toolCallId,
@@ -407,6 +440,10 @@ export const loadMcpTools = (opt?: {
     }),
   )
     .map((tools) => {
+      logger.info(
+        `[loadMcpTools] Total available MCP tools: ${Object.keys(tools).length}`,
+      );
+
       if (opt?.mentions?.length) {
         return filterMCPToolsByMentions(tools, opt.mentions);
       }
@@ -460,6 +497,10 @@ export const loadAppDefaultTools = (opt?: {
       return (
         allowedAppDefaultToolkit.reduce(
           (acc, key) => {
+            // Disable webSearch if EXA_API_KEY is not configured
+            if (key === "webSearch" && !process.env.EXA_API_KEY) {
+              return acc;
+            }
             return { ...acc, ...tools[key] };
           },
           {} as Record<string, Tool>,

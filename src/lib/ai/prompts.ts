@@ -223,6 +223,17 @@ ${userPreferences.responseStyleExample}
 export const buildMcpServerCustomizationsSystemPrompt = (
   instructions: Record<string, McpServerCustomizationsPrompt>,
 ) => {
+  const PLAYWRIGHT_TIPS = `
+<playwright>
+- For 'browser_run_code', avoid using 'today' or descriptive dates directly in selectors if possible; use ARIA labels or placeholders.
+- IF A CLICK FAILS due to "intercepts pointer events", use 'browser_click' with 'force: true'.
+- ALWAYS check for and close cookie banners or popups at the start of a session.
+- Sites like Expedia/Kayak use custom components; if 'browser_fill_form' fails, try 'browser_click' followed by 'browser_type'.
+- Prefer 'browser_run_code' for complex flows to minimize round-trips.
+- If a navigation fails with 'net::ERR_ABORTED', try a different search provider (e.g., Kayak or Skyscanner instead of Google Flights).
+- Always include explicit waits for results to appear before taking snapshots or reading content.
+</playwright>`.trim();
+
   const prompt = Object.values(instructions).reduce((acc, v) => {
     if (!v.prompt && !Object.keys(v.tools ?? {}).length) return acc;
     acc += `
@@ -248,9 +259,10 @@ ${
 - When using tools, please follow the guidelines below unless the user provides specific instructions otherwise.
 - These customizations help ensure tools are used effectively and appropriately for the current context.
 ${prompt}
+${!Object.keys(instructions).includes("playwright") ? `\n${PLAYWRIGHT_TIPS}` : ""}
 `.trim();
   }
-  return prompt;
+  return PLAYWRIGHT_TIPS;
 };
 
 export const generateExampleToolSchemaPrompt = (options: {
