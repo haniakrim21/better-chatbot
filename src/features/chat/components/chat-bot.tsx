@@ -87,6 +87,7 @@ export default function ChatBot({
     pendingThreadMention,
     threadImageToolModel,
     threadKnowledgeBase,
+    canvas,
   ] = appStore(
     useShallow((state) => [
       state.mutate,
@@ -99,6 +100,7 @@ export default function ChatBot({
       state.pendingThreadMention,
       state.threadImageToolModel,
       state.threadKnowledgeBase,
+      state.canvas,
     ]),
   );
 
@@ -207,6 +209,8 @@ export default function ChatBot({
           },
           knowledgeBaseId: latestRef.current.knowledgeBaseId,
           attachments,
+          currentSelection:
+            latestRef.current.canvas?.currentSelection || undefined,
         };
         return { body: requestBody };
       },
@@ -226,6 +230,77 @@ export default function ChatBot({
     [_addToolResult],
   );
 
+  // Monitor messages for draft-content tool result to redirect to canvas
+  const lastProcessedToolCallId = useRef<string | null>(null);
+
+  useEffect(() => {
+    const lastMessage = messages.at(-1);
+    if (lastMessage?.role === "assistant") {
+      const toolInvocations = (lastMessage as any).toolInvocations || [];
+
+      // Handle draft-content
+      const draftTool = toolInvocations.find(
+        (t: any) => t.toolName === "draft-content" && t.state === "result",
+      );
+      if (draftTool && "result" in draftTool) {
+        const result = draftTool.result as any;
+        if (result?.status === "success" && result.data?.documentId) {
+          appStoreMutate((prev) => ({
+            canvas: {
+              ...prev.canvas,
+              isOpen: true,
+              documentId: result.data.documentId,
+              pendingCommand: null,
+            },
+          }));
+          toast.success("Canvas document created");
+        }
+      }
+
+      // Handle run-terminal-command
+      const terminalTool = toolInvocations.find(
+        (t: any) =>
+          t.toolName === "run-terminal-command" && t.state === "result",
+      );
+      if (terminalTool && "result" in terminalTool) {
+        if (lastProcessedToolCallId.current === terminalTool.toolCallId) return;
+
+        const result = terminalTool.result as any;
+        if (result?.status === "pending_client_execution") {
+          lastProcessedToolCallId.current = terminalTool.toolCallId;
+          appStoreMutate((prev) => ({
+            canvas: {
+              ...prev.canvas,
+              isOpen: true,
+              pendingCommand: result.data,
+            },
+          }));
+          toast.info("Executing terminal command...");
+        }
+      }
+
+      // Handle edit-selection
+      const editTool = toolInvocations.find(
+        (t: any) => t.toolName === "edit-selection" && t.state === "result",
+      );
+      if (editTool && "result" in editTool) {
+        if (lastProcessedToolCallId.current === editTool.toolCallId) return;
+
+        const result = editTool.result as any;
+        if (result?.status === "success" && result.data) {
+          lastProcessedToolCallId.current = editTool.toolCallId;
+          appStoreMutate((prev) => ({
+            canvas: {
+              ...prev.canvas,
+              pendingEdit: result.data,
+            },
+          }));
+          // toast.info("Edits applied to canvas");
+        }
+      }
+    }
+  }, [messages, appStoreMutate]);
+
   const latestRef = useToRef({
     toolChoice,
     model,
@@ -237,6 +312,7 @@ export default function ChatBot({
     mentions: threadMentions[threadId],
     threadImageToolModel,
     knowledgeBaseId: threadKnowledgeBase[threadId],
+    canvas,
   });
 
   const isLoading = useMemo(

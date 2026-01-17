@@ -15,6 +15,10 @@ import {
   updateWorkflowStructureTool,
   deleteWorkflowTool,
 } from "./workflow";
+import { draftContentTool } from "./canvas/draft-content";
+import { editSelectionTool } from "./canvas/edit-selection";
+import { runTerminalCommandTool } from "./compute/execute";
+import { retrieveKnowledgeTool } from "./rag/retrieve";
 
 export const APP_DEFAULT_TOOL_KIT: Record<
   AppDefaultToolkit,
@@ -43,5 +47,15 @@ export const APP_DEFAULT_TOOL_KIT: Record<
     [DefaultToolName.CreateWorkflow]: createWorkflowTool,
     [DefaultToolName.UpdateWorkflowStructure]: updateWorkflowStructureTool,
     [DefaultToolName.DeleteWorkflow]: deleteWorkflowTool,
+  },
+  [AppDefaultToolkit.Canvas]: {
+    [DefaultToolName.DraftContent]: draftContentTool,
+    [DefaultToolName.EditSelection]: editSelectionTool,
+  },
+  [AppDefaultToolkit.Compute]: {
+    [DefaultToolName.RunTerminalCommand]: runTerminalCommandTool,
+  },
+  [AppDefaultToolkit.Rag]: {
+    [DefaultToolName.RetrieveKnowledge]: retrieveKnowledgeTool,
   },
 };

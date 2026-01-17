@@ -4,6 +4,9 @@ export enum AppDefaultToolkit {
   Http = "http",
   Code = "code",
   Workflow = "workflow",
+  Canvas = "canvas",
+  Compute = "compute",
+  Rag = "rag",
 }
 
 export enum DefaultToolName {
@@ -21,8 +24,14 @@ export enum DefaultToolName {
   CreateWorkflow = "create-workflow",
   UpdateWorkflowStructure = "update-workflow-structure",
   DeleteWorkflow = "delete-workflow",
+  DraftContent = "draftContent",
+  EditSelection = "editSelection",
+  RunTerminalCommand = "runTerminalCommand",
+  RetrieveKnowledge = "retrieveKnowledge",
 }
 
 export const SequentialThinkingToolName = "sequential-thinking";
 
+// WebContainer Tools
+export * from "./compute/execute";
 export const ImageToolName = "image-manager";

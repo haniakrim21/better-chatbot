@@ -68,6 +68,20 @@ export interface AppState {
     };
   };
   pendingThreadMention?: ChatMention;
+  canvas: {
+    isOpen: boolean;
+    documentId: string | null;
+    pendingCommand?: {
+      command: string;
+      args: string[];
+      cwd?: string;
+    } | null;
+    currentSelection: string | null;
+    pendingEdit?: {
+      instruction: string;
+      replacement?: string;
+    } | null;
+  };
 }
 
 export interface AppDispatch {
@@ -92,6 +106,9 @@ const initialState: AppState = {
   allowedAppDefaultToolkit: [
     AppDefaultToolkit.Code,
     AppDefaultToolkit.Visualization,
+    AppDefaultToolkit.Compute,
+    AppDefaultToolkit.Rag,
+    AppDefaultToolkit.Canvas,
   ],
   toolPresets: [],
   chatModel: undefined,
@@ -112,6 +129,13 @@ const initialState: AppState = {
     },
   },
   pendingThreadMention: undefined,
+  canvas: {
+    isOpen: false,
+    documentId: null,
+    pendingCommand: null,
+    currentSelection: null,
+    pendingEdit: null,
+  },
 };
 
 export const appStore = create<AppState & AppDispatch>()(
@@ -141,6 +165,10 @@ export const appStore = create<AppState & AppDispatch>()(
           ...initialState.voiceChat,
           ...state.voiceChat,
           isOpen: false,
+        },
+        canvas: {
+          ...initialState.canvas,
+          ...state.canvas,
         },
       }),
     },

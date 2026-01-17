@@ -527,3 +527,18 @@ export type KnowledgeBaseEntity = typeof KnowledgeBaseTable.$inferSelect;
 export type DocumentEntity = typeof DocumentTable.$inferSelect;
 export type DocumentChunkEntity = typeof DocumentChunkTable.$inferSelect;
 export type PipelineEntity = typeof PipelineTable.$inferSelect;
+export const CanvasDocumentTable = pgTable("canvas_document", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  title: text("title").notNull(),
+  content: text("content"),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => UserTable.id, { onDelete: "cascade" }),
+  threadId: uuid("thread_id").references(() => ChatThreadTable.id, {
+    onDelete: "set null",
+  }),
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export type CanvasDocumentEntity = typeof CanvasDocumentTable.$inferSelect;

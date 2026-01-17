@@ -12,11 +12,14 @@ import { UserDetailContentSkeleton } from "@/components/user/user-detail/user-de
 
 import { Suspense } from "react";
 import { redirect } from "next/navigation";
+import { ChatCanvasSplitView } from "@/components/layouts/chat-canvas-split-view";
 export const experimental_ppr = true;
 
 export default async function ChatLayout({
   children,
-}: { children: React.ReactNode }) {
+}: {
+  children: React.ReactNode;
+}) {
   const cookieStore = await cookies();
   const session = await getSession();
   if (!session) {
@@ -37,7 +40,7 @@ export default async function ChatLayout({
         <AppSidebar user={session.user} />
         <main className="relative w-full flex flex-col h-screen">
           <AppHeader />
-          <div className="flex-1 overflow-y-auto">{children}</div>
+          <ChatCanvasSplitView>{children}</ChatCanvasSplitView>
         </main>
       </SWRConfigProvider>
     </SidebarProvider>

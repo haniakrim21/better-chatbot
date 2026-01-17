@@ -1,11 +1,7 @@
 import { embed, embedMany } from "ai";
-import { createOllama } from "ollama-ai-provider-v2";
+import { openai } from "@ai-sdk/openai";
 
-const ollama = createOllama({
-  baseURL: process.env.OLLAMA_BASE_URL || "http://127.0.0.1:11434/api",
-});
-
-const embeddingModel = ollama.textEmbeddingModel("nomic-embed-text");
+const embeddingModel = openai.textEmbeddingModel("text-embedding-3-small");
 
 export async function generateEmbedding(text: string): Promise<number[]> {
   try {

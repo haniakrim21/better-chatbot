@@ -73,6 +73,7 @@ export class ChatService {
       mentions = [],
       attachments = [],
       knowledgeBaseId,
+      currentSelection,
     } = body;
 
     const model = customModelProvider.getModel(chatModel);
@@ -336,6 +337,10 @@ export class ChatService {
               }
             }
           }
+        }
+
+        if (currentSelection) {
+          context += `\n\n<current_canvas_selection>\n${currentSelection}\n</current_canvas_selection>\n\nThe user has selected the text above in the canvas. Use this as context for their request, especially if they refer to "this" or "selected text". To edit it, use the 'edit-selection' tool.`;
         }
 
         const systemPrompt = mergeSystemPrompt(

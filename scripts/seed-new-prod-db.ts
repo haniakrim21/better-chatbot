@@ -24,7 +24,7 @@ const { Pool } = pg;
 
 // PROD CONNECTION
 const PROD_DB_URL =
-  "postgres://postgres:UYbIOh9RqKVuhPoD@postgres-ndzy.sliplane.app:10525/postgres";
+  "postgres://postgres:UYbIOh9RqKVuhPoD@postgres-ndzy.sliplane.app:10525/mydb";
 
 async function main() {
   console.log("🌱 Seeding NEW Production Database (Postgres-NdZY)...");
