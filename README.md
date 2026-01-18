@@ -13,7 +13,7 @@
 [![Discord](https://img.shields.io/discord/1374847276874537103?label=Discord&logo=discord&color=5865F2)](https://discord.gg/gCRu69Upnp)
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/cgoinglove/better-chatbot&env=BETTER_AUTH_SECRET&env=OPENAI_API_KEY)
 
-[🎮 Live Demo](https://better-chatbot-demo.vercel.app/) • [📚 Documentation](./docs) • [💬 Discord Community](https://discord.gg/gCRu69Upnp) • [🐛 Report Bug](https://github.com/haniakrim21/better-chatbot/issues)
+[🎮 Live Demo](https://nabdai.sliplane.app/) • [📚 Documentation](./docs) • [💬 Discord Community](https://discord.gg/gCRu69Upnp) • [🐛 Report Bug](https://github.com/haniakrim21/better-chatbot/issues)
 
 </div>
 
@@ -252,7 +252,7 @@ Thanks to all our amazing contributors!
 
 ### 🔗 Quick Links
 
-[🎮 Try Demo](https://better-chatbot-demo.vercel.app/) • [📚 Full Documentation](./docs) • [💬 Discord](https://discord.gg/gCRu69Upnp) • [🐛 Issues](https://github.com/haniakrim21/better-chatbot/issues)
+[🎮 Try Demo](https://nabdai.sliplane.app/) • [📚 Full Documentation](./docs) • [💬 Discord](https://discord.gg/gCRu69Upnp) • [🐛 Issues](https://github.com/haniakrim21/better-chatbot/issues)
 
 **Built with Next.js, AI SDK by Vercel, and ❤️**
 
