@@ -173,6 +173,9 @@ importers:
       dotenv:
         specifier: ^17.2.3
         version: 17.2.3
+      drizzle-kit:
+        specifier: ^0.31.8
+        version: 0.31.8
       drizzle-orm:
         specifier: ^0.45.1
         version: 0.45.1(@libsql/client@0.15.6)(@opentelemetry/api@1.9.0)(@types/pg@8.16.0)(gel@2.2.0)(kysely@0.28.9)(pg@8.16.3)
@@ -278,6 +281,9 @@ importers:
       ts-safe:
         specifier: ^0.0.5
         version: 0.0.5
+      tsx:
+        specifier: ^4.21.0
+        version: 4.21.0
       tw-animate-css:
         specifier: ^1.4.0
         version: 1.4.0
@@ -327,9 +333,6 @@ importers:
       dotenv-cli:
         specifier: ^11.0.0
         version: 11.0.0
-      drizzle-kit:
-        specifier: ^0.31.8
-        version: 0.31.8
       eslint:
         specifier: ^9.39.2
         version: 9.39.2(jiti@2.6.1)
@@ -348,9 +351,6 @@ importers:
       tailwindcss:
         specifier: ^4.1.18
         version: 4.1.18
-      tsx:
-        specifier: ^4.21.0
-        version: 4.21.0
       typescript:
         specifier: ^5.9.3
         version: 5.9.3
