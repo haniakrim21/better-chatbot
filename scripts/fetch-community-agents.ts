@@ -16,7 +16,11 @@ dotenv.config();
 const connectionString =
   process.env.POSTGRES_URL ||
   process.env.DATABASE_URL ||
-  "postgresql://your_username:your_password@localhost:5432/your_database_name";
+  (process.env.POSTGRES_USER &&
+  process.env.POSTGRES_PASSWORD &&
+  process.env.HOST
+    ? `postgres://${process.env.POSTGRES_USER}:${process.env.POSTGRES_PASSWORD}@${process.env.HOST}:5432/${process.env.POSTGRES_DB || "mydb"}`
+    : "postgresql://postgres:postgres@localhost:5432/postgres");
 const pool = new Pool({ connectionString });
 const db = drizzle(pool);
 
