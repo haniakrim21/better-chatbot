@@ -1,29 +1,40 @@
-#!/usr/bin/env tsx
+// import fetch from "node-fetch";
 
 const API_BASE = "https://ctrl.sliplane.io/v0";
 const TOKEN = "api_rw_1gwwmrnkjkc6xlw2agq8r9hf";
 const ORG_ID = "org_eo03kcny1dp0";
 const PROJECT_ID = "project_ju5iup0kyxfp";
-const SERVICE_ID = "service_11h69bcja1cu"; // Postgres-NdZY
+const DB_SERVICE_ID = "service_11h69bcja1cu"; // Postgres-NdZY
 
-async function inspect() {
+async function main() {
   const headers = {
     Authorization: `Bearer ${TOKEN}`,
     "X-Organization-ID": ORG_ID,
+    "Content-Type": "application/json",
   };
 
-  const response = await fetch(
-    `${API_BASE}/projects/${PROJECT_ID}/services/${SERVICE_ID}`,
-    { headers },
-  );
+  try {
+    console.log("🔍 Fetching DB Service Config...");
 
-  const data = await response.json();
-  console.log("📦 Database Service Config:");
-  console.log(`   ID: ${data.id}`);
-  console.log(`   Name: ${data.name}`);
-  console.log(`   Image: ${data.image}`); // Crucial
-  console.log(`   CMD: ${data.cmd}`);
-  console.log(`   Env Vars:`, data.env);
+    const res = await fetch(
+      `${API_BASE}/projects/${PROJECT_ID}/services/${DB_SERVICE_ID}`,
+      { headers },
+    );
+
+    if (!res.ok) {
+      throw new Error(`Failed to fetch service: ${await res.text()}`);
+    }
+
+    const service = await res.json();
+    console.log("✅ Config Fetched!");
+
+    console.log("\n--- ENV VARS ---");
+    (service.env || []).forEach((e: any) => {
+      console.log(`${e.key}: ${e.value}`);
+    });
+  } catch (error: any) {
+    console.error("❌ Error:", error.message);
+  }
 }
 
-inspect();
+main();
