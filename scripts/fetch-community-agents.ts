@@ -80,36 +80,55 @@ async function main() {
 
   let count = 0;
   for (const agent of agents) {
-    if (!agent.meta.systemRole) continue; // Skip agents without instructions
+    // console.log(`Processing ${agent.identifier}...`);
+
+    let systemRole = agent.meta.systemRole;
+    let iconValue = agent.meta.avatar;
+
+    // If systemRole is missing (which is true for index.json), fetch detail
+    if (!systemRole) {
+      try {
+        const detailUrl = `https://chat-agents.lobehub.com/${agent.identifier}.json`;
+        const detailRes = await fetch(detailUrl);
+        if (detailRes.ok) {
+          const detailData = await detailRes.json();
+          systemRole = detailData.config?.systemRole || detailData.systemRole;
+          if (!iconValue && detailData.meta?.avatar) {
+            iconValue = detailData.meta.avatar;
+          }
+        } else {
+          console.warn(
+            `Failed to fetch detail for ${agent.identifier}: ${detailRes.status}`,
+          );
+        }
+      } catch (e) {
+        console.error(`Error fetching detail for ${agent.identifier}:`, e);
+      }
+    }
+
+    if (!systemRole) {
+      // console.log(`Skipping ${agent.identifier}: No systemRole found after detail fetch`);
+      continue;
+    }
 
     const description = agent.meta.description || agent.meta.title;
     const tags = agent.meta.tags || [];
 
     // Determine icon type
     let icon = { type: "emoji", value: "🤖" };
-    if (agent.meta.avatar && agent.meta.avatar.startsWith("http")) {
-      // It's an image, but our schema fully supports emojis simpler.
-      // If it's an emoji string (Lobe often uses them), use it.
-      // If it's a URL, we might fallback or try to use it if schema supports 'image' type.
-      // Checked schema: Icon is JSON, usually type: "emoji" | "image".
-      icon = { type: "image", value: agent.meta.avatar };
-    } else if (agent.meta.avatar) {
-      icon = { type: "emoji", value: agent.meta.avatar };
+    if (iconValue && iconValue.startsWith("http")) {
+      icon = { type: "image", value: iconValue };
+    } else if (iconValue) {
+      icon = { type: "emoji", value: iconValue };
     }
 
     try {
-      // Drizzle "where" generic object syntax is tricky without exact table schema import.
-      // Falling back to raw SQL check or just insert.
-      // Let's simpler: Just Insert. On conflict maybe skip?
-      // Since we don't have a unique constraint on name, we might duplicate.
-      // Let's do a quick check via sql execution if needed or relying on unique name isn't safe.
-      // Correct approach: Select first using raw query.
       const check = await pool.query('SELECT id FROM "agent" WHERE name = $1', [
         agent.meta.title,
       ]);
 
       if (check.rows.length > 0) {
-        console.log(`Skipping existing agent: ${agent.meta.title}`);
+        // console.log(`Skipping existing agent: ${agent.meta.title}`);
         continue;
       }
 
@@ -118,14 +137,15 @@ async function main() {
         description: description.substring(0, 8000), // Enforce limit
         icon: icon,
         userId: systemUserId,
-        instructions: { systemPrompt: agent.meta.systemRole },
+        instructions: { systemPrompt: systemRole },
         visibility: "public",
         tags: tags,
         usageCount: Math.floor(Math.random() * 1000), // Fake popularity for now or 0
       } as any);
 
       count++;
-      process.stdout.write(".");
+      if (count % 10 === 0) process.stdout.write(` ${count} `);
+      else process.stdout.write(".");
     } catch (err) {
       console.error(`Failed to insert ${agent.meta.title}:`, err);
     }
