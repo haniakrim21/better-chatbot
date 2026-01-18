@@ -10,10 +10,8 @@
 
 [![MCP Supported](https://img.shields.io/badge/MCP-Supported-08c53f)](https://modelcontextprotocol.io/introduction)
 [![Local First](https://img.shields.io/badge/Local-First-5865F2)](https://localfirstweb.dev/)
-[![Discord](https://img.shields.io/discord/1374847276874537103?label=Discord&logo=discord&color=5865F2)](https://discord.gg/gCRu69Upnp)
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/cgoinglove/better-chatbot&env=BETTER_AUTH_SECRET&env=OPENAI_API_KEY)
 
-[🎮 Live Demo](https://nabdai.sliplane.app/) • [📚 Documentation](./docs) • [💬 Discord Community](https://discord.gg/gCRu69Upnp) • [🐛 Report Bug](https://github.com/haniakrim21/better-chatbot/issues)
+[🎮 Live Demo](https://nabdai.sliplane.app/) • [📚 Documentation](./docs) • [🐛 Report Bug](https://github.com/haniakrim21/better-chatbot/issues)
 
 </div>
 
@@ -224,7 +222,6 @@ If Nabd AI has been helpful to you:
 - ⭐ **Star** this repository on GitHub
 - 💰 **[Become a sponsor](https://github.com/sponsors/cgoinglove)**
 - 🐦 **Share** on social media
-- 💬 **Join our [Discord community](https://discord.gg/gCRu69Upnp)**
 
 Your support helps us continue developing and improving Nabd AI! 🙏
 
@@ -252,12 +249,11 @@ Thanks to all our amazing contributors!
 
 ### 🔗 Quick Links
 
-[🎮 Try Demo](https://nabdai.sliplane.app/) • [📚 Full Documentation](./docs) • [💬 Discord](https://discord.gg/gCRu69Upnp) • [🐛 Issues](https://github.com/haniakrim21/better-chatbot/issues)
+[🎮 Try Demo](https://nabdai.sliplane.app/) • [📚 Full Documentation](./docs) • [🐛 Issues](https://github.com/haniakrim21/better-chatbot/issues)
 
-**Built with Next.js, AI SDK by Vercel, and ❤️**
+**Built with Next.js, and ❤️**
 
 [![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/cgoinglove/better-chatbot)
 
-*Star ⭐ this repo if you find it useful!*
 
 </div>
