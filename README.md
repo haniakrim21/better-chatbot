@@ -158,7 +158,6 @@ Chain multiple AI tasks into reusable workflows:
 ## 📚 Documentation
 
 ### 🚀 Deployment Guides
-- [Vercel Hosting](./docs/tips-guides/vercel.md) ⭐ Recommended
 - [Docker Deployment](./docs/tips-guides/docker.md)
 - [File Storage Setup](./docs/tips-guides/file-storage.md)
 
