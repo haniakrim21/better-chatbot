@@ -42,8 +42,12 @@ export function AppSidebarAgents({ userRole }: { userRole?: string | null }) {
   }); // Increase limit since we're not artificially limiting display
 
   const agents = useMemo(() => {
-    return [...myAgents, ...bookmarkedAgents];
-  }, [bookmarkedAgents, myAgents]);
+    // Filter out shared agents that are already bookmarked to avoid duplicates
+    const uniqueShared = sharedAgents.filter(
+      (sa) => !bookmarkedAgents.some((ba) => ba.id === sa.id),
+    );
+    return [...myAgents, ...bookmarkedAgents, ...uniqueShared];
+  }, [bookmarkedAgents, myAgents, sharedAgents]);
 
   const handleAgentClick = useCallback(
     (id: string) => {
