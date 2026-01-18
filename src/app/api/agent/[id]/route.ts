@@ -18,6 +18,14 @@ export async function GET(
 
   const { id } = await params;
 
+  // Validate ID format to prevent database errors (e.g. invalid input syntax for type uuid)
+  const idSchema = z.string().uuid();
+  const validationResult = idSchema.safeParse(id);
+
+  if (!validationResult.success) {
+    return new Response("Invalid Agent ID format", { status: 400 });
+  }
+
   const hasAccess = await agentRepository.checkAccess(id, session.user.id);
   if (!hasAccess) {
     return new Response("Unauthorized", { status: 401 });

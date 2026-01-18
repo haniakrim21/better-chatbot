@@ -20,6 +20,13 @@ export default async function AgentPage({
     return <EditAgent userId={session.user.id} />;
   }
 
+  // Validate UUID to prevent database errors
+  const isValidUUID =
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(id);
+  if (!isValidUUID) {
+    notFound();
+  }
+
   // Fetch the agent data on the server
   const agent = await agentRepository.selectAgentById(id, session.user.id);
 

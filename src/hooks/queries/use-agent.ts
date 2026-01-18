@@ -14,13 +14,19 @@ export function useAgent(
 ) {
   const { enabled = true, ...swrOptions } = options;
 
+  const isValidUUID =
+    agentId &&
+    /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+      agentId,
+    );
+
   const {
     data: agent,
     error,
     isLoading,
     mutate,
   } = useSWR<Agent>(
-    agentId && enabled ? `/api/agent/${agentId}` : null,
+    isValidUUID && enabled ? `/api/agent/${agentId}` : null,
     fetcher,
     {
       errorRetryCount: 0,

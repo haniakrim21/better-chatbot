@@ -24,12 +24,25 @@ export default async function HomePage(props: HomePageProps) {
   let agent: Agent | null = null;
 
   if (agentId) {
-    agent = await pgAgentRepository.selectAgentById(agentId, session.user.id);
-    if (agent && agent.instructions) {
-      initialMessages.push({
-        role: "system",
-        content: `You are an AI assistant named "${agent.name}". ${agent.description ? `Description: ${agent.description}. ` : ""}Instructions: ${agent.instructions}`,
-      });
+    const isValidUUID =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i.test(
+        agentId,
+      );
+    if (isValidUUID) {
+      try {
+        agent = await pgAgentRepository.selectAgentById(
+          agentId,
+          session.user.id,
+        );
+        if (agent && agent.instructions) {
+          initialMessages.push({
+            role: "system",
+            content: `You are an AI assistant named "${agent.name}". ${agent.description ? `Description: ${agent.description}. ` : ""}Instructions: ${agent.instructions}`,
+          });
+        }
+      } catch (e) {
+        console.error("Failed to fetch agent:", e);
+      }
     }
   }
 
