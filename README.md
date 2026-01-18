@@ -35,15 +35,7 @@ Nabd AI isn't just another chatbot - it's a comprehensive AI platform that bring
 
 ## 🎯 Quick Start
 
-### Option 1: Deploy to Vercel (Recommended - 5 minutes)
-
-[![Deploy with Vercel](https://vercel.com/button)](https://vercel.com/new/clone?repository-url=https://github.com/cgoinglove/better-chatbot&env=BETTER_AUTH_SECRET&env=OPENAI_API_KEY)
-
-✅ **No installation required** | ✅ **Free tier available** | ✅ **One-click setup**
-
-👉 **[Follow our step-by-step Vercel deployment guide](./docs/tips-guides/vercel.md)**
-
-### Option 2: Local Development
+### Option : Local Development
 
 ```bash
 # Install dependencies
