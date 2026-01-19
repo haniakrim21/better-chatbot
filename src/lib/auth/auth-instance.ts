@@ -125,7 +125,7 @@ export const getSession = async () => {
       headers: await headers(),
     });
     if (!session) {
-      logger.error("No session found");
+      logger.info("No session found");
       return null;
     }
     return session;
