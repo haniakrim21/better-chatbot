@@ -33,5 +33,6 @@ echo "Running migrations..."
 ./node_modules/.bin/tsx scripts/db-migrate.ts
 
 # Start application
+# Start application and pipe logs to file (for SSH inspection) AND stdout (for Sliplane UI)
 echo "Starting application..."
-exec node server.js
+exec node server.js 2>&1 | tee /app/server.log
