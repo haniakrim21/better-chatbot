@@ -22,6 +22,8 @@ COPY package.json pnpm-lock.yaml* ./
 COPY scripts ./scripts
 RUN echo "node-linker=hoisted" > .npmrc
 RUN corepack enable pnpm && \
+    pnpm config set node-linker hoisted && \
+    npm pkg delete scripts.prepare && \
     pnpm i --prod --no-frozen-lockfile
 
 # Rebuild the source code only when needed
