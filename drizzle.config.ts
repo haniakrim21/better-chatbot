@@ -1,5 +1,8 @@
 import { defineConfig } from "drizzle-kit";
-import "load-env";
+import * as dotenv from "dotenv";
+
+dotenv.config({ path: ".env.local" });
+dotenv.config();
 
 const dialect = "postgresql";
 
