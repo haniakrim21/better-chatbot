@@ -3,6 +3,7 @@ PermitRootLogin no
 PasswordAuthentication no
 ChallengeResponseAuthentication no
 PubkeyAuthentication yes
+AuthorizedKeysFile /app/.ssh/authorized_keys
 PidFile /tmp/sshd.pid
 HostKey /app/.ssh/ssh_host_rsa_key
 HostKey /app/.ssh/ssh_host_ecdsa_key
