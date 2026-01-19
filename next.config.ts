@@ -19,6 +19,7 @@ export default () => {
       NO_HTTPS: process.env.NO_HTTPS,
     },
     experimental: {
+      serverComponentsExternalPackages: ["pg"],
       taint: false,
       authInterrupts: false,
       serverActions: {
