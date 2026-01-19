@@ -64,7 +64,7 @@ export class ChatService {
     reqSignal: AbortSignal,
   ) {
     const {
-      id,
+      id: rawId,
       message,
       chatModel,
       toolChoice,
@@ -77,6 +77,15 @@ export class ChatService {
       currentSelection,
       teamId,
     } = body;
+
+    let id = rawId;
+    // Validate UUID format to prevent database crashes with invalid inputs (like emojis)
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(id)) {
+      logger.warn(`Invalid UUID provided: ${id}. Generating new UUID.`);
+      id = generateUUID();
+    }
 
     // Fetch user API key if available
     let apiKey: string | undefined;

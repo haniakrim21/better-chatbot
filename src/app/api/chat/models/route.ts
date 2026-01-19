@@ -20,8 +20,8 @@ export const GET = async () => {
         supportedFileMimeTypes: [],
       }));
     }
-  } catch (error) {
-    console.error("Failed to fetch Ollama models", error);
+  } catch {
+    // console.warn("Failed to fetch Ollama models (skipping dynamic models)", error);
   }
 
   const staticModels = customModelProvider.modelsInfo.map((providerInfo) => {
