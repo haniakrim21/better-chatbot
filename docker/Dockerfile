@@ -50,6 +50,8 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 # Copy migrations content
 COPY --from=builder /app/src/lib/db/migrations ./src/lib/db/migrations
+COPY --from=builder /app/scripts ./scripts
+COPY --from=builder /app/tsconfig.json ./tsconfig.json
 
 USER nextjs
 
@@ -58,4 +60,4 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["node", "server.js"]
+CMD ["sh", "-c", "npx tsx scripts/db-migrate.ts && node server.js"]
