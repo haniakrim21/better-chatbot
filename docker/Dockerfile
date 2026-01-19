@@ -49,7 +49,8 @@ ENV NODE_ENV=production
 ENV NEXT_TELEMETRY_DISABLED=1
 
 
-RUN corepack enable pnpm && pnpm add -g tsx
+RUN addgroup --system --gid 1001 nodejs
+RUN adduser --system --uid 1001 nextjs
 
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
@@ -62,6 +63,9 @@ RUN chown nextjs:nodejs .next
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
 COPY --from=prod-deps --chown=nextjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
+
+# Ensure modules are resolvable
+ENV NODE_PATH=/app/node_modules
 
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
@@ -77,4 +81,4 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["sh", "-c", "tsx scripts/db-migrate.ts && node server.js"]
+CMD ["sh", "-c", "./node_modules/.bin/tsx scripts/db-migrate.ts && node server.js"]
