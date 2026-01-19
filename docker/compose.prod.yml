@@ -1,0 +1,79 @@
+services:
+  better-chatbot:
+    container_name: better_chatbot_app
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile
+    ports:
+      - "3000:3000"
+      - "2222:2222"
+    environment:
+      # Production settings
+      - NODE_ENV=production
+      # Override DB and Redis hosts to point to docker service names
+      - POSTGRES_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-better_chatbot}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-better_chatbot}
+      - REDIS_URL=redis://redis:6379
+      - KV_URL=redis://redis:6379
+    env_file:
+      - ../.env
+    networks:
+      - better-chatbot-networks
+    volumes:
+      - uploads_data:/app/public/uploads
+    depends_on:
+      postgres:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
+    restart: always
+
+  postgres:
+    image: pgvector/pgvector:pg17
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-postgres}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
+      POSTGRES_DB: ${POSTGRES_DB:-better_chatbot}
+    ports:
+      - "5432:5432"
+    networks:
+      - better-chatbot-networks
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        [
+          "CMD-SHELL",
+          "pg_isready -U ${POSTGRES_USER:-postgres} -d ${POSTGRES_DB:-better_chatbot}",
+        ]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+  redis:
+    image: redis:alpine
+    ports:
+      - "6379:6379"
+    networks:
+      - better-chatbot-networks
+    volumes:
+      - redis_data:/data
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    restart: always
+
+volumes:
+  postgres_data:
+    external: false
+    name: better-chatbot-data
+  redis_data:
+  uploads_data:
+    name: better-chatbot-uploads
+
+networks:
+  better-chatbot-networks:
+    driver: bridge
