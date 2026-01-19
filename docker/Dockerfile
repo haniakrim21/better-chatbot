@@ -53,7 +53,8 @@ RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
 # Install openssh
-RUN apk add --no-cache openssh
+# Install openssh and bash
+RUN apk add --no-cache openssh openssh-server bash
 
 
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
