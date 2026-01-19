@@ -1,4 +1,4 @@
-// import { Logger } from "drizzle-orm";
+import { Pool } from "pg";
 import {
   drizzle as drizzlePg,
   NodePgDatabase,
@@ -20,7 +20,10 @@ function initPgDb(): NodePgDatabase<typeof schema> {
       "POSTGRES_URL environment variable is not set. Please configure it in your environment.",
     );
   }
-  return drizzlePg(process.env.POSTGRES_URL, {
+  const pool = new Pool({
+    connectionString: process.env.POSTGRES_URL,
+  });
+  return drizzlePg(pool, {
     schema,
     //   logger: new MyLogger(),
   });

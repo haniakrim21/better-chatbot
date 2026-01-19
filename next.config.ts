@@ -18,6 +18,7 @@ export default () => {
     env: {
       NO_HTTPS: process.env.NO_HTTPS,
     },
+    serverExternalPackages: ["pg", "sharp"],
     webpack: (config) => {
       config.externals.push({
         pg: "commonjs pg",
