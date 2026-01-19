@@ -1,0 +1,13 @@
+Port 2222
+PermitRootLogin no
+PasswordAuthentication no
+ChallengeResponseAuthentication no
+PubkeyAuthentication yes
+PidFile /tmp/sshd.pid
+HostKey /app/.ssh/ssh_host_rsa_key
+HostKey /app/.ssh/ssh_host_ecdsa_key
+HostKey /app/.ssh/ssh_host_ed25519_key
+StrictModes no
+LogLevel INFO
+PrintMotd yes
+Subsystem	sftp	internal-sftp

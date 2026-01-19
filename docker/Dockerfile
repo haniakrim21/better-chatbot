@@ -52,6 +52,10 @@ ENV NEXT_TELEMETRY_DISABLED=1
 RUN addgroup --system --gid 1001 nodejs
 RUN adduser --system --uid 1001 nextjs
 
+# Install openssh
+RUN apk add --no-cache openssh
+
+
 COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 
 # Set the correct permission for prerender cache
@@ -77,12 +81,15 @@ COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 COPY --from=builder /app/src ./src
 COPY --from=builder /app/scripts ./scripts
 COPY --from=builder /app/tsconfig.json ./tsconfig.json
+COPY docker/sshd_config /app/sshd_config
+COPY scripts/start-with-ssh.sh /app/start-with-ssh.sh
 
 USER nextjs
 
 EXPOSE 3000
+EXPOSE 2222
 
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["sh", "-c", "./node_modules/.bin/tsx scripts/db-migrate.ts && node server.js"]
+CMD ["sh", "/app/start-with-ssh.sh"]
