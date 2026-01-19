@@ -19,7 +19,9 @@ FROM base AS prod-deps
 WORKDIR /app
 COPY package.json pnpm-lock.yaml* ./
 COPY scripts ./scripts
-RUN corepack enable pnpm && pnpm i --prod --frozen-lockfile
+RUN corepack enable pnpm && \
+    pnpm config set node-linker hoisted && \
+    pnpm i --prod --frozen-lockfile
 
 
 # Rebuild the source code only when needed
