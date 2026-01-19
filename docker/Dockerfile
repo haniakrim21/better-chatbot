@@ -13,10 +13,12 @@ COPY package.json pnpm-lock.yaml* ./
 COPY scripts ./scripts
 RUN corepack enable pnpm && pnpm i --frozen-lockfile
 
+
 # Install production dependencies only
 FROM base AS prod-deps
 WORKDIR /app
 COPY package.json pnpm-lock.yaml* ./
+COPY scripts ./scripts
 RUN corepack enable pnpm && pnpm i --prod --frozen-lockfile
 
 
