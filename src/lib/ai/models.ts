@@ -43,7 +43,8 @@ import {
 } from "./file-support";
 
 const ollama = createOllama({
-  baseURL: process.env.OLLAMA_BASE_URL || "http://127.0.0.1:11434/api",
+  baseURL:
+    process.env.OLLAMA_BASE_URL || "http://host.docker.internal:11434/api",
 });
 const groq = createGroq({
   baseURL: process.env.GROQ_BASE_URL || "https://api.groq.com/openai/v1",
