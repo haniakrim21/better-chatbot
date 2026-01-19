@@ -16,6 +16,7 @@ RUN corepack enable pnpm && pnpm i --frozen-lockfile
 
 # Install production dependencies only
 FROM base AS prod-deps
+ENV DOCKER_BUILD=1
 WORKDIR /app
 COPY package.json pnpm-lock.yaml* ./
 COPY scripts ./scripts
