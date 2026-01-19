@@ -8,7 +8,7 @@ import {
   ArchiveItemTable,
 } from "../schema.pg";
 
-import { and, desc, eq, gte, sql } from "drizzle-orm";
+import { and, desc, eq, gte, sql, gt } from "drizzle-orm";
 
 export const pgChatRepository: ChatRepository = {
   insertThread: async (
@@ -20,6 +20,7 @@ export const pgChatRepository: ChatRepository = {
         title: thread.title,
         userId: thread.userId,
         id: thread.id,
+        teamId: thread.teamId,
       })
       .returning();
     return result;
@@ -75,17 +76,32 @@ export const pgChatRepository: ChatRepository = {
 
   selectThreadsByUserId: async (
     userId: string,
+    teamId?: string | null,
   ): Promise<
     (ChatThread & {
       lastMessageAt: number;
     })[]
   > => {
+    let whereClause;
+
+    if (teamId) {
+      // Fetch threads for the specific team
+      whereClause = eq(ChatThreadTable.teamId, teamId);
+    } else {
+      // Fetch personal threads (userId matches AND teamId is null)
+      whereClause = and(
+        eq(ChatThreadTable.userId, userId),
+        sql`${ChatThreadTable.teamId} IS NULL`,
+      );
+    }
+
     const threadWithLatestMessage = await db
       .select({
         threadId: ChatThreadTable.id,
         title: ChatThreadTable.title,
         createdAt: ChatThreadTable.createdAt,
         userId: ChatThreadTable.userId,
+        teamId: ChatThreadTable.teamId,
         lastMessageAt: sql<string>`MAX(${ChatMessageTable.createdAt})`.as(
           "last_message_at",
         ),
@@ -95,7 +111,7 @@ export const pgChatRepository: ChatRepository = {
         ChatMessageTable,
         eq(ChatThreadTable.id, ChatMessageTable.threadId),
       )
-      .where(eq(ChatThreadTable.userId, userId))
+      .where(whereClause)
       .groupBy(ChatThreadTable.id)
       .orderBy(desc(sql`last_message_at`));
 
@@ -104,6 +120,7 @@ export const pgChatRepository: ChatRepository = {
         id: row.threadId,
         title: row.title,
         userId: row.userId,
+        teamId: row.teamId,
         createdAt: row.createdAt,
         lastMessageAt: row.lastMessageAt
           ? new Date(row.lastMessageAt).getTime()
@@ -125,6 +142,19 @@ export const pgChatRepository: ChatRepository = {
       .returning();
     return result;
   },
+
+  updateChatMessage: async (
+    id: string,
+    message: Partial<Omit<ChatMessage, "id" | "createdAt" | "threadId">>,
+  ): Promise<ChatMessage> => {
+    const [result] = await db
+      .update(ChatMessageTable)
+      .set(message)
+      .where(eq(ChatMessageTable.id, id))
+      .returning();
+    return result as ChatMessage;
+  },
+
   upsertThread: async (
     thread: Omit<ChatThread, "createdAt">,
   ): Promise<ChatThread> => {
@@ -158,6 +188,7 @@ export const pgChatRepository: ChatRepository = {
     const entity = {
       ...message,
       id: message.id,
+      userId: message.userId, // Add userId
     };
     const [result] = await db
       .insert(ChatMessageTable)
@@ -171,12 +202,17 @@ export const pgChatRepository: ChatRepository = {
   ): Promise<ChatMessage> => {
     const result = await db
       .insert(ChatMessageTable)
-      .values(message)
+      .values({
+        ...message,
+        userId: message.userId, // Add userId
+      })
       .onConflictDoUpdate({
         target: [ChatMessageTable.id],
         set: {
           parts: message.parts,
           metadata: message.metadata,
+          role: message.role,
+          userId: message.userId, // Update userId
         },
       })
       .returning();
@@ -200,6 +236,25 @@ export const pgChatRepository: ChatRepository = {
         and(
           eq(ChatMessageTable.threadId, message.threadId),
           gte(ChatMessageTable.createdAt, message.createdAt),
+        ),
+      );
+  },
+
+  deleteMessagesAfterMessage: async (messageId: string): Promise<void> => {
+    const [message] = await db
+      .select()
+      .from(ChatMessageTable)
+      .where(eq(ChatMessageTable.id, messageId));
+    if (!message) {
+      return;
+    }
+    // Delete messages that are in the same thread AND created AFTER the target message
+    await db
+      .delete(ChatMessageTable)
+      .where(
+        and(
+          eq(ChatMessageTable.threadId, message.threadId),
+          gt(ChatMessageTable.createdAt, message.createdAt),
         ),
       );
   },

@@ -1,7 +1,7 @@
 "use server";
 
 import { generateText } from "ai";
-import { openai } from "@ai-sdk/openai";
+import { openai } from "lib/ai/models";
 
 const OPTIMIZER_SYSTEM_PROMPT = `
 You are an Expert Prompt Engineer. Your goal is to rewrite the user's prompt to be significantly more effective for Large Language Models.

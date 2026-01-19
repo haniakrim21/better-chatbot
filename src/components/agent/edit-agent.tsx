@@ -452,6 +452,7 @@ export default function EditAgent({
             value={agent.teamId}
             onChange={(teamId) => setAgent({ teamId })}
             className="w-full relative z-50"
+            currentUserId={userId}
           />
           <p className="text-xs text-muted-foreground">
             Assign this agent to a team to share it with members.

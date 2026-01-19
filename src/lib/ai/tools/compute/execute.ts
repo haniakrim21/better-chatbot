@@ -5,25 +5,17 @@ import { tool } from "ai";
 export const runTerminalCommandTool = tool({
   description:
     "Execute a shell command in the WebContainer simulation. Use this for running scripts, installing packages (npm install), or file operations.",
-  parameters: z.object({
+  inputSchema: z.object({
     command: z
       .string()
       .describe("The command to execute (e.g., 'npm install', 'ls -la')"),
-    args: z.array(z.string()).optional().describe("Arguments for the command"),
+    args: z.array(z.string()).default([]).describe("Arguments for the command"),
     cwd: z
       .string()
-      .optional()
+      .default("root")
       .describe("Current working directory (default: root)"),
   }),
-  execute: async ({
-    command,
-    args = [],
-    cwd,
-  }: {
-    command: string;
-    args?: string[];
-    cwd?: string;
-  }): Promise<any> => {
+  execute: async ({ command, args, cwd }) => {
     // We strictly return the command intent so the client can intercept and run it.
     return {
       status: "pending_client_execution",
@@ -35,4 +27,4 @@ export const runTerminalCommandTool = tool({
       },
     };
   },
-} as any);
+});

@@ -1,5 +1,6 @@
 {
   "Common": {
+    "copy": "Copy",
     "cancel": "Cancel",
     "update": "Update",
     "continue": "Continue",

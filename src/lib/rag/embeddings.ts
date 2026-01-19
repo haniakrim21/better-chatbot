@@ -1,5 +1,5 @@
 import { embed, embedMany } from "ai";
-import { openai } from "@ai-sdk/openai";
+import { openai } from "lib/ai/models";
 
 const embeddingModel = openai.textEmbeddingModel("text-embedding-3-small");
 

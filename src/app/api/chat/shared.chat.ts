@@ -118,10 +118,30 @@ export function excludeToolExecution(
   tool: Record<string, Tool>,
 ): Record<string, Tool> {
   return objectFlow(tool).map((value) => {
-    return createTool({
-      inputSchema: value.inputSchema,
+    const parameters = (value as any).parameters;
+    const inputSchema = (value as any).inputSchema;
+
+    if (!parameters && !inputSchema) {
+      console.warn(
+        `[excludeToolExecution] Tool ${value.description?.slice(0, 15)}... has NO parameters or inputSchema!`,
+      );
+      // Try to log keys to see what's going on
+      console.log(
+        "[excludeToolExecution] Keys:",
+        Object.keys(value),
+        "Proto:",
+        Object.getPrototypeOf(value),
+      );
+    }
+
+    // Explicitly construct the options to avoid passing undefined properties that might confuse createTool
+    const toolOptions: any = {
       description: value.description,
-    });
+    };
+    if (parameters) toolOptions.parameters = parameters;
+    if (inputSchema) toolOptions.inputSchema = inputSchema;
+
+    return createTool(toolOptions);
   });
 }
 

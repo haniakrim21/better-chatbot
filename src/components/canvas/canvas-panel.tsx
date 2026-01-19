@@ -5,12 +5,7 @@ import { useStore } from "zustand";
 import { appStore } from "@/app/store";
 import { CanvasEditor } from "./canvas-editor";
 import { TerminalPanel, TerminalPanelRef } from "./terminal-panel";
-import {
-  X,
-  ExternalLink,
-  FileText,
-  Terminal as TerminalIcon,
-} from "lucide-react";
+import { X, ExternalLink } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { cn } from "lib/utils";
 
@@ -51,33 +46,77 @@ export function CanvasPanel() {
   };
 
   return (
-    <div className="w-full h-full border-l bg-background flex flex-col shadow-xl z-30 transition-all duration-300 ease-in-out">
-      <div className="flex items-center justify-between p-2 border-b bg-muted/30">
-        <div className="flex items-center gap-1 bg-muted p-1 rounded-lg">
-          <Button
-            variant={activeTab === "editor" ? "secondary" : "ghost"}
-            size="sm"
+    <div className="w-full h-full border-l bg-[#18181b] flex flex-col shadow-xl z-30 transition-all duration-300 ease-in-out">
+      <div className="flex items-center justify-between px-4 py-3 shrink-0">
+        {/* Left Side - Could be empty or have a subtle mode switcher if absolutely needed,
+             but per design it's usually clean. We'll keep the terminal toggle very subtle or
+             only show it if there is a pending command. For now, let's keep it minimal. */}
+        <div className="flex items-center gap-2">
+          {/* We can hide the tab switcher or make it very subtle text links */}
+          <button
             onClick={() => setActiveTab("editor")}
-            className="h-7 text-xs gap-1"
+            className={cn(
+              "text-sm font-medium transition-colors hover:text-foreground",
+              activeTab === "editor"
+                ? "text-foreground"
+                : "text-muted-foreground",
+            )}
           >
-            <FileText className="size-3" />
-            Editor
-          </Button>
-          <Button
-            variant={activeTab === "terminal" ? "secondary" : "ghost"}
-            size="sm"
+            Canvas
+          </button>
+          <span className="text-muted-foreground/30">/</span>
+          <button
             onClick={() => setActiveTab("terminal")}
-            className="h-7 text-xs gap-1"
+            className={cn(
+              "text-sm font-medium transition-colors hover:text-foreground",
+              activeTab === "terminal"
+                ? "text-foreground"
+                : "text-muted-foreground",
+            )}
           >
-            <TerminalIcon className="size-3" />
             Terminal
-          </Button>
+          </button>
         </div>
+
         <div className="flex items-center gap-1">
           <Button
             variant="ghost"
+            size="sm"
+            className="text-muted-foreground hover:text-foreground h-8 text-xs font-medium"
+            onClick={() => {
+              // Mock Copy action
+              navigator.clipboard.writeText(
+                canvas.documentId ? "Content copied!" : "",
+              );
+              // In reality we need to access the editor content.
+              // For now let's just show a toast or something if we had it.
+            }}
+          >
+            Copy
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground hover:text-foreground h-8 text-xs font-medium"
+            // Mock Edit action - maybe toggle readOnly?
+          >
+            Edit
+          </Button>
+          <Button
+            variant="ghost"
+            size="sm"
+            className="text-muted-foreground hover:text-foreground h-8 text-xs font-medium"
+            // Mock Download action
+          >
+            Download
+          </Button>
+
+          <div className="w-px h-4 bg-border mx-2" />
+
+          <Button
+            variant="ghost"
             size="icon"
-            className="h-8 w-8"
+            className="h-8 w-8 text-muted-foreground hover:text-foreground"
             onClick={handleOpenNewTab}
             title="Open in new tab"
           >
@@ -86,7 +125,7 @@ export function CanvasPanel() {
           <Button
             variant="ghost"
             size="icon"
-            className="h-8 w-8"
+            className="h-8 w-8 text-muted-foreground hover:text-foreground"
             onClick={handleClose}
             title="Close canvas"
           >
@@ -94,7 +133,8 @@ export function CanvasPanel() {
           </Button>
         </div>
       </div>
-      <div className="flex-1 overflow-hidden relative">
+      <div className="flex-1 overflow-hidden relative bg-[#18181b]">
+        {/* We use a specific dark bg #18181b to match the screenshot's dark zinc tone */}
         <div
           className={cn(
             "h-full w-full",

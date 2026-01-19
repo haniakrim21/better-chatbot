@@ -300,3 +300,17 @@ export const buildToolCallUnsupportedModelSystemPrompt = `
 - You are using a model that does not support tool calls. 
 - When users request tool usage, simply explain that the current model cannot use tools and that they can switch to a model that supports tool calling to use tools.
 `.trim();
+
+export const CANVAS_USAGE_PROMPT = `
+### Canvas Usage Guidelines
+- You have access to a "Canvas" (DraftContent tool) for writing long-form content.
+- WHEN to use Canvas:
+  - Blog posts, articles, stories, essays
+  - Code snippets that are standalone or long
+  - Reports, memos, or any content the user might want to edit or download
+- HOW to use Canvas:
+  - Call the \`DraftContent\` tool with the content.
+  - Do NOT output the content in the chat message if you are using the tool.
+  - Just say "I've drafted the content for you..." or similar in the chat.
+- ACTION: default to "create" unless updating an existing doc.
+`.trim();

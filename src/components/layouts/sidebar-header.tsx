@@ -20,6 +20,7 @@ interface SidebarHeaderSharedProps {
   showMobileToggle?: boolean;
   onLinkClick?: () => void;
   enableShortcuts?: boolean;
+  children?: React.ReactNode; // Added default to optional
 }
 
 export function SidebarHeaderShared({
@@ -28,6 +29,7 @@ export function SidebarHeaderShared({
   showMobileToggle = true,
   onLinkClick,
   enableShortcuts = false,
+  children,
 }: SidebarHeaderSharedProps) {
   const { toggleSidebar, setOpenMobile, open } = useSidebar();
   const isMobile = useIsMobile();
@@ -87,6 +89,7 @@ export function SidebarHeaderShared({
             </Link>
           </SidebarMenuButton>
         </SidebarMenuItem>
+        {children && <SidebarMenuItem>{children}</SidebarMenuItem>}
       </SidebarMenu>
     </SidebarHeader>
   );

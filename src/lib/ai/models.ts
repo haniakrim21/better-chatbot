@@ -1,17 +1,34 @@
 import "server-only";
 
 import { createOllama } from "ollama-ai-provider-v2";
-import { openai, createOpenAI } from "@ai-sdk/openai";
-import { google, createGoogleGenerativeAI } from "@ai-sdk/google";
-import { anthropic, createAnthropic } from "@ai-sdk/anthropic";
-import { xai, createXai } from "@ai-sdk/xai";
-import {
-  LanguageModelV2,
-  openrouter,
-  createOpenRouter,
-} from "@openrouter/ai-sdk-provider";
+import { createOpenAI } from "@ai-sdk/openai";
+import { createGoogleGenerativeAI } from "@ai-sdk/google";
+import { createAnthropic } from "@ai-sdk/anthropic";
+import { createXai } from "@ai-sdk/xai";
+import { LanguageModelV2, createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { createGroq } from "@ai-sdk/groq";
 import { LanguageModel } from "ai";
+import { fetch, Agent } from "undici";
+
+const agent = new Agent({
+  connect: {
+    timeout: 60000,
+    family: 4,
+  },
+});
+
+export const customFetch = (url: any, options: any) => {
+  return fetch(url, {
+    ...options,
+    dispatcher: agent,
+  });
+};
+
+export const openai = createOpenAI({ fetch: customFetch as any });
+export const google = createGoogleGenerativeAI({ fetch: customFetch as any });
+export const anthropic = createAnthropic({ fetch: customFetch as any });
+export const xai = createXai({ fetch: customFetch as any });
+export const openrouter = createOpenRouter({ fetch: customFetch as any });
 import {
   createOpenAICompatibleModels,
   openaiCompatibleModelsSafeParse,
@@ -31,6 +48,7 @@ const ollama = createOllama({
 const groq = createGroq({
   baseURL: process.env.GROQ_BASE_URL || "https://api.groq.com/openai/v1",
   apiKey: process.env.GROQ_API_KEY,
+  fetch: customFetch as any,
 });
 
 const staticModels = {
@@ -257,6 +275,7 @@ export const customModelProvider = {
           name: "thesys",
           apiKey: process.env.THESYS_API_KEY,
           baseURL: process.env.THESYS_BASE_URL || "https://api.thesys.dev/v1",
+          fetch: customFetch as any,
         });
         // We pass the requested model ID, but Thesys might ignore it or route it.
         // If no model is requested, we default to 'gpt-4o' as a safe placeholder for Thesys.
@@ -278,21 +297,26 @@ export const customModelProvider = {
 
       switch (model.provider) {
         case "openai":
-          return createOpenAI({ apiKey })(model.model);
+          return createOpenAI({ apiKey, fetch: customFetch as any })(
+            model.model,
+          );
         case "google":
-          return createGoogleGenerativeAI({ apiKey })(model.model);
+          return createGoogleGenerativeAI({
+            apiKey,
+            fetch: customFetch as any,
+          })(model.model);
         case "anthropic":
-          return createAnthropic({ apiKey })(model.model);
+          return createAnthropic({ apiKey, fetch: customFetch as any })(
+            model.model,
+          );
         case "xai":
-          return createXai({ apiKey })(model.model);
+          return createXai({ apiKey, fetch: customFetch as any })(model.model);
         case "groq":
-          return createGroq({ apiKey })(model.model);
+          return createGroq({ apiKey, fetch: customFetch as any })(model.model);
         case "openRouter":
-          // Fallback if createOpenRouter isn't directly exported as expected
-          // but usually openrouter is a customized openai instance
-          return createOpenRouter
-            ? createOpenRouter({ apiKey })(model.model)
-            : openrouter(model.model, { apiKey } as any);
+          return createOpenRouter({ apiKey, fetch: customFetch as any })(
+            model.model,
+          );
       }
     }
 

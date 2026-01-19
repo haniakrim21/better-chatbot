@@ -27,6 +27,7 @@ export async function POST(request: Request) {
       return new Response("Forbidden", { status: 403 });
     }
     logger.error(error);
+    console.error("[Chat API Error]", error);
     return Response.json({ message: error.message }, { status: 500 });
   }
 }

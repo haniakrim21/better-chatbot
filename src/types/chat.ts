@@ -31,6 +31,7 @@ export type ChatThread = {
   title: string;
   userId: string;
   createdAt: Date;
+  teamId?: string | null;
 };
 
 export type ChatMessage = {
@@ -39,6 +40,7 @@ export type ChatMessage = {
   role: UIMessage["role"];
   parts: UIMessage["parts"];
   metadata?: ChatMetadata;
+  userId?: string | null;
   createdAt: Date;
 };
 
@@ -110,6 +112,7 @@ export const chatApiSchemaRequestBodySchema = z.object({
   attachments: z.array(ChatAttachmentSchema).optional(),
   knowledgeBaseId: z.string().optional(),
   currentSelection: z.string().optional(),
+  teamId: z.string().optional(), // Added
 });
 
 export type ChatApiSchemaRequestBody = z.infer<
@@ -133,7 +136,10 @@ export type ChatRepository = {
 
   selectMessagesByThreadId(threadId: string): Promise<ChatMessage[]>;
 
-  selectThreadsByUserId(userId: string): Promise<
+  selectThreadsByUserId(
+    userId: string,
+    teamId?: string | null,
+  ): Promise<
     (ChatThread & {
       lastMessageAt: number;
     })[]
@@ -154,6 +160,7 @@ export type ChatRepository = {
   upsertMessage(message: Omit<ChatMessage, "createdAt">): Promise<ChatMessage>;
 
   deleteMessagesByChatIdAfterTimestamp(messageId: string): Promise<void>;
+  deleteMessagesAfterMessage(messageId: string): Promise<void>;
 
   deleteAllThreads(userId: string): Promise<void>;
 
@@ -164,6 +171,11 @@ export type ChatRepository = {
   insertMessages(
     messages: PartialBy<ChatMessage, "createdAt">[],
   ): Promise<ChatMessage[]>;
+
+  updateChatMessage(
+    id: string,
+    message: Partial<Omit<ChatMessage, "id" | "createdAt" | "threadId">>,
+  ): Promise<ChatMessage>;
 };
 
 export const ManualToolConfirmTag = tag<{

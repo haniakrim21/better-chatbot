@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { Button } from "ui/button";
-import { Input } from "ui/input";
+
 import {
   Table,
   TableBody,
@@ -11,14 +11,8 @@ import {
   TableHeader,
   TableRow,
 } from "ui/table";
-import {
-  Dialog,
-  DialogContent,
-  DialogDescription,
-  DialogHeader,
-  DialogTitle,
-  DialogTrigger,
-} from "ui/dialog";
+import { InviteMemberDialog } from "./invite-member-dialog";
+
 import {
   AlertDialog,
   AlertDialogAction,
@@ -44,11 +38,7 @@ import {
   Loader2,
 } from "lucide-react";
 import { toast } from "sonner";
-import {
-  inviteMember,
-  removeMember,
-  updateMemberRole,
-} from "lib/teams/actions";
+import { removeMember, updateMemberRole } from "lib/teams/actions";
 import { useRouter } from "next/navigation";
 
 interface TeamMember {
@@ -77,33 +67,12 @@ export function TeamMemberList({
   currentUserId,
 }: TeamMemberListProps) {
   const [isInviteOpen, setIsInviteOpen] = useState(false);
-  const [inviteEmail, setInviteEmail] = useState("");
-  const [inviteRole, setInviteRole] = useState<"admin" | "member">("member");
-  const [isLoading, setIsLoading] = useState(false);
+
   const [memberToRemove, setMemberToRemove] = useState<string | null>(null);
   const [updatingRoleId, setUpdatingRoleId] = useState<string | null>(null);
   const router = useRouter();
 
   const canManage = currentUserRole === "owner" || currentUserRole === "admin";
-
-  const handleInvite = async (e: React.FormEvent) => {
-    e.preventDefault();
-    if (!inviteEmail) return;
-
-    setIsLoading(true);
-    try {
-      await inviteMember(currentUserId, teamId, inviteEmail, inviteRole);
-      toast.success("Member added successfully");
-      setIsInviteOpen(false);
-      setInviteEmail("");
-      router.refresh();
-    } catch (error: any) {
-      console.error(error);
-      toast.error(error.message || "Failed to add member");
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
   const handleRemove = async () => {
     if (!memberToRemove) return;
@@ -141,64 +110,18 @@ export function TeamMemberList({
     <div className="space-y-4">
       <div className="flex justify-between items-center">
         <h3 className="text-lg font-medium">Members</h3>
+
         {canManage && (
-          <Dialog open={isInviteOpen} onOpenChange={setIsInviteOpen}>
-            <DialogTrigger asChild>
-              <Button size="sm">
-                <PlusIcon className="me-2 h-4 w-4" /> Add Member
-              </Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>Add Team Member</DialogTitle>
-                <DialogDescription>
-                  Enter the email address of the user you want to add to this
-                  team. They must already have an account.
-                </DialogDescription>
-              </DialogHeader>
-              <form onSubmit={handleInvite} className="space-y-4 pt-4">
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Email Address</label>
-                  <Input
-                    placeholder="user@example.com"
-                    type="email"
-                    value={inviteEmail}
-                    onChange={(e) => setInviteEmail(e.target.value)}
-                    required
-                  />
-                </div>
-                <div className="space-y-2">
-                  <label className="text-sm font-medium">Role</label>
-                  <Select
-                    value={inviteRole}
-                    onValueChange={(val: "admin" | "member") =>
-                      setInviteRole(val)
-                    }
-                  >
-                    <SelectTrigger>
-                      <SelectValue placeholder="Select a role" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="member">Member</SelectItem>
-                      <SelectItem value="admin">Admin</SelectItem>
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="flex justify-end gap-2">
-                  <Button
-                    type="button"
-                    variant="ghost"
-                    onClick={() => setIsInviteOpen(false)}
-                  >
-                    Cancel
-                  </Button>
-                  <Button type="submit" disabled={isLoading}>
-                    {isLoading ? "Adding..." : "Add Member"}
-                  </Button>
-                </div>
-              </form>
-            </DialogContent>
-          </Dialog>
+          <InviteMemberDialog
+            teamId={teamId}
+            currentUserId={currentUserId}
+            open={isInviteOpen}
+            onOpenChange={setIsInviteOpen}
+          >
+            <Button size="sm">
+              <PlusIcon className="me-2 h-4 w-4" /> Add Member
+            </Button>
+          </InviteMemberDialog>
         )}
       </div>
 

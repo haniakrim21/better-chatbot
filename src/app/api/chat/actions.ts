@@ -47,7 +47,10 @@ export async function getUserId() {
 export async function generateTitleFromUserMessageAction({
   message,
   model,
-}: { message: UIMessage; model: LanguageModel }) {
+}: {
+  message: UIMessage;
+  model: LanguageModel;
+}) {
   const session = await getSession();
   if (!session) {
     throw new Error("Unauthorized");
@@ -92,8 +95,21 @@ export async function deleteThreadAction(threadId: string) {
 export async function deleteMessagesByChatIdAfterTimestampAction(
   messageId: string,
 ) {
-  "use server";
+  const session = await getSession();
+  if (!session) {
+    throw new Error("Unauthorized");
+  }
+
   await chatRepository.deleteMessagesByChatIdAfterTimestamp(messageId);
+}
+
+export async function deleteMessagesAfterMessageAction(messageId: string) {
+  const session = await getSession();
+  if (!session) {
+    throw new Error("Unauthorized");
+  }
+
+  await chatRepository.deleteMessagesAfterMessage(messageId);
 }
 
 export async function updateThreadAction(
@@ -102,6 +118,32 @@ export async function updateThreadAction(
 ) {
   const userId = await getUserId();
   await chatRepository.updateThread(id, { ...thread, userId });
+}
+
+export async function updateMessageAction(
+  message: UIMessage,
+  threadId?: string,
+) {
+  const session = await getSession();
+  if (!session) {
+    throw new Error("Unauthorized");
+  }
+
+  if (threadId) {
+    await chatRepository.upsertMessage({
+      id: message.id,
+      role: message.role,
+      parts: message.parts,
+      metadata: message.metadata as any,
+      threadId: threadId,
+    });
+  } else {
+    await chatRepository.updateChatMessage(message.id, {
+      parts: message.parts,
+      metadata: message.metadata as any,
+      role: message.role,
+    });
+  }
 }
 
 export async function deleteThreadsAction() {

@@ -6,6 +6,7 @@ import Link from "next/link";
 import { ArrowLeft, Settings } from "lucide-react";
 import { redirect, notFound } from "next/navigation";
 import { TeamMemberList } from "@/components/teams/team-member-list";
+import { TeamDangerZone } from "@/components/teams/team-danger-zone";
 
 export default async function TeamDetailsPage(props: {
   params: Promise<{ id: string }>;
@@ -65,20 +66,6 @@ export default async function TeamDetailsPage(props: {
 
         <div className="space-y-6">
           <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
-            <h3 className="font-semibold mb-2">Team Info</h3>
-            <div className="text-sm space-y-2">
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Created</span>
-                <span>{new Date(team.createdAt).toLocaleDateString()}</span>
-              </div>
-              <div className="flex justify-between">
-                <span className="text-muted-foreground">Role</span>
-                <span className="capitalize">{userRole}</span>
-              </div>
-            </div>
-          </div>
-
-          <div className="rounded-lg border bg-card text-card-foreground shadow-sm p-6">
             <h3 className="font-semibold mb-2">Team Resources</h3>
             <p className="text-sm text-muted-foreground mb-4">
               Resources shared with this team.
@@ -118,6 +105,8 @@ export default async function TeamDetailsPage(props: {
               </Button>
             </div>
           </div>
+
+          {userRole === "owner" && <TeamDangerZone teamId={team.id} />}
         </div>
       </div>
     </div>

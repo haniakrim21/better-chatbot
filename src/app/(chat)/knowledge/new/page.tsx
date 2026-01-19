@@ -9,6 +9,7 @@ import { Textarea } from "ui/textarea";
 import { toast } from "sonner";
 import { TeamSelector } from "@/components/teams/team-selector";
 import { createKnowledgeBase } from "lib/knowledge/actions";
+import { authClient } from "auth/client";
 
 export default function CreateKnowledgeBasePage() {
   const router = useRouter();
@@ -16,6 +17,8 @@ export default function CreateKnowledgeBasePage() {
   const [description, setDescription] = useState("");
   const [teamId, setTeamId] = useState<string | null>(null);
   const [loading, setLoading] = useState(false);
+  const { data: session } = authClient.useSession();
+  const userId = session?.user?.id;
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -75,6 +78,7 @@ export default function CreateKnowledgeBasePage() {
             value={teamId}
             onChange={setTeamId}
             className="w-full"
+            currentUserId={userId || ""}
           />
           <p className="text-xs text-muted-foreground">
             Assign to a team to share with members.

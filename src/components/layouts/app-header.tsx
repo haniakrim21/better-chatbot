@@ -22,6 +22,8 @@ import { TextShimmer } from "ui/text-shimmer";
 import { buildReturnUrl } from "lib/admin/navigation-utils";
 
 import { BackButton } from "@/components/layouts/back-button";
+import { getTeams } from "lib/teams/actions";
+import { useState } from "react";
 
 export function AppHeader() {
   const t = useTranslations();
@@ -191,7 +193,26 @@ function ThreadDropdownComponent() {
     if (currentThread?.id) {
       document.title = currentThread.title || "New Chat";
     }
-  }, [currentThread?.id]);
+  }, [currentThread?.id, currentThread?.title]);
+
+  const [teamName, setTeamName] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchTeamName = async () => {
+      if (currentThread?.teamId) {
+        try {
+          const teams = await getTeams();
+          const team = teams.find((t) => t.id === currentThread.teamId);
+          setTeamName(team?.name || null);
+        } catch (error) {
+          console.error("Failed to fetch team name", error);
+        }
+      } else {
+        setTeamName(null);
+      }
+    };
+    fetchTeamName();
+  }, [currentThread?.teamId]);
 
   if (!currentThread) return null;
 
@@ -212,6 +233,12 @@ function ThreadDropdownComponent() {
                 variant="ghost"
                 className="data-[state=open]:bg-input! hover:text-foreground cursor-pointer flex gap-1 items-center px-2 py-1 rounded-md hover:bg-accent"
               >
+                {teamName && (
+                  <span className="text-muted-foreground font-medium me-1 flex items-center gap-1">
+                    {teamName}
+                    <span className="text-muted-foreground/40">/</span>
+                  </span>
+                )}
                 {generatingTitleThreadIds.includes(currentThread.id) ? (
                   <TextShimmer className="truncate max-w-60 min-w-0 me-1">
                     {currentThread.title || "New Chat"}

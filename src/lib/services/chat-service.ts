@@ -19,6 +19,7 @@ import {
   buildMcpServerCustomizationsSystemPrompt,
   buildUserSystemPrompt,
   buildToolCallUnsupportedModelSystemPrompt,
+  CANVAS_USAGE_PROMPT,
 } from "lib/ai/prompts";
 import {
   ChatApiSchemaRequestBody,
@@ -74,6 +75,7 @@ export class ChatService {
       attachments = [],
       knowledgeBaseId,
       currentSelection,
+      teamId,
     } = body;
 
     // Fetch user API key if available
@@ -135,11 +137,21 @@ export class ChatService {
         id,
         title: "",
         userId: session.user.id,
+        teamId: teamId || null,
       });
       thread = await chatRepository.selectThreadDetails(newThread.id);
     }
 
-    if (thread!.userId !== session.user.id) {
+    // Verify user access to the thread
+    const teamIds = await userRepository.getTeamsByUserId(session.user.id);
+    const hasAccess =
+      thread!.userId === session.user.id ||
+      (thread!.teamId && teamIds.includes(thread!.teamId));
+
+    if (!hasAccess) {
+      logger.error(
+        `Access denied: User ${session.user.id} tried to access thread ${thread!.id} (owner: ${thread!.userId}, team: ${thread!.teamId})`,
+      );
       throw new Error("Forbidden");
     }
 
@@ -257,7 +269,10 @@ export class ChatService {
         logger.info(
           `mcp-server count: ${mcpClients.length}, mcp-tools count :${Object.keys(mcpTools).length}`,
         );
-        const teamIds = await userRepository.getTeamsByUserId(session.user.id);
+        logger.info(
+          `mcp-server count: ${mcpClients.length}, mcp-tools count :${Object.keys(mcpTools).length}`,
+        );
+        // teamIds is already fetched above
 
         const MCP_TOOLS = await safe()
           .map(errorIf(() => !isToolCallAllowed && "Not allowed"))
@@ -396,6 +411,7 @@ export class ChatService {
           buildUserSystemPrompt(session.user, userPreferences, agent),
           buildMcpServerCustomizationsSystemPrompt(mcpServerCustomizations),
           !supportToolCall && buildToolCallUnsupportedModelSystemPrompt,
+          CANVAS_USAGE_PROMPT,
           context,
         );
 
@@ -522,6 +538,7 @@ export class ChatService {
             role: message.role,
             parts: message.parts.map(convertToSavePart),
             id: message.id,
+            userId: session.user.id,
           });
           await chatRepository.upsertMessage({
             threadId: thread!.id,

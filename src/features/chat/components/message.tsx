@@ -21,19 +21,25 @@ import { useTranslations } from "next-intl";
 import { ChatMetadata } from "app-types/chat";
 import { ThesysRenderer } from "@/components/thesys-renderer";
 
+interface ExtendedUIMessage extends UIMessage {
+  userId?: string;
+}
+
 interface Props {
-  message: UIMessage;
+  message: ExtendedUIMessage;
   prevMessage?: UIMessage;
   threadId?: string;
   isLoading?: boolean;
   isLastMessage?: boolean;
-  setMessages?: UseChatHelpers<UIMessage>["setMessages"];
-  sendMessage?: UseChatHelpers<UIMessage>["sendMessage"];
+  setMessages?: UseChatHelpers<ExtendedUIMessage>["setMessages"];
+  sendMessage?: UseChatHelpers<ExtendedUIMessage>["sendMessage"];
   className?: string;
-  addToolResult?: UseChatHelpers<UIMessage>["addToolResult"];
+  addToolResult?: UseChatHelpers<ExtendedUIMessage>["addToolResult"];
   messageIndex?: number;
-  status?: UseChatHelpers<UIMessage>["status"];
+  status?: UseChatHelpers<ExtendedUIMessage>["status"];
   readonly?: boolean;
+  currentUserId?: string;
+  teamMembers?: Record<string, { name: string | null; image: string | null }>;
 }
 
 const PurePreviewMessage = ({
@@ -49,8 +55,16 @@ const PurePreviewMessage = ({
   addToolResult,
   messageIndex,
   sendMessage,
+  currentUserId,
+  teamMembers,
 }: Props) => {
   const isUserMessage = useMemo(() => message.role === "user", [message.role]);
+  const isMe = useMemo(
+    () =>
+      message.role === "user" &&
+      (!message.userId || message.userId === currentUserId),
+    [message.role, message.userId, currentUserId],
+  );
   const partsForDisplay = useMemo(
     () =>
       (message.parts || []).filter(
@@ -65,7 +79,10 @@ const PurePreviewMessage = ({
   if (!partsForDisplay.length) return null;
 
   return (
-    <div className="w-full mx-auto max-w-3xl px-6 group/message">
+    <div
+      className="w-full mx-auto max-w-3xl px-6 group/message"
+      data-role={isMe ? "user" : "assistant"}
+    >
       <div
         className={cn(
           "flex gap-4 w-full group-data-[role=user]/message:ms-auto group-data-[role=user]/message:max-w-2xl",
@@ -97,8 +114,11 @@ const PurePreviewMessage = ({
                   readonly={readonly}
                   isLast={isLastPart}
                   message={message}
+                  threadId={threadId}
                   setMessages={setMessages}
                   sendMessage={sendMessage}
+                  currentUserId={currentUserId}
+                  teamMembers={teamMembers}
                 />
               );
             }

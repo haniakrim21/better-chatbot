@@ -27,6 +27,7 @@ export interface AppState {
   agentList: AgentSummary[];
   workflowToolList: WorkflowSummary[];
   currentThreadId: ChatThread["id"] | null;
+  currentTeamId: string | null; // Added
   toolChoice: "auto" | "none" | "manual";
   allowedMcpServers?: Record<string, AllowedMCPServer>;
   allowedAppDefaultToolkit?: AppDefaultToolkit[];
@@ -100,6 +101,7 @@ const initialState: AppState = {
   agentList: [],
   workflowToolList: [],
   currentThreadId: null,
+  currentTeamId: null, // Added
   toolChoice: "auto",
   allowedMcpServers: undefined,
   openUserSettings: false,
@@ -155,6 +157,8 @@ export const appStore = create<AppState & AppDispatch>()(
           state.allowedAppDefaultToolkit ??
           initialState.allowedAppDefaultToolkit
         )?.filter((v) => Object.values(AppDefaultToolkit).includes(v)),
+        // Persist currentTeamId
+        currentTeamId: state.currentTeamId,
         temporaryChat: {
           ...initialState.temporaryChat,
           ...state.temporaryChat,

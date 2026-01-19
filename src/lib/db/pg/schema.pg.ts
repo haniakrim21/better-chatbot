@@ -21,6 +21,7 @@ import { UIMessage } from "ai";
 import { ChatMetadata } from "app-types/chat";
 import { TipTapMentionJsonContent } from "@/types/util";
 
+// Team Table Changes
 export const TeamTable = pgTable("team", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
   name: text("name").notNull(),
@@ -28,10 +29,12 @@ export const TeamTable = pgTable("team", {
   ownerId: uuid("owner_id")
     .notNull()
     .references(() => UserTable.id, { onDelete: "cascade" }),
+  isGroupChat: boolean("is_group_chat").notNull().default(false), // Added flag
   createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
+// Team Relations
 export const TeamRelations = relations(TeamTable, ({ one, many }) => ({
   owner: one(UserTable, {
     fields: [TeamTable.ownerId],
@@ -153,6 +156,12 @@ export const ChatThreadTable = pgTable("chat_thread", {
   userId: uuid("user_id")
     .notNull()
     .references(() => UserTable.id, { onDelete: "cascade" }),
+  teamId: uuid("team_id").references(() => TeamTable.id, {
+    onDelete: "cascade",
+  }),
+  folderId: uuid("folder_id").references(() => ChatFolderTable.id, {
+    onDelete: "set null",
+  }),
   createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
@@ -164,6 +173,9 @@ export const ChatMessageTable = pgTable("chat_message", {
   role: text("role").notNull().$type<UIMessage["role"]>(),
   parts: json("parts").notNull().array().$type<UIMessage["parts"]>(),
   metadata: json("metadata").$type<ChatMetadata>(),
+  userId: uuid("user_id").references(() => UserTable.id, {
+    onDelete: "cascade",
+  }),
   createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
@@ -561,6 +573,39 @@ export const ApiKeyTable = pgTable(
   (table) => [unique().on(table.userId, table.provider)],
 );
 
+export const ChatFolderTable = pgTable("chat_folder", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  name: text("name").notNull(),
+  color: text("color"), // Hex code or tailwind class
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => UserTable.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const PromptTable = pgTable("prompt_library", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  title: text("title").notNull(),
+  content: text("content").notNull(),
+  tags: json("tags").$type<string[]>(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => UserTable.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export const ModelPricingTable = pgTable("model_pricing", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  modelId: text("model_id").notNull(), // e.g., 'gpt-4'
+  provider: text("provider").notNull(), // e.g., 'openai'
+  inputPrice: integer("input_price").notNull().default(0), // Price per 1M tokens in scents (or smallest unit)
+  outputPrice: integer("output_price").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
 export const UsageTrackingTable = pgTable("usage_tracking", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
   userId: uuid("user_id")
@@ -571,9 +616,13 @@ export const UsageTrackingTable = pgTable("usage_tracking", {
   inputTokens: integer("input_tokens").notNull().default(0),
   outputTokens: integer("output_tokens").notNull().default(0),
   totalTokens: integer("total_tokens").notNull().default(0),
+  cost: integer("cost").default(0), // Calculated cost for this record
   createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
 });
 
 export type CanvasDocumentEntity = typeof CanvasDocumentTable.$inferSelect;
 export type ApiKeyEntity = typeof ApiKeyTable.$inferSelect;
 export type UsageTrackingEntity = typeof UsageTrackingTable.$inferSelect;
+export type ChatFolderEntity = typeof ChatFolderTable.$inferSelect;
+export type PromptEntity = typeof PromptTable.$inferSelect;
+export type ModelPricingEntity = typeof ModelPricingTable.$inferSelect;

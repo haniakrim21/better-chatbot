@@ -46,6 +46,7 @@ import {
 import { useTranslations } from "next-intl";
 import { Think } from "ui/think";
 import { useGenerateThreadTitle } from "@/hooks/queries/use-generate-thread-title";
+import { getTeamMembers } from "lib/teams/actions";
 interface Props {
   threadId: string;
   initialMessages: any[];
@@ -53,6 +54,7 @@ interface Props {
   agentAvatar?: any;
   initialModel?: ChatModel;
   isEmbedded?: boolean;
+  currentUserId?: string;
 }
 
 export default function ChatBot({
@@ -62,7 +64,11 @@ export default function ChatBot({
   agentAvatar,
   initialModel,
   isEmbedded = false,
+  currentUserId,
 }: Props) {
+  const [teamMembers, setTeamMembers] = useState<
+    Record<string, { name: string | null; image: string | null }>
+  >({});
   const containerRef = useRef<HTMLDivElement>(null);
   const [isAtBottom, setIsAtBottom] = useState(true);
   const { uploadFiles } = useThreadFileUploader(threadId);
@@ -89,6 +95,7 @@ export default function ChatBot({
     threadImageToolModel,
     threadKnowledgeBase,
     canvas,
+    currentTeamId,
   ] = appStore(
     useShallow((state) => [
       state.mutate,
@@ -102,12 +109,30 @@ export default function ChatBot({
       state.threadImageToolModel,
       state.threadKnowledgeBase,
       state.canvas,
+      state.currentTeamId,
     ]),
   );
 
   const generateTitle = useGenerateThreadTitle({
     threadId,
   });
+
+  useEffect(() => {
+    if (currentTeamId && currentUserId) {
+      getTeamMembers(currentTeamId, currentUserId).then((data) => {
+        const map: Record<
+          string,
+          { name: string | null; image: string | null }
+        > = {};
+        data.forEach((m: any) => {
+          map[m.user.id] = { name: m.user.name, image: m.user.image };
+        });
+        setTeamMembers(map);
+      });
+    } else {
+      setTeamMembers({});
+    }
+  }, [currentTeamId, currentUserId]);
 
   const onFinish = useCallback(() => {
     const messages = latestRef.current.messages;
@@ -133,7 +158,10 @@ export default function ChatBot({
         generateTitle(part.join("\n\n"));
       }
     } else if (latestRef.current.threadList[0]?.id !== threadId) {
-      mutate("/api/thread");
+      const key = latestRef.current.currentTeamId
+        ? `/api/thread?teamId=${latestRef.current.currentTeamId}`
+        : "/api/thread";
+      mutate(key);
     }
   }, []);
 
@@ -212,6 +240,7 @@ export default function ChatBot({
           attachments,
           currentSelection:
             latestRef.current.canvas?.currentSelection || undefined,
+          teamId: latestRef.current.currentTeamId || undefined,
         };
         return { body: requestBody };
       },
@@ -317,6 +346,7 @@ export default function ChatBot({
     threadImageToolModel,
     knowledgeBaseId: threadKnowledgeBase[threadId],
     canvas,
+    currentTeamId,
   });
 
   const isLoading = useMemo(
@@ -481,6 +511,8 @@ export default function ChatBot({
                     isLastMessage={isLastMessage}
                     setMessages={setMessages}
                     sendMessage={sendMessage}
+                    currentUserId={currentUserId}
+                    teamMembers={teamMembers}
                     className={
                       isLastMessage &&
                       message.role != "user" &&

@@ -115,7 +115,7 @@ export async function inviteMember(
     !membership ||
     (membership.role !== "owner" && membership.role !== "admin")
   ) {
-    throw new Error("Permission denied");
+    return { error: "Permission denied" };
   }
 
   const user = await db.query.UserTable.findFirst({
@@ -123,7 +123,7 @@ export async function inviteMember(
   });
 
   if (!user) {
-    throw new Error("User not found");
+    return { error: "User not found" };
   }
 
   // Check if exists
@@ -135,7 +135,7 @@ export async function inviteMember(
   });
 
   if (existing) {
-    throw new Error("User is already a member");
+    return { error: "User is already a member" };
   }
 
   await db.insert(TeamMemberTable).values({
@@ -145,6 +145,7 @@ export async function inviteMember(
   });
 
   revalidatePath(`/teams/${teamId}`);
+  return { success: true };
 }
 
 export async function removeMember(teamId: string, targetUserId: string) {
@@ -296,4 +297,31 @@ export async function updateMemberRole(
     );
 
   revalidatePath(`/teams/${teamId}`);
+}
+
+export async function deleteTeam(teamId: string) {
+  const session = await getSession();
+  if (!session) {
+    return { error: "Unauthorized" };
+  }
+  const userId = session.user.id;
+
+  // Verify ownership
+  const team = await db.query.TeamTable.findFirst({
+    where: eq(TeamTable.id, teamId),
+  });
+
+  if (!team) {
+    return { error: "Team not found" };
+  }
+
+  if (team.ownerId !== userId) {
+    return { error: "Permission denied. Only the owner can delete the team." };
+  }
+
+  await db.delete(TeamTable).where(eq(TeamTable.id, teamId));
+
+  revalidatePath("/teams");
+  revalidatePath("/");
+  return { success: true };
 }

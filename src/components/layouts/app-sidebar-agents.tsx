@@ -137,7 +137,7 @@ export function AppSidebarAgents({ userRole }: { userRole?: string | null }) {
               {canCreateAgent(userRole) ? (
                 <Link
                   href={"/agent/new"}
-                  className="bg-input/40 py-8 px-4 hover:bg-input/100 rounded-lg cursor-pointer flex justify-between items-center text-xs overflow-hidden"
+                  className="bg-input/40 py-8 px-4 hover:bg-input rounded-lg cursor-pointer flex justify-between items-center text-xs overflow-hidden"
                   data-testid="sidebar-create-agent-link"
                 >
                   <div className="gap-1 z-10">
@@ -173,7 +173,7 @@ export function AppSidebarAgents({ userRole }: { userRole?: string | null }) {
             <div className="flex flex-col">
               <div className="relative">
                 {expanded && (
-                  <div className="absolute bottom-0 left-0 right-0 h-4 z-10 pointer-events-none bg-gradient-to-t from-background to-transparent" />
+                  <div className="absolute bottom-0 left-0 right-0 h-4 z-10 pointer-events-none bg-linear-to-t from-background to-transparent" />
                 )}
                 <div
                   className={cn(

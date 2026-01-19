@@ -5,7 +5,6 @@ import {
   Check,
   Copy,
   Loader,
-  Pencil,
   ChevronDownIcon,
   ChevronUp,
   RefreshCw,
@@ -18,6 +17,8 @@ import {
   FileIcon,
   Download,
 } from "lucide-react";
+import { MessageActionsMenu } from "./message-actions-menu";
+
 import { Tooltip, TooltipContent, TooltipTrigger } from "ui/tooltip";
 import { Button } from "ui/button";
 import { Badge } from "ui/badge";
@@ -25,7 +26,7 @@ import { Markdown } from "@/components/markdown";
 import { cn, safeJSONParse, truncateString } from "lib/utils";
 import JsonView from "ui/json-view";
 import { useMemo, useState, memo, useEffect, useRef, useCallback } from "react";
-import { MessageEditor } from "./message-editor";
+
 import type { UseChatHelpers } from "@ai-sdk/react";
 import { useCopy } from "@/hooks/use-copy";
 
@@ -65,6 +66,8 @@ import { ModelProviderIcon } from "ui/model-provider-icon";
 import { appStore } from "@/app/store";
 import { BACKGROUND_COLORS, EMOJI_DATA } from "lib/const";
 
+type ExtendedUIMessage = UIMessage & { userId?: string };
+
 type MessagePart = UIMessage["parts"][number];
 type TextMessagePart = Extract<MessagePart, { type: "text" }>;
 type AssistMessagePart = Extract<MessagePart, { type: "text" }>;
@@ -72,24 +75,29 @@ type AssistMessagePart = Extract<MessagePart, { type: "text" }>;
 interface UserMessagePartProps {
   part: TextMessagePart;
   isLast: boolean;
-  message: UIMessage;
-  setMessages?: UseChatHelpers<UIMessage>["setMessages"];
-  sendMessage?: UseChatHelpers<UIMessage>["sendMessage"];
-  status?: UseChatHelpers<UIMessage>["status"];
+  message: ExtendedUIMessage;
+  threadId?: string;
+  setMessages?: UseChatHelpers<ExtendedUIMessage>["setMessages"];
+  sendMessage?: UseChatHelpers<ExtendedUIMessage>["sendMessage"];
+  status?: UseChatHelpers<ExtendedUIMessage>["status"];
   isError?: boolean;
   readonly?: boolean;
+  currentUserId?: string;
+  teamMembers?: Record<string, { name: string | null; image: string | null }>;
 }
+
+// ... existing AssistMessagePartProps ...
 
 interface AssistMessagePartProps {
   part: AssistMessagePart;
   isLast?: boolean;
   isLoading?: boolean;
-  message: UIMessage;
+  message: ExtendedUIMessage;
   prevMessage?: UIMessage;
   showActions: boolean;
   threadId?: string;
-  setMessages?: UseChatHelpers<UIMessage>["setMessages"];
-  sendMessage?: UseChatHelpers<UIMessage>["sendMessage"];
+  setMessages?: UseChatHelpers<ExtendedUIMessage>["setMessages"];
+  sendMessage?: UseChatHelpers<ExtendedUIMessage>["sendMessage"];
   isError?: boolean;
   readonly?: boolean;
 }
@@ -100,14 +108,14 @@ interface ToolMessagePartProps {
   showActions: boolean;
   isLast?: boolean;
   isManualToolInvocation?: boolean;
-  addToolResult?: UseChatHelpers<UIMessage>["addToolResult"];
+  addToolResult?: UseChatHelpers<ExtendedUIMessage>["addToolResult"];
   isError?: boolean;
-  setMessages?: UseChatHelpers<UIMessage>["setMessages"];
+  setMessages?: UseChatHelpers<ExtendedUIMessage>["setMessages"];
   readonly?: boolean;
 }
 
 const MAX_TEXT_LENGTH = 600;
-export const UserMessagePart = memo(
+export const UserMessagePart = memo<UserMessagePartProps>(
   function UserMessagePart({
     part,
     isLast,
@@ -117,43 +125,33 @@ export const UserMessagePart = memo(
     sendMessage,
     readonly,
     isError,
+    threadId,
+    currentUserId,
+    teamMembers,
   }: UserMessagePartProps) {
     const { copied, copy } = useCopy();
     const t = useTranslations();
-    const [mode, setMode] = useState<"view" | "edit">("view");
-    const [isDeleting, setIsDeleting] = useState(false);
+
     const [expanded, setExpanded] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
     const scrolledRef = useRef(false);
+
+    const isMe = useMemo(
+      () =>
+        !message.userId || (currentUserId && message.userId === currentUserId),
+      [message.userId, currentUserId],
+    );
+
+    const sender = useMemo(() => {
+      if (isMe) return null;
+      return teamMembers?.[message.userId!] || { name: "User", image: null };
+    }, [isMe, teamMembers, message.userId]);
 
     const isLongText = part.text.length > MAX_TEXT_LENGTH;
     const displayText =
       expanded || !isLongText
         ? part.text
         : truncateString(part.text, MAX_TEXT_LENGTH);
-
-    const deleteMessage = useCallback(async () => {
-      if (!setMessages) return;
-      const ok = await notify.confirm({
-        title: "Delete Message",
-        description: "Are you sure you want to delete this message?",
-      });
-      if (!ok) return;
-      safe(() => setIsDeleting(true))
-        .ifOk(() => deleteMessageAction(message.id))
-        .ifOk(() =>
-          setMessages((messages) => {
-            const index = messages.findIndex((m) => m.id === message.id);
-            if (index !== -1) {
-              return messages.filter((_, i) => i !== index);
-            }
-            return messages;
-          }),
-        )
-        .ifFail((error) => toast.error(error.message))
-        .watch(() => setIsDeleting(false))
-        .unwrap();
-    }, [message.id]);
 
     useEffect(() => {
       if (status === "submitted" && isLast && !scrolledRef.current) {
@@ -162,21 +160,24 @@ export const UserMessagePart = memo(
       }
     }, [status]);
 
-    if (mode === "edit" && setMessages && sendMessage) {
-      return (
-        <div className="flex flex-row gap-2 items-start w-full">
-          <MessageEditor
-            message={message}
-            setMode={setMode}
-            setMessages={setMessages}
-            sendMessage={sendMessage}
-          />
-        </div>
-      );
-    }
-
     return (
-      <div className="flex flex-col gap-2 items-end my-2">
+      <div
+        className={cn(
+          "flex flex-col gap-2 my-2",
+          isMe ? "items-end" : "items-start",
+        )}
+      >
+        {!isMe && sender && (
+          <div className="flex items-center gap-2 mb-1 ms-1">
+            <Avatar className="size-6">
+              <AvatarImage src={sender.image || ""} />
+              <AvatarFallback>{sender.name?.[0] || "?"}</AvatarFallback>
+            </Avatar>
+            <span className="text-xs text-muted-foreground font-medium">
+              {sender.name}
+            </span>
+          </div>
+        )}
         <div
           data-testid="message-content"
           className={cn(
@@ -189,9 +190,9 @@ export const UserMessagePart = memo(
           )}
         >
           {isLongText && !expanded && (
-            <div className="absolute pointer-events-none bg-gradient-to-t from-accent to-transparent w-full h-40 bottom-0 left-0" />
+            <div className="absolute pointer-events-none bg-linear-to-t from-accent to-transparent w-full h-40 bottom-0 left-0" />
           )}
-          <p className={cn("whitespace-pre-wrap text-sm break-words")}>
+          <p className="whitespace-pre-wrap text-sm wrap-break-word">
             {displayText}
           </p>
           {isLongText && (
@@ -212,63 +213,34 @@ export const UserMessagePart = memo(
             </Button>
           )}
         </div>
-        {isLast && (
-          <div className="flex w-full justify-end md:opacity-0 group-hover/message:opacity-100 transition-opacity duration-300">
-            <Tooltip>
-              <TooltipTrigger asChild>
-                <Button
-                  data-testid="message-edit-button"
-                  variant="ghost"
-                  size="icon"
-                  className={cn("size-3! p-4!")}
-                  onClick={() => copy(part.text)}
-                >
-                  {copied ? <Check /> : <Copy />}
-                </Button>
-              </TooltipTrigger>
-              <TooltipContent side="bottom">Copy</TooltipContent>
-            </Tooltip>
-            {!readonly && (
-              <>
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      data-testid="message-edit-button"
-                      variant="ghost"
-                      size="icon"
-                      className="size-3! p-4!"
-                      onClick={() => setMode("edit")}
-                    >
-                      <Pencil />
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent side="bottom">Edit</TooltipContent>
-                </Tooltip>
 
-                <Tooltip>
-                  <TooltipTrigger asChild>
-                    <Button
-                      disabled={isDeleting}
-                      onClick={deleteMessage}
-                      variant="ghost"
-                      size="icon"
-                      className="size-3! p-4! hover:text-destructive"
-                    >
-                      {isDeleting ? (
-                        <Loader className="animate-spin" />
-                      ) : (
-                        <Trash2 />
-                      )}
-                    </Button>
-                  </TooltipTrigger>
-                  <TooltipContent className="text-destructive" side="bottom">
-                    Delete Message
-                  </TooltipContent>
-                </Tooltip>
-              </>
-            )}
-          </div>
-        )}
+        <div className="flex w-full justify-end items-center gap-1 md:opacity-0 group-hover/message:opacity-100 transition-opacity duration-300">
+          <Tooltip>
+            <TooltipTrigger asChild>
+              <Button
+                data-testid="message-edit-button"
+                variant="ghost"
+                size="icon"
+                className="size-3! p-4!"
+                onClick={() => copy(part.text)}
+              >
+                {copied ? <Check /> : <Copy />}
+              </Button>
+            </TooltipTrigger>
+            <TooltipContent side="bottom">Copy</TooltipContent>
+          </Tooltip>
+          {!readonly && setMessages && (
+            <>
+              <MessageActionsMenu
+                message={message}
+                setMessages={setMessages}
+                isReadOnly={readonly}
+                threadId={threadId}
+              />
+            </>
+          )}
+        </div>
+
         <div ref={ref} className="min-w-0" />
       </div>
     );
@@ -299,36 +271,13 @@ export const AssistMessagePart = memo(function AssistMessagePart({
   const { copied, copy } = useCopy();
   const [isLoading, setIsLoading] = useState(false);
   const agentList = appStore((state) => state.agentList);
-  const [isDeleting, setIsDeleting] = useState(false);
+
   const ref = useRef<HTMLDivElement>(null);
   const metadata = message.metadata as ChatMetadata | undefined;
 
   const agent = useMemo(() => {
     return agentList.find((a) => a.id === metadata?.agentId);
   }, [metadata, agentList]);
-
-  const deleteMessage = useCallback(async () => {
-    if (!setMessages) return;
-    const ok = await notify.confirm({
-      title: "Delete Message",
-      description: "Are you sure you want to delete this message?",
-    });
-    if (!ok) return;
-    safe(() => setIsDeleting(true))
-      .ifOk(() => deleteMessageAction(message.id))
-      .ifOk(() =>
-        setMessages((messages) => {
-          const index = messages.findIndex((m) => m.id === message.id);
-          if (index !== -1) {
-            return messages.filter((_, i) => i !== index);
-          }
-          return messages;
-        }),
-      )
-      .ifFail((error) => toast.error(error.message))
-      .watch(() => setIsDeleting(false))
-      .unwrap();
-  }, [message.id]);
 
   const handleModelChange = (model: ChatModel) => {
     if (!setMessages || !sendMessage || !prevMessage) return;
@@ -375,7 +324,7 @@ export const AssistMessagePart = memo(function AssistMessagePart({
         <Markdown>{part.text}</Markdown>
       </div>
       {showActions && (
-        <div className="flex w-full">
+        <div className="flex w-full items-center gap-1">
           <Tooltip>
             <TooltipTrigger asChild>
               <Button
@@ -390,7 +339,7 @@ export const AssistMessagePart = memo(function AssistMessagePart({
             </TooltipTrigger>
             <TooltipContent>Copy</TooltipContent>
           </Tooltip>
-          {!readonly && (
+          {!readonly && setMessages && (
             <>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -409,26 +358,13 @@ export const AssistMessagePart = memo(function AssistMessagePart({
                 </TooltipTrigger>
                 <TooltipContent>Change Model</TooltipContent>
               </Tooltip>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <Button
-                    variant="ghost"
-                    size="icon"
-                    disabled={isDeleting}
-                    onClick={deleteMessage}
-                    className="size-3! p-4! hover:text-destructive"
-                  >
-                    {isDeleting ? (
-                      <Loader className="animate-spin" />
-                    ) : (
-                      <Trash2 />
-                    )}
-                  </Button>
-                </TooltipTrigger>
-                <TooltipContent className="text-destructive">
-                  Delete Message
-                </TooltipContent>
-              </Tooltip>
+
+              <MessageActionsMenu
+                message={message}
+                setMessages={setMessages}
+                // onEdit={() => setMode("edit")}
+                isReadOnly={readonly}
+              />
             </>
           )}
 
@@ -487,7 +423,7 @@ export const AssistMessagePart = memo(function AssistMessagePart({
                         <div className="flex gap-3 items-center">
                           <ModelProviderIcon
                             provider={metadata.chatModel.provider}
-                            className="size-5 flex-shrink-0"
+                            className="size-5 shrink-0"
                           />
                           <div className="space-y-0.5 flex-1">
                             <div className="text-sm font-medium text-foreground">
@@ -1017,7 +953,7 @@ export const ToolMessagePart = memo(
               <div className="w-7 flex justify-center">
                 <Separator
                   orientation="vertical"
-                  className="h-full bg-gradient-to-t from-transparent to-border to-5%"
+                  className="h-full bg-linear-to-t from-transparent to-border to-5%"
                 />
               </div>
               <div className="w-full flex flex-col gap-2">
@@ -1254,7 +1190,7 @@ export const FileMessagePart = memo(
         <div className="flex items-start gap-4">
           <div
             className={cn(
-              "flex-shrink-0 rounded-xl p-3",
+              "shrink-0 rounded-xl p-3",
               isUserMessage ? "bg-accent-foreground/10" : "bg-muted",
             )}
           >
@@ -1298,7 +1234,7 @@ export const FileMessagePart = memo(
               {secondaryLabel && (
                 <span
                   className={cn(
-                    "truncate max-w-[10rem]",
+                    "truncate max-w-40",
                     isUserMessage
                       ? "text-accent-foreground/70"
                       : "text-muted-foreground",
@@ -1318,7 +1254,7 @@ export const FileMessagePart = memo(
                   size="icon"
                   variant="ghost"
                   className={cn(
-                    "size-9 flex-shrink-0 hover:text-foreground",
+                    "size-9 shrink-0 hover:text-foreground",
                     isUserMessage
                       ? "text-accent-foreground/70 hover:text-accent-foreground"
                       : "text-muted-foreground",
@@ -1367,7 +1303,7 @@ export function SourceUrlMessagePart({
       <div className="flex items-start gap-4 max-w-sm">
         <div
           className={cn(
-            "flex-shrink-0 rounded-xl p-3",
+            "shrink-0 rounded-xl p-3",
             isUserMessage ? "bg-accent-foreground/10" : "bg-muted",
           )}
         >
@@ -1412,7 +1348,7 @@ export function SourceUrlMessagePart({
               {ext}
             </Badge>
             {mediaType && (
-              <span className="truncate max-w-[10rem]" title={mediaType}>
+              <span className="truncate max-w-40" title={mediaType}>
                 {mediaType}
               </span>
             )}
@@ -1425,7 +1361,7 @@ export function SourceUrlMessagePart({
               size="icon"
               variant="ghost"
               className={cn(
-                "size-9 flex-shrink-0 hover:text-foreground",
+                "size-9 shrink-0 hover:text-foreground",
                 isUserMessage
                   ? "text-accent-foreground/70 hover:text-accent-foreground"
                   : "text-muted-foreground",

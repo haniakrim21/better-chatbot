@@ -19,7 +19,16 @@ export default async function Page({
 
   const thread = await fetchThread(threadId);
 
+  const { getSession } = await import("lib/auth/server");
+  const session = await getSession();
+
   if (!thread) redirect("/", RedirectType.replace);
 
-  return <ChatBot threadId={threadId} initialMessages={thread.messages} />;
+  return (
+    <ChatBot
+      threadId={threadId}
+      initialMessages={thread.messages}
+      currentUserId={session?.user.id}
+    />
+  );
 }

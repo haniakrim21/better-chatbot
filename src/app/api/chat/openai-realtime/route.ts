@@ -1,5 +1,7 @@
 import { NextRequest } from "next/server";
 import { getSession } from "auth/server";
+import fetch from "node-fetch";
+import https from "https";
 import { VercelAIMcpTool } from "app-types/mcp";
 import {
   filterMcpServerCustomizations,
@@ -98,13 +100,15 @@ export async function POST(request: NextRequest) {
 
     const bindingTools = [...openAITools, ...DEFAULT_VOICE_TOOLS];
 
+    const httpsAgent = new https.Agent({ family: 4 });
+
     const r = await fetch("https://api.openai.com/v1/realtime/sessions", {
       method: "POST",
       headers: {
         Authorization: `Bearer ${process.env.OPENAI_API_KEY}`,
         "Content-Type": "application/json",
       },
-
+      agent: httpsAgent,
       body: JSON.stringify({
         model: "gpt-4o-realtime-preview",
         voice: voice || "alloy",
@@ -133,7 +137,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    return new Response(r.body, {
+    return new Response(r.body as any, {
       status: 200,
       headers: {
         "Content-Type": "application/json",

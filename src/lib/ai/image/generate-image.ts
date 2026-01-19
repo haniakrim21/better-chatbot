@@ -7,8 +7,7 @@ import {
 import { safe, watchError } from "ts-safe";
 import { getBase64Data } from "lib/file-storage/storage-utils";
 import { serverFileStorage } from "lib/file-storage";
-import { openai } from "@ai-sdk/openai";
-import { xai } from "@ai-sdk/xai";
+import { openai, xai } from "lib/ai/models";
 
 // Helper to convert Blob to Base64
 

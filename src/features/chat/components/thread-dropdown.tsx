@@ -5,6 +5,8 @@ import { useToRef } from "@/hooks/use-latest";
 import {
   Archive,
   ChevronRight,
+  Folder,
+  FolderMinus,
   Loader,
   PencilLine,
   Trash,
@@ -13,7 +15,7 @@ import {
 import { useRouter } from "next/navigation";
 import { type PropsWithChildren, useState } from "react";
 import { toast } from "sonner";
-import { mutate } from "swr";
+import useSWR, { mutate } from "swr";
 import { safe } from "ts-safe";
 import { Button } from "ui/button";
 import {
@@ -40,11 +42,16 @@ import {
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuTrigger,
+  DropdownMenuSeparator,
 } from "ui/dropdown-menu";
 import { useTranslations } from "next-intl";
 import { addItemToArchiveAction } from "@/app/api/archive/actions";
 import { useShallow } from "zustand/shallow";
 import { ChatExportPopup } from "@/components/export/chat-export-popup";
+import {
+  getFoldersAction,
+  moveChatToFolderAction,
+} from "@/app/actions/folder-actions";
 
 type Props = PropsWithChildren<{
   threadId: string;
@@ -73,6 +80,8 @@ export function ThreadDropdown({
   const [open, setOpen] = useState(false);
 
   const [isDeleting, setIsDeleting] = useState(false);
+
+  const { data: folders } = useSWR("folders", getFoldersAction);
 
   const handleUpdate = async (title: string) => {
     safe()
@@ -131,6 +140,16 @@ export function ThreadDropdown({
       .unwrap();
   };
 
+  const handleMoveToFolder = async (folderId: string | null) => {
+    try {
+      await moveChatToFolderAction(threadId, folderId);
+      mutate("/api/thread");
+      toast.success(folderId ? "Moved to folder" : "Removed from folder");
+    } catch (_e) {
+      toast.error("Failed to move chat");
+    }
+  };
+
   return (
     <Popover open={open} onOpenChange={setOpen}>
       <PopoverTrigger asChild>{children}</PopoverTrigger>
@@ -160,6 +179,54 @@ export function ThreadDropdown({
                     <span className="me-4">{t("Chat.Thread.renameChat")}</span>
                   </div>
                 </UpdateThreadNameDialog>
+              </CommandItem>
+
+              <CommandItem className="cursor-pointer p-0">
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <div className="flex items-center gap-2 w-full px-2 py-1 rounded hover:bg-accent">
+                      <Folder className="text-foreground" />
+                      <span className="me-4">Move to Folder</span>
+                      <ChevronRight className="ms-auto h-4 w-4 rtl:rotate-180" />
+                    </div>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent
+                    side="right"
+                    align="start"
+                    className="w-56"
+                  >
+                    <DropdownMenuItem
+                      onClick={() => handleMoveToFolder(null)}
+                      className="cursor-pointer text-muted-foreground"
+                    >
+                      <FolderMinus className="me-2 h-4 w-4" />
+                      <span>Remove from Folder</span>
+                    </DropdownMenuItem>
+                    <DropdownMenuSeparator />
+                    {folders?.length === 0 ? (
+                      <DropdownMenuItem
+                        disabled
+                        className="text-muted-foreground"
+                      >
+                        No Folders Created
+                      </DropdownMenuItem>
+                    ) : (
+                      folders?.map((folder) => (
+                        <DropdownMenuItem
+                          key={folder.id}
+                          onClick={() => handleMoveToFolder(folder.id)}
+                          className="cursor-pointer"
+                        >
+                          <span
+                            className="h-2 w-2 rounded-full mr-2"
+                            style={{ backgroundColor: folder.color || "#888" }}
+                          />
+                          <span className="truncate">{folder.name}</span>
+                        </DropdownMenuItem>
+                      ))
+                    )}
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </CommandItem>
 
               <CommandItem className="cursor-pointer p-0">
