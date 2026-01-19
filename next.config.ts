@@ -18,7 +18,7 @@ export default () => {
     env: {
       NO_HTTPS: process.env.NO_HTTPS,
     },
-    serverExternalPackages: ["pg", "drizzle-orm"],
+    serverExternalPackages: ["pg", "drizzle-orm", "better-auth"],
     experimental: {
       taint: false,
       authInterrupts: false,
