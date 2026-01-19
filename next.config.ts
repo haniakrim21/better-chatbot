@@ -18,8 +18,8 @@ export default () => {
     env: {
       NO_HTTPS: process.env.NO_HTTPS,
     },
+    serverExternalPackages: ["pg", "drizzle-orm"],
     experimental: {
-      serverComponentsExternalPackages: ["pg", "drizzle-orm"],
       taint: false,
       authInterrupts: false,
       serverActions: {
