@@ -7,10 +7,18 @@ ENV DOCKER_BUILD=1
 RUN apk add --no-cache libc6-compat python3 make g++
 WORKDIR /app
 
+
 # Install dependencies based on the preferred package manager
 COPY package.json pnpm-lock.yaml* ./
 COPY scripts ./scripts
 RUN corepack enable pnpm && pnpm i --frozen-lockfile
+
+# Install production dependencies only
+FROM base AS prod-deps
+WORKDIR /app
+COPY package.json pnpm-lock.yaml* ./
+RUN corepack enable pnpm && pnpm i --prod --frozen-lockfile
+
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -46,6 +54,8 @@ RUN chown nextjs:nodejs .next
 # Automatically leverage output traces to reduce image size
 # https://nextjs.org/docs/advanced-features/output-file-tracing
 COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
+COPY --from=prod-deps --chown=nextjs:nodejs /app/node_modules ./node_modules
+
 COPY --from=builder --chown=nextjs:nodejs /app/.next/static ./.next/static
 
 # Copy migrations content
