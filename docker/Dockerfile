@@ -19,10 +19,9 @@ FROM base AS prod-deps
 WORKDIR /app
 COPY package.json pnpm-lock.yaml* ./
 COPY scripts ./scripts
+RUN echo "node-linker=hoisted" > .npmrc
 RUN corepack enable pnpm && \
-    pnpm config set node-linker hoisted && \
-    pnpm i --prod --frozen-lockfile
-
+    pnpm i --prod --no-frozen-lockfile
 
 # Rebuild the source code only when needed
 FROM base AS builder
@@ -74,4 +73,4 @@ EXPOSE 3000
 ENV PORT=3000
 ENV HOSTNAME="0.0.0.0"
 
-CMD ["sh", "-c", "npx tsx scripts/db-migrate.ts && node server.js"]
+CMD ["sh", "-c", "./node_modules/.bin/tsx scripts/db-migrate.ts && node server.js"]
