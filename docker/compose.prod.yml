@@ -32,19 +32,32 @@ services:
 
 
   # Dedicated service for running migrations
+  caddy:
+    image: caddy:alpine
+    container_name: docker-caddy
+    restart: always
+    ports:
+      - "80:80"
+      - "443:443"
+    volumes:
+      - ./Caddyfile:/etc/caddy/Caddyfile
+      - caddy_data:/data
+      - caddy_config:/config
+    depends_on:
+      - better-chatbot
+    networks:
+      - better-chatbot-networks
+
   migrator:
     container_name: better_chatbot_migrator
     build:
       context: ..
-      dockerfile: ./docker/Dockerfile
-    # Override the default command to run migrations
-    command: sh -c "./node_modules/.bin/tsx scripts/db-migrate.ts"
-    environment:
-      - NODE_ENV=production
-      - POSTGRES_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-better_chatbot}
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-better_chatbot}
+      dockerfile: docker/Dockerfile
+    command: pnpm db:migrate
     env_file:
       - ../.env
+    environment:
+      POSTGRES_URL: postgres://postgres:password@postgres:5432/better_chatbot
     networks:
       - better-chatbot-networks
     depends_on:
@@ -98,6 +111,8 @@ volumes:
   redis_data:
   uploads_data:
     name: better-chatbot-uploads
+  caddy_data:
+  caddy_config:
 
 networks:
   better-chatbot-networks:

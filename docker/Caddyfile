@@ -1,0 +1,3 @@
+nabdai.io {
+    reverse_proxy better-chatbot:3000
+}

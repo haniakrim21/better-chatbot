@@ -20,6 +20,7 @@ const nextConfig = {
         "10.138.73.233:3001",
         "72.62.190.235:3000",
         "72.62.190.235:3010",
+        "nabdai.io",
         "nabd-ai.vercel.app",
         "nabdai.sliplane.app",
         "nabd.sliplane.app",
