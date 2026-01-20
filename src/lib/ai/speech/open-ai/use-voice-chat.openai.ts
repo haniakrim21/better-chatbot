@@ -98,6 +98,11 @@ export function useOpenAIVoiceChat(props?: VoiceChatOptions): VoiceChatSession {
   const startListening = useCallback(async () => {
     try {
       if (!audioStream.current) {
+        if (!navigator.mediaDevices?.getUserMedia) {
+          throw new Error(
+            "Voice chat requires a secure connection (HTTPS) or localhost. Please enable HTTPS to use this feature.",
+          );
+        }
         audioStream.current = await navigator.mediaDevices.getUserMedia({
           audio: true,
         });
@@ -190,7 +195,12 @@ export function useOpenAIVoiceChat(props?: VoiceChatOptions): VoiceChatSession {
       toolName,
       args,
       id,
-    }: { callId: string; toolName: string; args: string; id: string }) => {
+    }: {
+      callId: string;
+      toolName: string;
+      args: string;
+      id: string;
+    }) => {
       let toolResult: any = "success";
       stopListening();
       const toolArgs = JSON.parse(args);
@@ -417,6 +427,11 @@ export function useOpenAIVoiceChat(props?: VoiceChatOptions): VoiceChatSession {
         }
       };
       if (!audioStream.current) {
+        if (!navigator.mediaDevices?.getUserMedia) {
+          throw new Error(
+            "Voice chat requires a secure connection (HTTPS) or localhost. Please enable HTTPS to use this feature.",
+          );
+        }
         audioStream.current = await navigator.mediaDevices.getUserMedia({
           audio: true,
         });
