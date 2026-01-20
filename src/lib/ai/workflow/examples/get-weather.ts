@@ -102,6 +102,7 @@ export const getWeatherNodes: Partial<DBNode>[] = [
                 description: "Geographical longitude of the location",
               },
             },
+            required: ["latitude", "longitude"],
           },
         },
       },

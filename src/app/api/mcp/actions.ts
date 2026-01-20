@@ -58,7 +58,8 @@ export async function selectMcpClientsAction() {
         visibility: server?.visibility,
         isOwner: server?.userId === currentUser.id,
         canManage: server
-          ? server.userId === currentUser.id || currentUser.role === "admin"
+          ? server.userId === currentUser.id ||
+            (currentUser as any).role === "admin"
           : false,
       };
     });
@@ -257,4 +258,40 @@ export async function installMcpServerAction(id: string) {
   await mcpRepository.incrementUsage(id);
 
   return { success: true };
+}
+
+export async function resolveMcpConfigAction(url: string) {
+  const smitheryUrlRegex =
+    /https?:\/\/(?:www\.)?smithery\.ai\/(@[a-zA-Z0-9-]+\/[a-zA-Z0-9-]+|@[a-zA-Z0-9-]+|[a-zA-Z0-9-]+)/;
+  const packagePathRegex =
+    /^(@[a-zA-Z0-9-]+\/[a-zA-Z0-9-]+|@[a-zA-Z0-9-]+|[a-zA-Z0-9-][a-zA-Z0-9-.]+)$/;
+
+  const urlMatch = url.match(smitheryUrlRegex);
+  const pathMatch = url.match(packagePathRegex);
+
+  const packageName = urlMatch ? urlMatch[1] : pathMatch ? pathMatch[1] : null;
+
+  if (packageName) {
+    const derivedName =
+      packageName
+        .split("/")
+        .pop()
+        ?.replace(/[^a-zA-Z0-9-]/g, "-") || "";
+
+    return {
+      success: true,
+      data: {
+        name: derivedName,
+        config: {
+          command: "npx",
+          args: ["-y", "@smithery/cli", "run", packageName],
+        },
+      },
+    };
+  }
+
+  return {
+    success: false,
+    error: "UNSUPPORTED_URL",
+  };
 }

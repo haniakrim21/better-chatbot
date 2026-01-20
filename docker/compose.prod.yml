@@ -29,7 +29,6 @@ services:
         condition: service_healthy
 
 
-  # Dedicated service for running migrations
   caddy:
     image: caddy:alpine
     container_name: docker-caddy
@@ -45,22 +44,6 @@ services:
       - better-chatbot
     networks:
       - better-chatbot-networks
-
-  migrator:
-    container_name: better_chatbot_migrator
-    build:
-      context: ..
-      dockerfile: docker/Dockerfile
-    command: pnpm db:migrate
-    env_file:
-      - ../.env
-    environment:
-      POSTGRES_URL: postgres://postgres:password@postgres:5432/better_chatbot
-    networks:
-      - better-chatbot-networks
-    depends_on:
-      postgres:
-        condition: service_healthy
 
   postgres:
     image: pgvector/pgvector:pg17

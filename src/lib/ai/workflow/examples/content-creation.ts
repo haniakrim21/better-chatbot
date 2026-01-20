@@ -41,6 +41,7 @@ export const contentCreationNodes: Partial<DBNode>[] = [
             properties: {
               outline: { type: "string", description: "The generated outline" },
             },
+            required: ["outline"],
           },
         },
       },
@@ -92,6 +93,7 @@ export const contentCreationNodes: Partial<DBNode>[] = [
                 description: "The full blog post content",
               },
             },
+            required: ["content"],
           },
         },
       },

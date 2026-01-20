@@ -16,7 +16,7 @@ import { useRouter } from "next/navigation";
 import { createDebounce, fetcher, isNull, safeJSONParse } from "lib/utils";
 import { handleErrorWithToast } from "ui/shared-toast";
 import { mutate } from "swr";
-import { Loader } from "lucide-react";
+import { Loader, LinkIcon } from "lucide-react";
 import {
   isMaybeMCPServerConfig,
   isMaybeRemoteConfig,
@@ -26,7 +26,10 @@ import { Alert, AlertDescription, AlertTitle } from "ui/alert";
 import { z } from "zod";
 import { useTranslations } from "next-intl";
 import { TeamSelect } from "./team-select";
-import { existMcpClientByServerNameAction } from "@/app/api/mcp/actions";
+import {
+  existMcpClientByServerNameAction,
+  resolveMcpConfigAction,
+} from "@/app/api/mcp/actions";
 
 interface MCPEditorProps {
   initialConfig?: MCPServerConfig;
@@ -62,6 +65,7 @@ export default function MCPEditor({
   const shouldInsert = useMemo(() => isNull(id), [id]);
 
   const [isLoading, setIsLoading] = useState(false);
+  const [isResolvingUrl, setIsResolvingUrl] = useState(false);
   const [jsonError, setJsonError] = useState<string | null>(null);
   const [nameError, setNameError] = useState<string | null>(null);
 
@@ -175,8 +179,39 @@ export default function MCPEditor({
       .watch(() => setIsLoading(false));
   };
 
-  const handleConfigChange = (data: string) => {
+  const handleConfigChange = async (data: string) => {
     setJsonString(data);
+
+    // Check for Smithery URL
+    if (
+      data.trim().startsWith("http") &&
+      (data.includes("smithery.ai") || data.includes("github.com"))
+    ) {
+      setIsResolvingUrl(true);
+      try {
+        const result = await resolveMcpConfigAction(data.trim());
+        if (result.success && result.data) {
+          const { name: resolvedName, config: resolvedConfig } = result.data;
+
+          toast.success(t("MCP.detectedSmitheryLink"), {
+            description: `Auto-configured for ${resolvedName}`,
+          });
+
+          setConfig(resolvedConfig as MCPServerConfig);
+          setJsonString(JSON.stringify(resolvedConfig, null, 2));
+
+          if (!name) {
+            setName(resolvedName);
+          }
+          setJsonError(null);
+          return;
+        }
+      } catch (e) {
+        console.error("Failed to resolve MCP config from URL", e);
+      } finally {
+        setIsResolvingUrl(false);
+      }
+    }
 
     // Check for Smithery command paste
     if (data.trim().startsWith("npx -y @smithery/cli run")) {
@@ -232,6 +267,32 @@ export default function MCPEditor({
   return (
     <>
       <div className="flex flex-col space-y-6">
+        {/* Auto-fill field */}
+        {!id && (
+          <div className="space-y-2 p-4 bg-muted/30 rounded-lg border border-dashed border-primary/20">
+            <Label
+              htmlFor="auto-fill"
+              className="text-primary font-semibold flex items-center gap-2"
+            >
+              <LinkIcon className="size-4" />
+              {t("MCP.autoFillFromLink")}
+            </Label>
+            <div className="relative">
+              <Input
+                id="auto-fill"
+                placeholder={t("MCP.pasteSmitheryLinkPlaceholder")}
+                onChange={(e) => handleConfigChange(e.target.value)}
+                className="bg-background pr-10"
+              />
+              {isResolvingUrl && (
+                <div className="absolute right-3 top-1/2 -translate-y-1/2">
+                  <Loader className="size-4 animate-spin text-primary" />
+                </div>
+              )}
+            </div>
+          </div>
+        )}
+
         {/* Name field */}
         <div className="space-y-2">
           <Label htmlFor="name">Name</Label>
@@ -292,6 +353,11 @@ export default function MCPEditor({
                 >
                   preview
                 </Label>
+                {isResolvingUrl && (
+                  <div className="absolute inset-0 flex items-center justify-center bg-background/50 z-10">
+                    <Loader className="size-6 animate-spin text-primary" />
+                  </div>
+                )}
                 <JsonView
                   data={config}
                   initialExpandDepth={3}

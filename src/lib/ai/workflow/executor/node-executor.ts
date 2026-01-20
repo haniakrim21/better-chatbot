@@ -139,7 +139,7 @@ export const llmNodeExecutor: NodeExecutor<LLMNodeData> = async ({
   const response = await generateObject({
     model,
     messages: await convertToModelMessages(messages),
-    schema: jsonSchemaToZod(outputPropertySchema),
+    schema: jsonSchemaToZod(makeStrict(outputPropertySchema)),
     maxRetries: 3,
   });
 
@@ -512,3 +512,30 @@ export const templateNodeExecutor: NodeExecutor<TemplateNodeData> = ({
     },
   };
 };
+
+/**
+ * Recursively ensures all properties in a JSON schema are marked as required.
+ * This is necessary for AI providers that enforce strict structured outputs.
+ */
+function makeStrict(schema: any): any {
+  if (typeof schema !== "object" || schema === null) return schema;
+
+  const result = { ...schema };
+
+  if (schema.type === "object" && schema.properties) {
+    // Add all property keys to the required array
+    result.required = Object.keys(schema.properties);
+
+    // Recursively apply to all properties
+    const properties: any = {};
+    for (const [key, prop] of Object.entries(schema.properties)) {
+      properties[key] = makeStrict(prop);
+    }
+    result.properties = properties;
+  } else if (schema.type === "array" && schema.items) {
+    // Recursively apply to array items
+    result.items = makeStrict(schema.items);
+  }
+
+  return result;
+}
