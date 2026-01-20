@@ -39,7 +39,7 @@ export function DiscoverLayout({ children }: DiscoverLayoutProps) {
   ];
 
   return (
-    <div className="relative flex flex-col min-h-screen w-full bg-background/95">
+    <div className="relative flex flex-col h-full w-full bg-background/95 overflow-y-auto">
       <div className="absolute inset-x-0 top-0 h-[250px] opacity-20 pointer-events-none z-0">
         <BackgroundPaths />
       </div>

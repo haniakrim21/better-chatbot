@@ -31,7 +31,7 @@ export default async function KnowledgePage() {
   }
 
   return (
-    <div className="p-6 space-y-6">
+    <div className="h-full overflow-y-auto p-6 space-y-6">
       <div className="flex justify-between items-center">
         <div className="space-y-1">
           <h2 className="text-2xl font-bold tracking-tight">Knowledge Base</h2>

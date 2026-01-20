@@ -31,7 +31,7 @@ export default function Page() {
   }, [searchParams]);
 
   return (
-    <div className="container max-w-3xl mx-0 px-4 sm:mx-4 md:mx-auto py-8">
+    <div className="h-full overflow-y-auto container max-w-3xl mx-0 px-4 sm:mx-4 md:mx-auto py-8">
       <div className="flex flex-col gap-2">
         <Link
           href="/mcp"
