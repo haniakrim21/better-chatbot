@@ -1,0 +1,21 @@
+#!/usr/bin/expect -f
+
+set timeout -1
+set password [lindex $argv 0]
+set remote_user "root"
+set remote_host "72.62.190.235"
+
+# Fetch logs directly from container
+spawn ssh -o StrictHostKeyChecking=no $remote_user@$remote_host "docker logs --tail 100 better_chatbot_app"
+
+expect {
+    "yes/no" {
+        send "yes\r"
+        exp_continue
+    }
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    eof
+}

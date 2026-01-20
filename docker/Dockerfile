@@ -36,7 +36,6 @@ COPY . .
 # Learn more here: https://nextjs.org/telemetry
 # Uncomment the following line in case you want to disable telemetry during the build.
 ENV NEXT_TELEMETRY_DISABLED=1
-ENV NEXT_STANDALONE_OUTPUT=1
 
 RUN corepack enable pnpm && pnpm build
 
@@ -63,12 +62,9 @@ COPY --from=builder --chown=nextjs:nodejs /app/public ./public
 RUN mkdir .next
 RUN chown nextjs:nodejs .next
 
-# Automatically leverage output traces to reduce image size
-# https://nextjs.org/docs/advanced-features/output-file-tracing
-COPY --from=builder --chown=nextjs:nodejs /app/.next/standalone ./
-
-# Remove standalone node_modules to avoid conflict with prod-deps copy
-RUN rm -rf node_modules
+# Copy built artifacts
+COPY --from=builder --chown=nextjs:nodejs /app/public ./public
+COPY --from=builder --chown=nextjs:nodejs /app/.next ./.next
 
 COPY --from=prod-deps --chown=nextjs:nodejs /app/node_modules ./node_modules
 COPY --from=builder --chown=nextjs:nodejs /app/package.json ./package.json
@@ -87,7 +83,7 @@ COPY --chown=nextjs:nodejs scripts/start-with-ssh.sh /app/start-with-ssh.sh
 
 RUN chmod +x /app/start-with-ssh.sh && \
     mkdir -p /app/.ssh && \
-    chown nextjs:nodejs /app/.ssh
+    chown -R nextjs:nodejs /app
 
 USER nextjs
 

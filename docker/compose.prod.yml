@@ -5,8 +5,7 @@ services:
       context: ..
       dockerfile: ./docker/Dockerfile
     ports:
-      - "3000:3000"
-      - "2222:2222"
+      - "3010:3000"
     environment:
       # Production settings
       - NODE_ENV=production
@@ -15,6 +14,9 @@ services:
       - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-better_chatbot}
       - REDIS_URL=redis://redis:6379
       - KV_URL=redis://redis:6379
+      - FILE_STORAGE_TYPE=local
+      - BETTER_AUTH_URL=http://72.62.190.235:3010
+      - NEXT_PUBLIC_APP_URL=http://72.62.190.235:3010
     env_file:
       - ../.env
     networks:
@@ -28,14 +30,35 @@ services:
         condition: service_healthy
     restart: always
 
+  # Dedicated service for running migrations
+  migrator:
+    container_name: better_chatbot_migrator
+    build:
+      context: ..
+      dockerfile: ./docker/Dockerfile
+    # Override the default command to run migrations
+    command: sh -c "./node_modules/.bin/tsx scripts/db-migrate.ts"
+    environment:
+      - NODE_ENV=production
+      - POSTGRES_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-better_chatbot}
+      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-better_chatbot}
+    env_file:
+      - ../.env
+    networks:
+      - better-chatbot-networks
+    depends_on:
+      postgres:
+        condition: service_healthy
+
   postgres:
     image: pgvector/pgvector:pg17
     environment:
       POSTGRES_USER: ${POSTGRES_USER:-postgres}
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-postgres}
       POSTGRES_DB: ${POSTGRES_DB:-better_chatbot}
-    ports:
-      - "5432:5432"
+    # Security: Do not expose ports to host in production
+    # ports:
+    #   - "5432:5432"
     networks:
       - better-chatbot-networks
     volumes:
@@ -53,8 +76,9 @@ services:
 
   redis:
     image: redis:alpine
-    ports:
-      - "6379:6379"
+    # Security: Do not expose ports to host in production
+    # ports:
+    #   - "6379:6379"
     networks:
       - better-chatbot-networks
     volumes:

@@ -1,0 +1,21 @@
+#!/usr/bin/expect -f
+
+set timeout -1
+set password [lindex $argv 0]
+set remote_user "root"
+set remote_host "72.62.190.235"
+
+# Check status and get last 50 lines of logs
+spawn ssh -o StrictHostKeyChecking=no $remote_user@$remote_host "cd /app/better-chatbot && echo '--- STATUS ---' && docker compose -f docker/compose.prod.yml ps -a && echo '--- LOGS ---' && docker compose -f docker/compose.prod.yml logs --tail=50"
+
+expect {
+    "yes/no" {
+        send "yes\r"
+        exp_continue
+    }
+    "password:" {
+        send "$password\r"
+        exp_continue
+    }
+    eof
+}

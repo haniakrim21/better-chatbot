@@ -35,4 +35,4 @@ echo "Running migrations..."
 # Start application
 # Start application and pipe logs to file (for SSH inspection) AND stdout (for Sliplane UI)
 echo "Starting application..."
-exec node server.js 2>&1 | tee /app/server.log
+exec ./node_modules/.bin/next start -p 3000 2>&1 | tee /app/server.log

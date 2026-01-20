@@ -103,13 +103,18 @@ const options = {
     },
   },
   account: {
-    accountLinking: {
-      trustedProviders: (
-        Object.keys(
-          socialAuthenticationProviders,
-        ) as (keyof typeof socialAuthenticationProviders)[]
-      ).filter((key) => socialAuthenticationProviders[key]),
-    },
+    // accountLinking: {
+    //   trustedOrigins: [
+    //     "http://72.62.190.235:3000",
+    //     "http://72.62.190.235:3010",
+    //     "http://localhost:3000",
+    //     ...(
+    //       Object.keys(
+    //         socialAuthenticationProviders,
+    //       ) as (keyof typeof socialAuthenticationProviders)[]
+    //     ).filter((key) => socialAuthenticationProviders[key]),
+    //   ],
+    // },
   },
   socialProviders: socialAuthenticationProviders,
 } satisfies BetterAuthOptions;
