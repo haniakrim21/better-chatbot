@@ -179,6 +179,34 @@ export default function MCPEditor({
       .watch(() => setIsLoading(false));
   };
 
+  const handleAutoFill = async (url: string) => {
+    if (!url.trim()) return;
+
+    setIsResolvingUrl(true);
+    try {
+      const result = await resolveMcpConfigAction(url.trim());
+      if (result.success && result.data) {
+        const { name: resolvedName, config: resolvedConfig } = result.data;
+
+        toast.success(t("MCP.detectedSmitheryLink"), {
+          description: `Auto-configured for ${resolvedName}`,
+        });
+
+        setConfig(resolvedConfig as MCPServerConfig);
+        setJsonString(JSON.stringify(resolvedConfig, null, 2));
+
+        if (!name) {
+          setName(resolvedName);
+        }
+        setJsonError(null);
+      }
+    } catch (e) {
+      console.error("Failed to resolve MCP config from URL", e);
+    } finally {
+      setIsResolvingUrl(false);
+    }
+  };
+
   const handleConfigChange = async (data: string) => {
     setJsonString(data);
 
@@ -281,7 +309,7 @@ export default function MCPEditor({
               <Input
                 id="auto-fill"
                 placeholder={t("MCP.pasteSmitheryLinkPlaceholder")}
-                onChange={(e) => handleConfigChange(e.target.value)}
+                onChange={(e) => handleAutoFill(e.target.value)}
                 className="bg-background pr-10"
               />
               {isResolvingUrl && (

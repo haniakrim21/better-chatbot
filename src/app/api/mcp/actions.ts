@@ -262,7 +262,7 @@ export async function installMcpServerAction(id: string) {
 
 export async function resolveMcpConfigAction(url: string) {
   const smitheryUrlRegex =
-    /https?:\/\/(?:www\.)?smithery\.ai\/(@[a-zA-Z0-9-]+\/[a-zA-Z0-9-]+|@[a-zA-Z0-9-]+|[a-zA-Z0-9-]+)/;
+    /https?:\/\/(?:[a-zA-Z0-9-]+\.)?smithery\.ai\/(@[a-zA-Z0-9-]+\/[a-zA-Z0-9-]+|@[a-zA-Z0-9-]+|[a-zA-Z0-9-]+)/;
   const packagePathRegex =
     /^(@[a-zA-Z0-9-]+\/[a-zA-Z0-9-]+|@[a-zA-Z0-9-]+|[a-zA-Z0-9-][a-zA-Z0-9-.]+)$/;
 

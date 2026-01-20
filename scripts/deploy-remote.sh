@@ -49,10 +49,6 @@ ssh $SSH_OPTS ${REMOTE_USER}@${REMOTE_HOST} << EOF
     echo "Building and starting services..."
     docker compose -f docker/compose.prod.yml up -d --build
 
-    # Run migrations
-    echo "Running migrations..."
-    docker compose -f docker/compose.prod.yml run --rm migrator
-
     # Prune unused images to save space
     docker image prune -f
 
