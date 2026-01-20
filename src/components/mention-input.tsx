@@ -9,6 +9,7 @@ import {
   Editor,
 } from "@tiptap/react";
 import StarterKit from "@tiptap/starter-kit";
+import { Markdown } from "tiptap-markdown";
 import { TipTapMentionJsonContent } from "app-types/util";
 import { cn } from "lib/utils";
 import {
@@ -93,11 +94,8 @@ export default function MentionInput({
       editable: !disabled,
       immediatelyRender: false,
       extensions: [
-        StarterKit.configure({
-          codeBlock: false,
-          blockquote: false,
-          code: false,
-        }),
+        StarterKit,
+        Markdown,
         Mention.configure({
           HTMLAttributes: {
             class: "mention",

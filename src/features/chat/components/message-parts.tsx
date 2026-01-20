@@ -23,7 +23,7 @@ import { Tooltip, TooltipContent, TooltipTrigger } from "ui/tooltip";
 import { Button } from "ui/button";
 import { Badge } from "ui/badge";
 import { Markdown } from "@/components/markdown";
-import { cn, safeJSONParse, truncateString } from "lib/utils";
+import { cn, safeJSONParse } from "lib/utils";
 import JsonView from "ui/json-view";
 import { useMemo, useState, memo, useEffect, useRef, useCallback } from "react";
 
@@ -114,7 +114,6 @@ interface ToolMessagePartProps {
   readonly?: boolean;
 }
 
-const MAX_TEXT_LENGTH = 600;
 export const UserMessagePart = memo<UserMessagePartProps>(
   function UserMessagePart({
     part,
@@ -130,9 +129,6 @@ export const UserMessagePart = memo<UserMessagePartProps>(
     teamMembers,
   }: UserMessagePartProps) {
     const { copied, copy } = useCopy();
-    const t = useTranslations();
-
-    const [expanded, setExpanded] = useState(false);
     const ref = useRef<HTMLDivElement>(null);
     const scrolledRef = useRef(false);
 
@@ -146,12 +142,6 @@ export const UserMessagePart = memo<UserMessagePartProps>(
       if (isMe) return null;
       return teamMembers?.[message.userId!] || { name: "User", image: null };
     }, [isMe, teamMembers, message.userId]);
-
-    const isLongText = part.text.length > MAX_TEXT_LENGTH;
-    const displayText =
-      expanded || !isLongText
-        ? part.text
-        : truncateString(part.text, MAX_TEXT_LENGTH);
 
     useEffect(() => {
       if (status === "submitted" && isLast && !scrolledRef.current) {
@@ -189,29 +179,9 @@ export const UserMessagePart = memo<UserMessagePartProps>(
             isError && "border-destructive border",
           )}
         >
-          {isLongText && !expanded && (
-            <div className="absolute pointer-events-none bg-linear-to-t from-accent to-transparent w-full h-40 bottom-0 left-0" />
-          )}
-          <p className="whitespace-pre-wrap text-sm wrap-break-word">
-            {displayText}
-          </p>
-          {isLongText && (
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setExpanded(!expanded)}
-              className="h-auto p-1 text-xs z-10 text-muted-foreground hover:text-foreground self-start"
-            >
-              <span className="flex items-center gap-1">
-                {t(expanded ? "Common.showLess" : "Common.showMore")}
-                {expanded ? (
-                  <ChevronUp className="size-3" />
-                ) : (
-                  <ChevronDownIcon className="size-3" />
-                )}
-              </span>
-            </Button>
-          )}
+          <div className="w-full">
+            <Markdown>{part.text}</Markdown>
+          </div>
         </div>
 
         <div className="flex w-full justify-end items-center gap-1 md:opacity-0 group-hover/message:opacity-100 transition-opacity duration-300">
