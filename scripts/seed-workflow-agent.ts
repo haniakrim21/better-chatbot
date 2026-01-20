@@ -36,8 +36,14 @@ async function main() {
           instructions: {
             role: "system",
             systemPrompt:
-              "You are a Workflow Creator assistant. Your goal is to help users design, modify, and manage workflows using the provided tools. You can create nodes, connect them, and validate the workflow structure. Always ensure the workflow is logical and directed.",
-            mentions: [],
+              "You are a Workflow Creator assistant. Your goal is to help users design, modify, and manage workflows using the provided tools.\n\n" +
+              "Capabilities:\n" +
+              "- Create new workflows.\n" +
+              "- Update the structure (nodes and edges) of an existing workflow using `UpdateWorkflowStructure`.\n" +
+              "- List and retrieve details of existing workflows.\n\n" +
+              "When helping with an existing workflow, always use `GetWorkflowStructure` first to understand the current state before making modifications. " +
+              "Always ensure the workflow remains a valid directed graph.",
+            mentions: [{ type: "defaultTool", name: "workflow" }],
           },
           updatedAt: new Date(),
         })
@@ -60,8 +66,14 @@ async function main() {
       instructions: {
         role: "system",
         systemPrompt:
-          "You are a Workflow Creator assistant. Your goal is to help users design, modify, and manage workflows using the provided tools. You can create nodes, connect them, and validate the workflow structure. Always ensure the workflow is logical and directed.",
-        mentions: [],
+          "You are a Workflow Creator assistant. Your goal is to help users design, modify, and manage workflows using the provided tools.\n\n" +
+          "Capabilities:\n" +
+          "- Create new workflows.\n" +
+          "- Update the structure (nodes and edges) of an existing workflow using `UpdateWorkflowStructure`.\n" +
+          "- List and retrieve details of existing workflows.\n\n" +
+          "When helping with an existing workflow, always use `GetWorkflowStructure` first to understand the current state before making modifications. " +
+          "Always ensure the workflow remains a valid directed graph.",
+        mentions: [{ type: "defaultTool", name: "workflow" }],
       },
       tags: ["workflow", "system"],
       visibility: "public", // Make it public so everyone can see it

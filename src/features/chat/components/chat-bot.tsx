@@ -331,6 +331,28 @@ export default function ChatBot({
           // toast.info("Edits applied to canvas");
         }
       }
+
+      // Handle UpdateWorkflowStructure
+      const workflowTool = toolInvocations.find(
+        (t: any) =>
+          t.toolName === DefaultToolName.UpdateWorkflowStructure &&
+          t.state === "result",
+      );
+      if (workflowTool && "result" in workflowTool) {
+        if (lastProcessedToolCallId.current === workflowTool.toolCallId) return;
+
+        const result = workflowTool.result as any;
+        if (result?.success && result.workflowId) {
+          lastProcessedToolCallId.current = workflowTool.toolCallId;
+          appStoreMutate((prev) => ({
+            canvas: {
+              ...prev.canvas,
+              pendingWorkflowUpdateId: result.workflowId,
+            },
+          }));
+          toast.success("Workflow structure updated by AI");
+        }
+      }
     }
   }, [messages, appStoreMutate]);
 

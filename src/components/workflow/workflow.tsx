@@ -33,6 +33,8 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import useSWR from "swr";
 import { safe } from "ts-safe";
 import ChatBot from "@/features/chat/components/chat-bot";
+import { appStore } from "@/app/store";
+import { AppDefaultToolkit } from "@/lib/ai/tools";
 import { Agent } from "app-types/agent";
 import { Button } from "ui/button";
 import { Bot, ChevronDown } from "lucide-react";
@@ -66,6 +68,12 @@ export default function Workflow({
   const [nodes, setNodes] = useState<UINode[]>(initialNodes);
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
   const [isChatOpen, setIsChatOpen] = useState(false);
+  const [appMutate, allowedAppDefaultToolkit, pendingWorkflowUpdateId] =
+    appStore((state) => [
+      state.mutate,
+      state.allowedAppDefaultToolkit,
+      state.canvas.pendingWorkflowUpdateId,
+    ]);
 
   // ... (existing useMemo and hooks)
 
@@ -73,12 +81,18 @@ export default function Workflow({
     () => processIds.length > 0,
     [processIds.length],
   );
-  const { data: workflow } = useSWR<DBWorkflow>(
+  const { data: workflow, mutate: refreshWorkflow } = useSWR<DBWorkflow>(
     `/api/workflow/${workflowId}`,
     fetcher,
     {
       onSuccess: (workflow) => {
         init(workflow, hasEditAccess);
+        if (workflow) {
+          setNodes(
+            workflow.nodes.map((n) => convertDBNodeToUINode(workflowId, n)),
+          );
+          setEdges(workflow.edges.map(convertDBEdgeToUIEdge));
+        }
       },
     },
   );
@@ -285,6 +299,26 @@ export default function Workflow({
   useEffect(() => {
     init(workflow, hasEditAccess);
   }, [workflow, hasEditAccess]);
+
+  useEffect(() => {
+    if (isChatOpen) {
+      const prevTools = allowedAppDefaultToolkit || [];
+      if (!prevTools.includes(AppDefaultToolkit.Workflow)) {
+        appMutate({
+          allowedAppDefaultToolkit: [...prevTools, AppDefaultToolkit.Workflow],
+        });
+      }
+    }
+  }, [isChatOpen]);
+
+  useEffect(() => {
+    if (pendingWorkflowUpdateId === workflowId) {
+      refreshWorkflow();
+      appMutate((prev) => ({
+        canvas: { ...prev.canvas, pendingWorkflowUpdateId: null },
+      }));
+    }
+  }, [pendingWorkflowUpdateId, workflowId, refreshWorkflow, appMutate]);
 
   const threadId = useMemo(() => generateUUID(), []);
 

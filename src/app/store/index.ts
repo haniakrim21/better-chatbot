@@ -82,6 +82,7 @@ export interface AppState {
       instruction: string;
       replacement?: string;
     } | null;
+    pendingWorkflowUpdateId?: string | null;
   };
 }
 
@@ -137,6 +138,7 @@ const initialState: AppState = {
     pendingCommand: null,
     currentSelection: null,
     pendingEdit: null,
+    pendingWorkflowUpdateId: null,
   },
 };
 
