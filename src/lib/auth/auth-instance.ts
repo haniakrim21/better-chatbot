@@ -103,21 +103,19 @@ const options = {
     },
   },
   account: {
-    // accountLinking: {
-    //   trustedOrigins: [
-    //     "http://72.62.190.235:3000",
-    //     "http://72.62.190.235:3010",
-    //     "http://localhost:3000",
-    //     ...(
-    //       Object.keys(
-    //         socialAuthenticationProviders,
-    //       ) as (keyof typeof socialAuthenticationProviders)[]
-    //     ).filter((key) => socialAuthenticationProviders[key]),
-    //   ],
-    // },
+    accountLinking: {
+      enabled: true,
+    },
   },
+  trustedOrigins: [
+    "http://72.62.190.235:3000",
+    "http://72.62.190.235:3010",
+    "http://localhost:3000",
+    "https://nabdai.io",
+    "https://www.nabdai.io",
+  ],
   socialProviders: socialAuthenticationProviders,
-} satisfies BetterAuthOptions;
+} as any;
 
 export const auth = betterAuth({
   ...options,
