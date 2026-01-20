@@ -16,8 +16,6 @@ services:
       - REDIS_URL=redis://redis:6379
       - KV_URL=redis://redis:6379
       - FILE_STORAGE_TYPE=local
-      - BETTER_AUTH_URL=http://72.62.190.235:3010
-      - NEXT_PUBLIC_APP_URL=http://72.62.190.235:3010
     env_file:
       - ../.env
     networks:
