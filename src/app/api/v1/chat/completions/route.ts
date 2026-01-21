@@ -21,7 +21,7 @@ export async function POST(req: NextRequest) {
     );
   }
 
-  const user = await userRepository.getUser(keyRecord.userId);
+  const user = await userRepository.getUserById(keyRecord.userId);
   if (!user) {
     return NextResponse.json({ error: "User not found" }, { status: 404 });
   }
