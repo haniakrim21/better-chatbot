@@ -642,6 +642,15 @@ function convertToCoreMessages(messages: any[]): any[] {
           } else if (part.type === "image") {
             return { type: "image", image: part.url || "" };
           } else if (part.type === "file") {
+            // Check if it's an image file and convert to image part for vision compatibility
+            const isImage =
+              part.mediaType?.startsWith("image/") ||
+              /\.(jpg|jpeg|png|webp|gif)$/i.test(part.url || "");
+
+            if (isImage) {
+              return { type: "image", image: part.url || "" };
+            }
+
             return {
               type: "file",
               data: part.url,
@@ -659,24 +668,28 @@ function convertToCoreMessages(messages: any[]): any[] {
         });
       }
     } else if (message.role === "assistant") {
-      coreMessages.push({
-        role: "assistant",
-        content: message.parts
-          .map((part: any) => {
-            if (part.type === "text") {
-              return { type: "text", text: part.text };
-            } else if (part.type === "tool-invocation") {
-              return {
-                type: "tool-call",
-                toolCallId: part.toolCallId,
-                toolName: part.toolName,
-                args: part.args,
-              };
-            }
-            return null;
-          })
-          .filter((p: any) => p !== null) as any,
-      });
+      const parts = message.parts
+        .map((part: any) => {
+          if (part.type === "text") {
+            return { type: "text", text: part.text };
+          } else if (part.type === "tool-invocation") {
+            return {
+              type: "tool-call",
+              toolCallId: part.toolCallId,
+              toolName: part.toolName,
+              args: part.args,
+            };
+          }
+          return null;
+        })
+        .filter((p: any) => p !== null);
+
+      if (parts.length > 0) {
+        coreMessages.push({
+          role: "assistant",
+          content: parts as any,
+        });
+      }
     } else if (message.role === "tool" || message.role === "data") {
       const toolResults = message.parts
         .map((p: any) => {
