@@ -16,9 +16,21 @@ export async function middleware(request: NextRequest) {
     return NextResponse.redirect(new URL("/admin/users", request.url));
   }
 
+  if (pathname.startsWith("/api/v1")) {
+    const apiKey =
+      request.headers.get("Authorization")?.replace("Bearer ", "") ||
+      request.headers.get("X-API-Key");
+
+    if (apiKey) {
+      // API Key validation will happen in the route itself for more granular control,
+      // but we allow the request through the middleware here.
+      return NextResponse.next();
+    }
+  }
+
   const sessionCookie = getSessionCookie(request);
 
-  if (!sessionCookie) {
+  if (!sessionCookie && !pathname.startsWith("/api/v1")) {
     return NextResponse.redirect(new URL("/sign-in", request.url));
   }
   return NextResponse.next();

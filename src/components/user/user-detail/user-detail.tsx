@@ -5,6 +5,7 @@ import { UserDetailFormCard } from "./user-detail-form-card";
 import { UserAccessCard } from "./user-access-card";
 import { useProfileTranslations } from "@/hooks/use-profile-translations";
 import { ApiKeyManager } from "./api-key-manager";
+import { PlatformApiKeyManager } from "./platform-api-key-manager";
 import { useSidebar } from "ui/sidebar";
 import useSWR, { mutate } from "swr";
 import { cn, fetcher } from "lib/utils";
@@ -93,6 +94,7 @@ export function UserDetail({
             })}
           >
             <ApiKeyManager />
+            <PlatformApiKeyManager />
           </div>
         )}
 

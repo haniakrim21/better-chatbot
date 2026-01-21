@@ -4,7 +4,7 @@ const API_BASE = "https://ctrl.sliplane.io/v0";
 const TOKEN = "api_rw_1gwwmrnkjkc6xlw2agq8r9hf";
 const ORG_ID = "org_eo03kcny1dp0";
 const PROJECT_ID = "project_ju5iup0kyxfp";
-const SERVICE_ID = "service_3uamp29uw6p4"; // NabdAI
+const SERVICE_ID = "service_2zb0sf2dfyi9"; // NabdAI
 
 async function main() {
   console.log("🚀 Triggering Manual Deployment for NabdAI...");

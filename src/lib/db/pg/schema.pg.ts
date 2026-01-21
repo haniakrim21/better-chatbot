@@ -626,3 +626,22 @@ export type UsageTrackingEntity = typeof UsageTrackingTable.$inferSelect;
 export type ChatFolderEntity = typeof ChatFolderTable.$inferSelect;
 export type PromptEntity = typeof PromptTable.$inferSelect;
 export type ModelPricingEntity = typeof ModelPricingTable.$inferSelect;
+
+export const PlatformApiKeyTable = pgTable("platform_api_key", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  name: text("name").notNull(),
+  keyHash: text("key_hash").notNull().unique(), // Hashed for secure verification
+  prefix: text("prefix").notNull(), // First 10 chars for identification, e.g. "nbd_abc123"
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => UserTable.id, { onDelete: "cascade" }),
+  teamId: uuid("team_id").references(() => TeamTable.id, {
+    onDelete: "set null",
+  }),
+  lastUsedAt: timestamp("last_used_at"),
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  revokedAt: timestamp("revoked_at"),
+});
+
+export type PlatformApiKeyEntity = typeof PlatformApiKeyTable.$inferSelect;
