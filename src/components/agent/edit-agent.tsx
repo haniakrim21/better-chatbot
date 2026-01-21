@@ -42,6 +42,8 @@ import {
   WeatherExample,
 } from "lib/ai/agent/example";
 import { notify } from "lib/notify";
+import { CamelSessionDialog } from "../chat/camel-session-dialog";
+import { Users2 } from "lucide-react";
 
 const defaultConfig = (): PartialBy<
   Omit<Agent, "createdAt" | "updatedAt" | "userId">,
@@ -90,6 +92,7 @@ export default function EditAgent({
   const [isSaving, setIsSaving] = useState(false);
   const [isVisibilityChangeLoading, setIsVisibilityChangeLoading] =
     useState(false);
+  const [isCamelDialogOpen, setIsCamelDialogOpen] = useState(false);
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -263,6 +266,24 @@ export default function EditAgent({
     isBookmarkToggleLoading,
   ]);
 
+  const onStartCamelSession = async (config: any) => {
+    try {
+      const response = await fetch("/api/chat/camel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(config),
+      });
+      const data = await response.json();
+      if (data.threadId) {
+        router.push(`/chat/${data.threadId}`);
+      }
+      toast.success("Camel multi-agent session started!");
+    } catch (err) {
+      console.error("Camel API Error:", err);
+      toast.error("Failed to start Camel session");
+    }
+  };
+
   const handleAgentChange = useCallback((generatedData: any) => {
     if (textareaRef.current) {
       textareaRef.current.scrollTo({
@@ -317,10 +338,10 @@ export default function EditAgent({
 
   return (
     <ScrollArea className="h-full w-full relative">
-      <div className="w-full h-8 absolute bottom-0 left-0 bg-gradient-to-t from-background to-transparent z-20 pointer-events-none" />
+      <div className="w-full h-8 absolute bottom-0 left-0 bg-linear-to-t from-background to-transparent z-20 pointer-events-none" />
       <div className="z-10 relative flex flex-col gap-4 px-8 pt-8 pb-14 max-w-3xl h-full mx-auto">
         <div className="sticky top-0 bg-background z-10 flex items-center justify-between pb-4 gap-2">
-          <div className="w-full h-8 absolute top-[100%] left-0 bg-gradient-to-b from-background to-transparent z-20 pointer-events-none" />
+          <div className="w-full h-8 absolute top-full left-0 bg-linear-to-b from-background to-transparent z-20 pointer-events-none" />
           {isGenerating ? (
             <TextShimmer className="w-full text-2xl font-bold">
               {t("Agent.generatingAgent")}
@@ -389,6 +410,16 @@ export default function EditAgent({
                   onBookmarkToggle={handleBookmarkToggle}
                   isBookmarkToggleLoading={isBookmarkToggleLoading}
                 />
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="size-8 text-muted-foreground hover:text-primary"
+                  onClick={() => setIsCamelDialogOpen(true)}
+                  disabled={isLoading}
+                  title="Collaborative Session"
+                >
+                  <Users2 className="size-4" />
+                </Button>
               </div>
             )}
           </div>
@@ -571,13 +602,21 @@ export default function EditAgent({
           </div>
         )}
       </div>
-
       <GenerateAgentDialog
         open={openGenerateAgentDialog}
         onOpenChange={setOpenGenerateAgentDialog}
         onAgentChange={handleAgentChange}
         onToolsGenerated={assignToolsByNames}
       />
+
+      {initialAgent && (
+        <CamelSessionDialog
+          open={isCamelDialogOpen}
+          onOpenChange={setIsCamelDialogOpen}
+          roleA={initialAgent as any}
+          onStart={onStartCamelSession}
+        />
+      )}
     </ScrollArea>
   );
 }

@@ -103,6 +103,13 @@ export function createUINode(
         content: [],
       },
     };
+  } else if (node.data.kind === NodeKind.MultiAgent) {
+    node.data.outputSchema = structuredClone(defaultMultiAgentNodeOutputSchema);
+    node.data.maxTurns = 10;
+    node.data.taskDescription = {
+      type: "doc",
+      content: [],
+    };
   }
 
   return node;
@@ -125,6 +132,21 @@ export const defaultTemplateNodeOutputSchema: ObjectJsonSchema7 = {
   properties: {
     template: {
       type: "string",
+    },
+  },
+};
+
+export const defaultMultiAgentNodeOutputSchema: ObjectJsonSchema7 = {
+  type: "object",
+  properties: {
+    result: {
+      type: "string",
+    },
+    transcript: {
+      type: "string",
+    },
+    turns: {
+      type: "number",
     },
   },
 };

@@ -10,6 +10,7 @@ import {
   toolNodeExecutor,
   httpNodeExecutor,
   templateNodeExecutor,
+  multiAgentNodeExecutor,
 } from "./node-executor";
 import { toAny } from "lib/utils";
 import { addEdgeBranchLabel } from "./add-edge-branch-label";
@@ -39,6 +40,8 @@ function getExecutorByKind(kind: NodeKind): NodeExecutor {
       return httpNodeExecutor;
     case NodeKind.Template:
       return templateNodeExecutor;
+    case NodeKind.MultiAgent:
+      return multiAgentNodeExecutor;
     case "NOOP" as any:
       return () => {
         return {
@@ -67,12 +70,14 @@ function getExecutorByKind(kind: NodeKind): NodeExecutor {
 export const createWorkflowExecutor = (workflow: {
   nodes: DBNode[];
   edges: DBEdge[];
+  userId: string;
   logger?: ConsolaInstance;
 }) => {
   // Create runtime state store for the workflow
   const store = createGraphStore({
     nodes: workflow.nodes,
     edges: workflow.edges,
+    userId: workflow.userId,
   });
 
   const logger =

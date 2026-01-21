@@ -90,6 +90,21 @@ const PurePreviewMessage = ({
         )}
       >
         <div className="flex flex-col gap-4 w-full">
+          {(message.metadata as any)?.camelRole && (
+            <div className="flex items-center gap-2 mb-1 opacity-80 animate-in fade-in slide-in-from-top-1">
+              <div className="text-[10px] font-bold uppercase tracking-wider bg-primary/20 text-primary px-1.5 py-0.5 rounded-sm border border-primary/20">
+                {(message.metadata as any).camelRole === "user_agent"
+                  ? "Inception"
+                  : "Execution"}
+              </div>
+              <span className="text-xs font-semibold text-foreground/80">
+                {(message.metadata as any).agentName}
+              </span>
+              <span className="text-[10px] text-muted-foreground bg-muted px-1 rounded-full">
+                Turn {(message.metadata as any).turn}
+              </span>
+            </div>
+          )}
           {partsForDisplay.map((part, index) => {
             const key = `message-${messageIndex}-part-${part.type}-${index}`;
             const isLastPart = index === partsForDisplay.length - 1;

@@ -19,6 +19,8 @@ import { useState } from "react";
 import { handleErrorWithToast } from "ui/shared-toast";
 import { safe } from "ts-safe";
 import { canCreateAgent } from "lib/auth/client-permissions";
+import { CamelSessionDialog } from "@/components/chat/camel-session-dialog";
+import { useRouter } from "next/navigation";
 
 interface AgentsListProps {
   initialMyAgents: AgentSummary[];
@@ -41,6 +43,9 @@ export function AgentsList({
   const [visibilityChangeLoading, setVisibilityChangeLoading] = useState<
     string | null
   >(null);
+  const [selectedAgentForCamel, setSelectedAgentForCamel] =
+    useState<AgentSummary | null>(null);
+  const router = useRouter();
 
   const { data: allAgents } = useSWR(
     "/api/agent?filters=mine,shared",
@@ -110,6 +115,24 @@ export function AgentsList({
       .watch(() => setDeletingAgentLoading(null));
   };
 
+  const onStartCamelSession = async (config: any) => {
+    try {
+      const response = await fetch("/api/chat/camel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(config),
+      });
+      const data = await response.json();
+      if (data.threadId) {
+        router.push(`/chat/${data.threadId}`);
+      }
+      toast.success("Camel multi-agent session started!");
+    } catch (err) {
+      console.error("Camel API Error:", err);
+      toast.error("Failed to start Camel session");
+    }
+  };
+
   // Check if user can create agents using Better Auth permissions
   const canCreate = canCreateAgent(userRole);
 
@@ -177,6 +200,12 @@ export function AgentsList({
                 isVisibilityChangeLoading={visibilityChangeLoading === agent.id}
                 isDeleteLoading={deletingAgentLoading === agent.id}
                 onDelete={deleteAgent}
+                onCollaborationClick={(agentId) => {
+                  const agent = allAgents?.find(
+                    (a: AgentSummary) => a.id === agentId,
+                  );
+                  if (agent) setSelectedAgentForCamel(agent);
+                }}
               />
             ))}
           </div>
@@ -222,6 +251,12 @@ export function AgentsList({
           )}
         </div>
       </div>
+      <CamelSessionDialog
+        open={!!selectedAgentForCamel}
+        onOpenChange={(open) => !open && setSelectedAgentForCamel(null)}
+        roleA={selectedAgentForCamel}
+        onStart={onStartCamelSession}
+      />
     </div>
   );
 }

@@ -12,6 +12,7 @@ import {
   SplitIcon,
   TerminalIcon,
   TextIcon,
+  Users2,
   WrenchIcon,
 } from "lucide-react";
 import { useMemo } from "react";
@@ -20,7 +21,11 @@ export function NodeIcon({
   type,
   className,
   iconClassName,
-}: { type: NodeKind; className?: string; iconClassName?: string }) {
+}: {
+  type: NodeKind;
+  className?: string;
+  iconClassName?: string;
+}) {
   const Icon = useMemo(() => {
     switch (type) {
       case NodeKind.Input:
@@ -41,6 +46,8 @@ export function NodeIcon({
         return TextIcon;
       case NodeKind.Code:
         return TerminalIcon;
+      case NodeKind.MultiAgent:
+        return Users2;
       default:
         return BoxIcon;
     }
@@ -65,7 +72,9 @@ export function NodeIcon({
                       ? "bg-purple-500"
                       : type === NodeKind.Condition
                         ? "bg-amber-500"
-                        : "bg-card",
+                        : type === NodeKind.MultiAgent
+                          ? "bg-cyan-500"
+                          : "bg-card",
         "p-1 rounded",
         className,
       )}

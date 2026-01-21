@@ -58,6 +58,7 @@ interface ShareableCardProps {
   isBookmarkToggleLoading?: boolean;
   isDeleteLoading?: boolean;
   actionsDisabled?: boolean;
+  onCollaborationClick?: (itemId: string) => void;
 }
 
 export function ShareableCard({
@@ -72,6 +73,7 @@ export function ShareableCard({
   isVisibilityChangeLoading,
   isDeleteLoading,
   actionsDisabled,
+  onCollaborationClick,
 }: ShareableCardProps) {
   const t = useTranslations();
   const isPublished = (item as WorkflowSummary).isPublished;
@@ -195,7 +197,7 @@ export function ShareableCard({
         </CardHeader>
 
         <CardContent className="min-h-0 grow">
-          <CardDescription className="text-xs line-clamp-3 break-words overflow-hidden">
+          <CardDescription className="text-xs line-clamp-3 wrap-break-word overflow-hidden">
             {item.description}
           </CardDescription>
         </CardContent>
@@ -220,6 +222,11 @@ export function ShareableCard({
                     : undefined
                 }
                 onDelete={onDelete ? () => onDelete(item.id) : undefined}
+                onCollaborationClick={
+                  onCollaborationClick
+                    ? () => onCollaborationClick(item.id)
+                    : undefined
+                }
                 isBookmarkToggleLoading={isBookmarkToggleLoading}
                 isVisibilityChangeLoading={isVisibilityChangeLoading}
                 isDeleteLoading={isDeleteLoading}

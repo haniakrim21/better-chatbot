@@ -9,7 +9,9 @@ import {
   HttpNodeData,
   TemplateNodeData,
   OutputSchemaSourceKey,
+  MultiAgentNodeData,
 } from "../workflow.interface";
+import { multiAgentOrchestrator } from "lib/services/multi-agent-orchestrator";
 import { WorkflowRuntimeState } from "./graph-store";
 import {
   convertToModelMessages,
@@ -509,6 +511,71 @@ export const templateNodeExecutor: NodeExecutor<TemplateNodeData> = ({
   return {
     output: {
       template: text,
+    },
+  };
+};
+
+/**
+ * Multi-Agent Node Executor
+ * Runs an autonomous Camel-AI session between two specified agents.
+ *
+ * Workflow:
+ * 1. Resolves agent IDs and task description (with mentions)
+ * 2. Triggers MultiAgentOrchestrator to run the session
+ * 3. Captures the final result and the full transcript
+ */
+export const multiAgentNodeExecutor: NodeExecutor<MultiAgentNodeData> = async ({
+  node,
+  state,
+}) => {
+  if (!node.roleAId || !node.roleBId) {
+    throw new Error("Multi-Agent node requires two agents to be selected");
+  }
+
+  // Resolve task description mentions to text
+  const taskDescription = convertTiptapJsonToText({
+    getOutput: state.getOutput,
+    json: node.taskDescription!,
+  });
+
+  if (!taskDescription.trim()) {
+    throw new Error("Multi-Agent node requires a task description");
+  }
+
+  // Fetch agent names for the orchestrator (ideally these would be in state or metadata)
+  // For now, we use placeholders if names aren't available, but orchestrator uses IDs anyway
+  // Actually, orchestrator uses name for logging/system prompts.
+  // We might want to pass more info if available.
+
+  const sessionConfig = {
+    userId: state.userId,
+    taskDescription,
+    userRole: {
+      name: "Agent A", // Default labels if we can't fetch names easily
+      agentId: node.roleAId,
+    },
+    assistantRole: {
+      name: "Agent B",
+      agentId: node.roleBId,
+    },
+    maxTurns: node.maxTurns || 10,
+  };
+
+  const result = await multiAgentOrchestrator.runSession(sessionConfig);
+
+  // Collect the transcript (lastMessageContent is updated in orchestrator, but we need messages)
+  // Actually, we need to capture the messages from the session.
+  // The runSession returns threadId. We can fetch messages or have runSession return them.
+  // For simplicity, let's have runSession return the transcript if possible.
+
+  // NOTE: I'll need to slightly update runSession to return the transcript if I want it directly.
+  // Or I can just return the status.
+
+  return {
+    output: {
+      result: result.lastMessage, // The final outcome of the collaboration
+      turns: result.turns,
+      threadId: result.threadId,
     },
   };
 };

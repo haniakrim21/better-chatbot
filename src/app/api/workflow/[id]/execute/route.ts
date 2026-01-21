@@ -31,6 +31,7 @@ export async function POST(
   const app = createWorkflowExecutor({
     edges: workflow.edges,
     nodes: workflow.nodes,
+    userId: session.user.id,
     logger: wfLogger,
   });
 

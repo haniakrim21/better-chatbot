@@ -8,6 +8,7 @@ import {
   BookmarkCheck,
   Trash2,
   Loader2,
+  Users2,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useRouter } from "next/navigation";
@@ -82,6 +83,7 @@ interface ShareableActionsProps {
   onDelete?: () => void;
   isDeleteLoading?: boolean;
   renderActions?: () => React.ReactNode;
+  onCollaborationClick?: () => void;
   disabled?: boolean;
 }
 
@@ -95,6 +97,7 @@ export function ShareableActions({
   onVisibilityChange,
   onBookmarkToggle,
   onDelete,
+  onCollaborationClick,
   renderActions,
   isVisibilityChangeLoading = false,
   isBookmarkToggleLoading = false,
@@ -253,8 +256,29 @@ export function ShareableActions({
         </Tooltip>
       )}
 
-      {/* Custom Actions */}
       {isOwner && renderActions && renderActions()}
+
+      {/* Collaboration Action */}
+      {type === "agent" && onCollaborationClick && (
+        <Tooltip>
+          <TooltipTrigger asChild>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="size-8 text-muted-foreground hover:text-primary"
+              disabled={isAnyLoading || disabled}
+              onClick={(e) => {
+                e.preventDefault();
+                e.stopPropagation();
+                onCollaborationClick();
+              }}
+            >
+              <Users2 className="size-4" />
+            </Button>
+          </TooltipTrigger>
+          <TooltipContent>{t("Agent.startCollaboration")}</TooltipContent>
+        </Tooltip>
+      )}
 
       {/* Delete Action */}
       {isOwner && onDelete && (

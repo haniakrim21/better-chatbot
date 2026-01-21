@@ -75,6 +75,9 @@ interface PromptInputProps {
 
 import { VoiceToTextButton } from "@/features/chat/components/voice-to-text-button";
 import { PromptEnhancer } from "@/features/chat/components/prompt-enhancer";
+import { CamelSessionDialog } from "@/components/chat/camel-session-dialog";
+import { useRouter } from "next/navigation";
+import { Users2 } from "lucide-react";
 
 const ChatMentionInput = dynamic(() => import("./chat-mention-input"), {
   ssr: false,
@@ -99,7 +102,9 @@ export default function PromptInput({
   disabledMention,
 }: PromptInputProps) {
   const t = useTranslations("Chat");
+  const router = useRouter();
   const [isUploadDropdownOpen, setIsUploadDropdownOpen] = useState(false);
+  const [isCamelDialogOpen, setIsCamelDialogOpen] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const { uploadFiles } = useThreadFileUploader(threadId);
   const { data: providers } = useChatModels();
@@ -403,6 +408,24 @@ export default function PromptInput({
     }));
   };
 
+  const handleStartCamelSession = async (config: any) => {
+    try {
+      const response = await fetch("/api/chat/camel", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ ...config, threadId }),
+      });
+      const data = await response.json();
+      if (data.threadId && !threadId) {
+        router.push(`/chat/${data.threadId}`);
+      }
+      toast.success("Camel multi-agent session started!");
+    } catch (err) {
+      console.error("Camel API Error:", err);
+      toast.error("Failed to start Camel session");
+    }
+  };
+
   // Handle ESC key to clear mentions
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
@@ -568,6 +591,13 @@ export default function PromptInput({
                         </DropdownMenuSubContent>
                       </DropdownMenuPortal>
                     </DropdownMenuSub>
+                    <DropdownMenuItem
+                      className="cursor-pointer"
+                      onClick={() => setIsCamelDialogOpen(true)}
+                    >
+                      <Users2 className="me-2 size-4" />
+                      Multi-Agent Session
+                    </DropdownMenuItem>
                   </DropdownMenuContent>
                 </DropdownMenu>
 
@@ -830,6 +860,12 @@ export default function PromptInput({
           </div>
         </fieldset>
       </div>
+      <CamelSessionDialog
+        open={isCamelDialogOpen}
+        onOpenChange={setIsCamelDialogOpen}
+        initialTask={input}
+        onStart={handleStartCamelSession}
+      />
     </div>
   );
 }

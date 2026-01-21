@@ -626,6 +626,88 @@ export class ChatService {
       stream,
     });
   }
+
+  /**
+   * Non-streaming version of processRequest for service-to-service calls (e.g. Camel-AI)
+   */
+  async processServiceRequest(params: {
+    userId: string;
+    threadId: string;
+    agentId: string;
+    lastMessageContent: string;
+    systemPromptOverride?: string;
+  }) {
+    const {
+      userId,
+      threadId,
+      agentId,
+      lastMessageContent,
+      systemPromptOverride,
+    } = params;
+
+    // Fetch agent details
+    const agent = await agentRepository.selectAgentById(agentId, userId);
+    if (!agent) throw new Error("Agent not found");
+
+    // Fetch user for the session
+    const user = await (userRepository as any).getUserById(userId);
+    if (!user) throw new Error("User not found");
+
+    // Construct the request body
+    const body: any = {
+      id: threadId,
+      message: {
+        id: generateUUID(),
+        role: "user",
+        parts: [{ type: "text", text: lastMessageContent }],
+      },
+      chatModel: (agent.instructions as any)?.chatModel || {
+        provider: "openai",
+        modelId: "gpt-4o",
+      },
+      mentions: [{ type: "agent", agentId }],
+    };
+
+    // We use generateText (non-streaming) from 'ai' instead of streamText
+    // But since ChatService is heavily geared towards streaming, we'll manually
+    // reconstruct the logic or call handleFinish behavior.
+
+    // For now, let's implement a simplified version of the completion logic
+    const model = customModelProvider.getModel(body.chatModel);
+
+    // Fetch conversation history
+    const thread = await chatRepository.selectThreadDetails(threadId);
+    const history = (thread?.messages || []).map((m) => ({
+      role: m.role,
+      content: m.parts
+        .filter((p: any) => p.type === "text")
+        .map((p: any) => p.text)
+        .join("\n"),
+    }));
+
+    // Add current message
+    history.push({ role: "user", content: lastMessageContent });
+
+    const { generateText } = await import("ai");
+
+    const result = await generateText({
+      model: model as any,
+      system: systemPromptOverride || agent.instructions?.systemPrompt || "",
+      messages: history as any[],
+    });
+
+    // Save the response message to DB
+    const assistantMessageId = generateUUID();
+    await chatRepository.insertMessage({
+      id: assistantMessageId,
+      threadId,
+      role: "assistant",
+      parts: [{ type: "text", text: result.text }],
+      userId,
+    });
+
+    return { content: result.text, messageId: assistantMessageId };
+  }
 }
 
 export const chatService = new ChatService();

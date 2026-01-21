@@ -15,6 +15,7 @@ export interface WorkflowRuntimeState {
   outputs: {
     [nodeId: string]: any;
   };
+  userId: string;
   setInput(nodeId: string, value: any): void;
   getInput(nodeId: string): any;
   setOutput(key: OutputSchemaSourceKey, value: any): void;
@@ -24,6 +25,7 @@ export interface WorkflowRuntimeState {
 export const createGraphStore = (params: {
   nodes: DBNode[];
   edges: DBEdge[];
+  userId: string;
 }) => {
   return graphStore<WorkflowRuntimeState>((set, get) => {
     return {
@@ -32,6 +34,7 @@ export const createGraphStore = (params: {
       inputs: {},
       nodes: params.nodes,
       edges: params.edges,
+      userId: params.userId,
       setInput(nodeId, value) {
         set((prev) => {
           return { inputs: { ...prev.inputs, [nodeId]: value } };
