@@ -280,8 +280,8 @@ export class ChatService {
                 id: e.id,
                 source: e.source,
                 target: e.target,
-                sourceHandle: e.sourceHandle,
-                targetHandle: e.targetHandle,
+                sourceHandle: e.uiConfig?.sourceHandle,
+                targetHandle: e.uiConfig?.targetHandle,
               })),
             },
             null,
@@ -511,11 +511,27 @@ export class ChatService {
 
         // Truncate messages to prevent context length errors
         // Keep the most recent messages to stay within context window
-        const MAX_MESSAGES = 15;
-        const truncatedMessages =
+        const MAX_MESSAGES = 40;
+        let truncatedMessages =
           messages.length > MAX_MESSAGES
             ? messages.slice(-MAX_MESSAGES)
             : messages;
+
+        // Ensure we don't start with a tool result without its assistant call
+        // This is a common cause of "messages do not match the ModelMessage[] schema"
+        if (
+          truncatedMessages.length > 0 &&
+          ((truncatedMessages[0].role as string) === "tool" ||
+            (truncatedMessages[0].role as string) === "data")
+        ) {
+          const firstIndexInOriginal = messages.indexOf(truncatedMessages[0]);
+          if (firstIndexInOriginal > 0) {
+            const potentialAssistant = messages[firstIndexInOriginal - 1];
+            if (potentialAssistant.role === "assistant") {
+              truncatedMessages = [potentialAssistant, ...truncatedMessages];
+            }
+          }
+        }
 
         logger.info(
           `Message truncation: ${messages.length} total messages, using ${truncatedMessages.length} in context`,
@@ -619,27 +635,29 @@ function convertToCoreMessages(messages: any[]): any[] {
 
   for (const message of messages) {
     if (message.role === "user") {
-      coreMessages.push({
-        role: "user",
-        content: message.parts
-          .map((part: any) => {
-            if (part.type === "text") {
-              return { type: "text", text: part.text };
-            } else if (part.type === "image") {
-              return { type: "image", image: part.url || "" };
-            } else if (part.type === "file") {
-              return {
-                type: "file",
-                data: part.url,
-                mimeType: "application/octet-stream",
-              };
-            }
-            return null;
-          })
-          .filter(
-            (p: any) => p !== null && (p.type !== "text" || p.text !== ""),
-          ) as any,
-      });
+      const parts = message.parts
+        .map((part: any) => {
+          if (part.type === "text") {
+            return { type: "text", text: part.text };
+          } else if (part.type === "image") {
+            return { type: "image", image: part.url || "" };
+          } else if (part.type === "file") {
+            return {
+              type: "file",
+              data: part.url,
+              mimeType: part.mediaType || "application/octet-stream",
+            };
+          }
+          return null;
+        })
+        .filter((p: any) => p !== null && (p.type !== "text" || p.text !== ""));
+
+      if (parts.length > 0) {
+        coreMessages.push({
+          role: "user",
+          content: parts,
+        });
+      }
     } else if (message.role === "assistant") {
       coreMessages.push({
         role: "assistant",
@@ -659,44 +677,47 @@ function convertToCoreMessages(messages: any[]): any[] {
           })
           .filter((p: any) => p !== null) as any,
       });
-    } else if (
-      message.role === "data" &&
-      message.parts.some((p: any) => p.type === "tool-invocation")
-    ) {
+    } else if (message.role === "tool" || message.role === "data") {
       const toolResults = message.parts
-        .filter((p: any) => p.type === "tool-invocation")
         .map((p: any) => {
-          let result = "result" in p ? p.result : undefined;
-          const toolName = p.toolName?.toLowerCase() || "";
+          if (p.type === "tool-invocation" || p.type === "tool-result") {
+            let result =
+              "result" in p ? p.result : "output" in p ? p.output : undefined;
+            const toolName = p.toolName?.toLowerCase() || "";
 
-          // Aggressively remove screenshots from context (AI can't use base64 effectively)
-          if (
-            toolName.includes("screenshot") ||
-            toolName.includes("snapshot")
-          ) {
-            result =
-              "[Screenshot/Snapshot data removed from context to save space]";
-          } else if (typeof result === "string" && result.length > 10000) {
-            result = result.slice(0, 10000) + "... [Output truncated]";
-          } else if (result && typeof result === "object") {
-            const str = JSON.stringify(result);
-            if (str.length > 10000) {
-              result = str.slice(0, 10000) + "... [Output truncated]";
+            // Aggressively remove screenshots from context (AI can't use base64 effectively)
+            if (
+              toolName.includes("screenshot") ||
+              toolName.includes("snapshot")
+            ) {
+              result =
+                "[Screenshot/Snapshot data removed from context to save space]";
+            } else if (typeof result === "string" && result.length > 10000) {
+              result = result.slice(0, 10000) + "... [Output truncated]";
+            } else if (result && typeof result === "object") {
+              const str = JSON.stringify(result);
+              if (str.length > 10000) {
+                result = str.slice(0, 10000) + "... [Output truncated]";
+              }
             }
+
+            return {
+              type: "tool-result",
+              toolCallId: p.toolCallId,
+              toolName: p.toolName,
+              result,
+            };
           }
+          return null;
+        })
+        .filter((p: any) => p !== null) as any;
 
-          return {
-            type: "tool-result",
-            toolCallId: p.toolCallId,
-            toolName: p.toolName,
-            result,
-          };
-        }) as any;
-
-      coreMessages.push({
-        role: "tool",
-        content: toolResults,
-      });
+      if (toolResults.length > 0) {
+        coreMessages.push({
+          role: "tool",
+          content: toolResults,
+        });
+      }
     }
   }
   return coreMessages;
