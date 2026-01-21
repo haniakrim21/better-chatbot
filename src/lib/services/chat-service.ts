@@ -537,7 +537,7 @@ export class ChatService {
           `Message truncation: ${messages.length} total messages, using ${truncatedMessages.length} in context`,
         );
 
-        const coreMessages = convertToCoreMessages(truncatedMessages);
+        const coreMessages = await convertToCoreMessages(truncatedMessages);
         const totalCharCount =
           systemPrompt.length + JSON.stringify(coreMessages).length;
         logger.info(
@@ -630,16 +630,37 @@ export class ChatService {
 
 export const chatService = new ChatService();
 
-function convertToCoreMessages(messages: any[]): any[] {
+async function convertToCoreMessages(messages: any[]): Promise<any[]> {
   const coreMessages: any[] = [];
 
   for (const message of messages) {
     if (message.role === "user") {
-      const parts = message.parts
-        .map((part: any) => {
+      const parts = await Promise.all(
+        message.parts.map(async (part: any) => {
           if (part.type === "text") {
             return { type: "text", text: part.text };
           } else if (part.type === "image") {
+            try {
+              if (
+                part.url?.startsWith("/") ||
+                part.url?.includes("72.62.190.235")
+              ) {
+                const key = part.url.replace(/^\//, "");
+                const exists = await serverFileStorage.exists(key);
+                if (exists) {
+                  const buffer = await serverFileStorage.download(key);
+                  return {
+                    type: "image",
+                    image: buffer,
+                  };
+                }
+              }
+            } catch (error) {
+              logger.error(
+                `Failed to convert image url to buffer: ${part.url}`,
+                error,
+              );
+            }
             return { type: "image", image: part.url || "" };
           } else if (part.type === "file") {
             // Check if it's an image file and convert to image part for vision compatibility
@@ -648,6 +669,27 @@ function convertToCoreMessages(messages: any[]): any[] {
               /\.(jpg|jpeg|png|webp|gif)$/i.test(part.url || "");
 
             if (isImage) {
+              try {
+                if (
+                  part.url?.startsWith("/") ||
+                  part.url?.includes("72.62.190.235")
+                ) {
+                  const key = part.url.replace(/^\//, "");
+                  const exists = await serverFileStorage.exists(key);
+                  if (exists) {
+                    const buffer = await serverFileStorage.download(key);
+                    return {
+                      type: "image",
+                      image: buffer,
+                    };
+                  }
+                }
+              } catch (error) {
+                logger.error(
+                  `Failed to convert image file to buffer: ${part.url}`,
+                  error,
+                );
+              }
               return { type: "image", image: part.url || "" };
             }
 
@@ -658,13 +700,17 @@ function convertToCoreMessages(messages: any[]): any[] {
             };
           }
           return null;
-        })
-        .filter((p: any) => p !== null && (p.type !== "text" || p.text !== ""));
+        }),
+      );
 
-      if (parts.length > 0) {
+      const filteredParts = parts.filter(
+        (p: any) => p !== null && (p.type !== "text" || p.text !== ""),
+      );
+
+      if (filteredParts.length > 0) {
         coreMessages.push({
           role: "user",
-          content: parts,
+          content: filteredParts,
         });
       }
     } else if (message.role === "assistant") {
