@@ -25,6 +25,8 @@ import { extractWorkflowDiff } from "lib/ai/workflow/extract-workflow-diff";
 import {
   convertUIEdgeToDBEdge,
   convertUINodeToDBNode,
+  convertDBEdgeToUIEdge,
+  convertDBNodeToUINode,
 } from "lib/ai/workflow/shared.workflow";
 import { NodeKind, UINode } from "lib/ai/workflow/workflow.interface";
 import { wouldCreateCycle } from "lib/ai/workflow/would-create-cycle";
@@ -34,6 +36,8 @@ import useSWR from "swr";
 import { safe } from "ts-safe";
 import ChatBot from "@/features/chat/components/chat-bot";
 import { appStore } from "@/app/store";
+import { useShallow } from "zustand/shallow";
+import { cn } from "lib/utils";
 import { AppDefaultToolkit } from "@/lib/ai/tools";
 import { Agent } from "app-types/agent";
 import { Button } from "ui/button";
@@ -48,7 +52,7 @@ const debounce = createDebounce();
 
 const fitViewOptions = {
   duration: 500,
-  padding: 1,
+  padding: 0.2,
 };
 
 export default function Workflow({
@@ -68,12 +72,15 @@ export default function Workflow({
   const [nodes, setNodes] = useState<UINode[]>(initialNodes);
   const [edges, setEdges] = useState<Edge[]>(initialEdges);
   const [isChatOpen, setIsChatOpen] = useState(false);
-  const [appMutate, allowedAppDefaultToolkit, pendingWorkflowUpdateId] =
-    appStore((state) => [
-      state.mutate,
-      state.allowedAppDefaultToolkit,
-      state.canvas.pendingWorkflowUpdateId,
-    ]);
+  const [appMutate, allowedAppDefaultToolkit, pendingWorkflowUpdateId, canvas] =
+    appStore(
+      useShallow((state) => [
+        state.mutate,
+        state.allowedAppDefaultToolkit,
+        state.canvas.pendingWorkflowUpdateId,
+        state.canvas,
+      ]),
+    );
 
   // ... (existing useMemo and hooks)
 
@@ -81,21 +88,19 @@ export default function Workflow({
     () => processIds.length > 0,
     [processIds.length],
   );
-  const { data: workflow, mutate: refreshWorkflow } = useSWR<DBWorkflow>(
-    `/api/workflow/${workflowId}`,
-    fetcher,
-    {
-      onSuccess: (workflow) => {
-        init(workflow, hasEditAccess);
-        if (workflow) {
-          setNodes(
-            workflow.nodes.map((n) => convertDBNodeToUINode(workflowId, n)),
-          );
-          setEdges(workflow.edges.map(convertDBEdgeToUIEdge));
-        }
-      },
+  const { data: workflow, mutate: refreshWorkflow } = useSWR<
+    DBWorkflow & { nodes: any[]; edges: any[] }
+  >(`/api/workflow/${workflowId}`, fetcher, {
+    onSuccess: (workflow) => {
+      init(workflow, hasEditAccess);
+      if (workflow && workflow.nodes && workflow.edges) {
+        setNodes(
+          workflow.nodes.map((n) => convertDBNodeToUINode(workflowId, n)),
+        );
+        setEdges(workflow.edges.map(convertDBEdgeToUIEdge));
+      }
     },
-  );
+  });
   const [activeNodeIds, setActiveNodeIds] = useState<string[]>([]);
 
   const snapshot = useRef({ nodes: initialNodes, edges: initialEdges });
@@ -135,7 +140,7 @@ export default function Workflow({
   };
 
   const selectedNode = useMemo(() => {
-    return nodes.findLast((node) => node.selected);
+    return [...nodes].reverse().find((node) => node.selected);
   }, [nodes]);
 
   const onNodesChange: OnNodesChange = useCallback(
@@ -198,7 +203,9 @@ export default function Workflow({
 
   const onSelectionChange: OnSelectionChangeFunc = useCallback(
     ({ nodes: selectedNodes }) => {
-      setActiveNodeIds(selectedNodes.map((node) => node.id));
+      if (Array.isArray(selectedNodes)) {
+        setActiveNodeIds(selectedNodes.map((node) => node.id));
+      }
     },
     [],
   );
@@ -274,7 +281,7 @@ export default function Workflow({
         animated: runningIds.includes(edge.source),
       };
     });
-  }, [edges, activeNodeIds, errorIds, runningIds]);
+  }, [edges, activeNodeIds, errorIds, runningIds, successIds]);
 
   useEffect(() => {
     const debounceDelay =
@@ -309,16 +316,16 @@ export default function Workflow({
         });
       }
     }
-  }, [isChatOpen]);
+  }, [isChatOpen, allowedAppDefaultToolkit, appMutate]);
 
   useEffect(() => {
     if (pendingWorkflowUpdateId === workflowId) {
       refreshWorkflow();
-      appMutate((prev) => ({
-        canvas: { ...prev.canvas, pendingWorkflowUpdateId: null },
-      }));
+      appMutate({
+        canvas: { ...canvas, pendingWorkflowUpdateId: null },
+      });
     }
-  }, [pendingWorkflowUpdateId, workflowId, refreshWorkflow, appMutate]);
+  }, [pendingWorkflowUpdateId, workflowId, refreshWorkflow, appMutate, canvas]);
 
   const threadId = useMemo(() => generateUUID(), []);
 
@@ -328,7 +335,7 @@ export default function Workflow({
         {
           id: generateUUID(),
           role: "system",
-          content: `You are an AI assistant named "${agent.name}". ${agent.description ? `Description: ${agent.description}. ` : ""}Instructions: ${agent.instructions}`,
+          content: `You are an AI assistant named "${agent.name}". ${agent.description ? `Description: ${agent.description}. ` : ""}Instructions: ${agent.instructions}. You are currently assisting with workflow ID: ${workflowId}.`,
         },
       ];
     }
@@ -336,7 +343,12 @@ export default function Workflow({
   }, [agent]);
 
   return (
-    <div className="w-full h-full relative text-de text-gree-4">
+    <div
+      className={cn(
+        "w-full h-full relative text-sm",
+        !hasEditAccess && "text-foreground",
+      )}
+    >
       <ReactFlow
         fitView
         deleteKeyCode={null}
@@ -382,7 +394,7 @@ export default function Workflow({
                   initial={{ opacity: 0, scale: 0.9, y: 20 }}
                   animate={{ opacity: 1, scale: 1, y: 0 }}
                   exit={{ opacity: 0, scale: 0.9, y: 20 }}
-                  className="w-[400px] h-[500px] bg-background border rounded-xl shadow-2xl mb-4 overflow-hidden flex flex-col"
+                  className="w-[400px] h-[600px] bg-background/80 backdrop-blur-xl border rounded-xl shadow-2xl mb-4 overflow-hidden flex flex-col"
                 >
                   <div className="flex items-center justify-between p-3 border-b bg-muted/50">
                     <div className="flex items-center gap-2">
@@ -407,6 +419,7 @@ export default function Workflow({
                       agentName={agent.name}
                       agentAvatar={agent.icon}
                       isEmbedded={true}
+                      workflowId={workflowId}
                     />
                   </div>
                 </motion.div>
@@ -429,10 +442,10 @@ export default function Workflow({
           position="top-left"
           className="h-full w-full m-0! pointer-events-none!"
         >
-          <div className="z-10 absolute inset-0 w-full h-1/12 bg-gradient-to-b to-90% from-background to-transparent  pointer-events-none" />
-          <div className="z-10 absolute inset-0 w-1/12 h-full bg-gradient-to-r from-background to-transparent  pointer-events-none" />
-          <div className="z-10 absolute left-0 bottom-0 w-full h-1/12 bg-gradient-to-t from-background to-transparent  pointer-events-none" />
-          <div className="z-10 absolute right-0 bottom-0 w-1/12 h-full bg-gradient-to-l from-background to-transparent  pointer-events-none" />
+          <div className="z-10 absolute inset-0 w-full h-1/12 bg-linear-to-b to-90% from-background to-transparent  pointer-events-none" />
+          <div className="z-10 absolute inset-0 w-1/12 h-full bg-linear-to-r from-background to-transparent  pointer-events-none" />
+          <div className="z-10 absolute left-0 bottom-0 w-full h-1/12 bg-linear-to-t from-background to-transparent  pointer-events-none" />
+          <div className="z-10 absolute right-0 bottom-0 w-1/12 h-full bg-linear-to-l from-background to-transparent  pointer-events-none" />
         </Panel>
       </ReactFlow>
     </div>

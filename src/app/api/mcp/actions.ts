@@ -116,8 +116,11 @@ export async function saveMcpClientAction(
     }
 
     // Check if a featured server with this name already exists
-    const existing = await mcpRepository.existsByServerName(server.name);
-    if (existing && !server.id) {
+    const existingServer = await mcpRepository.selectByServerName(server.name);
+    // Only throw error if:
+    // 1. A server with this name exists AND
+    // 2. We're creating a new server (no ID) OR updating a different server (different ID)
+    if (existingServer && (!server.id || existingServer.id !== server.id)) {
       throw new Error("A featured MCP server with this name already exists");
     }
   }

@@ -8,7 +8,7 @@ import {
 } from "@/components/layouts/theme-provider";
 import { Toaster } from "ui/sonner";
 import { NextIntlClientProvider } from "next-intl";
-import { getLocale } from "next-intl/server";
+import { getLocale, getMessages } from "next-intl/server";
 import { BackgroundAnimated } from "@/components/background-animated";
 import { ThesysProvider } from "@/components/thesys-provider";
 const geistSans = Geist({
@@ -37,6 +37,7 @@ export default async function RootLayout({
   children: React.ReactNode;
 }>) {
   const locale = await getLocale();
+  const messages = await getMessages();
   const dir = locale === "ar" ? "rtl" : "ltr";
 
   return (
@@ -53,7 +54,7 @@ export default async function RootLayout({
           disableTransitionOnChange
         >
           <ThemeStyleProvider>
-            <NextIntlClientProvider>
+            <NextIntlClientProvider messages={messages}>
               <ThesysProvider>
                 <BackgroundAnimated />
                 <div id="root" className="relative z-10">

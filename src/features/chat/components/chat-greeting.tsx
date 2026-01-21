@@ -26,12 +26,12 @@ export const ChatGreeting = ({ agentName, agentAvatar }: ChatGreetingProps) => {
   });
   const t = useTranslations("Chat.Greeting");
 
-  const word = useMemo(() => {
+  const greetingWords = useMemo(() => {
     if (agentName) {
-      return `Welcome to ${agentName}. How can I help you today?`;
+      return [`Welcome to ${agentName}. How can I help you today?`];
     }
-    if (!user?.name) return "";
-    const words = [
+    if (!user?.name) return [];
+    return [
       t(getGreetingByTime(), { name: user.name }),
       t("niceToSeeYouAgain", { name: user.name }),
       t("whatAreYouWorkingOnToday", { name: user.name }),
@@ -40,19 +40,11 @@ export const ChatGreeting = ({ agentName, agentAvatar }: ChatGreetingProps) => {
       t("whereWouldYouLikeToStart"),
       t("whatAreYouThinking", { name: user.name }),
     ];
-    return words[Math.floor(Math.random() * words.length)];
   }, [user?.name, agentName]);
 
   return (
-    <motion.div
-      key="welcome"
-      className="max-w-3xl mx-auto my-4 h-20"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-      transition={{ delay: 0.3 }}
-    >
-      <div className="rounded-xl p-6 flex flex-col items-start gap-4 leading-relaxed text-start">
+    <motion.div key="welcome">
+      <div className="rounded-xl p-4 flex flex-col items-center gap-3 leading-relaxed text-center">
         {agentAvatar && (
           <div className="flex items-center justify-center w-16 h-16 rounded-2xl bg-primary/10 text-4xl">
             {agentAvatar.type === "emoji" ? (
@@ -66,8 +58,8 @@ export const ChatGreeting = ({ agentName, agentAvatar }: ChatGreetingProps) => {
             ) : null}
           </div>
         )}
-        <h1 className="text-2xl md:text-3xl">
-          {word ? <FlipWords words={[word]} className="text-primary" /> : ""}
+        <h1 className="text-4xl font-semibold text-primary leading-tight">
+          <FlipWords words={greetingWords} />
         </h1>
       </div>
     </motion.div>

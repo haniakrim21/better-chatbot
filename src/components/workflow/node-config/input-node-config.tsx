@@ -84,7 +84,7 @@ export const InputNodeDataConfig = memo(function ({
   );
 
   return (
-    <div className="flex flex-col gap-2 text-sm px-4 ">
+    <div className="flex flex-col gap-2 relative bg-secondary rounded-md p-4 wrap-break-word">
       <div className="flex items-center justify-between">
         <Label className="text-sm">{t("Workflow.inputFields")}</Label>
 
@@ -97,7 +97,7 @@ export const InputNodeDataConfig = memo(function ({
           <TooltipContent
             side="left"
             align="center"
-            className="p-4 text-sm whitespace-pre-wrap break-words"
+            className="p-4 text-sm whitespace-pre-wrap wrap-break-word"
           >
             {t("Workflow.inputFieldsDescription")}
           </TooltipContent>
@@ -164,7 +164,10 @@ InputNodeDataConfig.displayName = "InputNodeDataConfig";
 
 export const OutputSchemaStack = memo(function ({
   data,
-}: { data: WorkflowNodeData }) {
+}: {
+  data: WorkflowNodeData;
+}) {
+  if (!data?.outputSchema) return null;
   const keys = Object.keys(data.outputSchema?.properties ?? {});
   if (!keys.length) return null;
   return (

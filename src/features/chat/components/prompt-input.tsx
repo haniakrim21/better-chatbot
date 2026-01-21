@@ -79,7 +79,7 @@ import { PromptEnhancer } from "@/features/chat/components/prompt-enhancer";
 const ChatMentionInput = dynamic(() => import("./chat-mention-input"), {
   ssr: false,
   loading() {
-    return <div className="h-[2rem] w-full animate-pulse"></div>;
+    return <div className="h-8 w-full animate-pulse"></div>;
   },
 });
 
@@ -430,8 +430,8 @@ export default function PromptInput({
   return (
     <div className="max-w-3xl mx-auto fade-in animate-in">
       <div className="z-10 mx-auto w-full max-w-3xl relative">
-        <fieldset className="flex w-full min-w-0 max-w-full flex-col px-4">
-          <div className="shadow-lg overflow-hidden rounded-4xl backdrop-blur-sm transition-all duration-200 bg-muted/60 relative flex w-full flex-col cursor-text z-10 items-stretch focus-within:bg-muted hover:bg-muted focus-within:ring-muted hover:ring-muted">
+        <fieldset className="flex w-full min-w-0 max-w-full flex-col px-1 sm:px-4">
+          <div className="shadow-lg rounded-3xl backdrop-blur-sm transition-all duration-200 bg-muted/60 relative flex w-full flex-col cursor-text z-10 items-stretch focus-within:bg-muted hover:bg-muted focus-within:ring-muted hover:ring-muted">
             {mentions.length > 0 && (
               <div className="bg-input rounded-b-sm rounded-t-3xl p-3 flex flex-col gap-4 mx-2 my-2">
                 {mentions.map((mention, i) => {
@@ -440,7 +440,7 @@ export default function PromptInput({
                       {mention.type === "workflow" ||
                       mention.type === "agent" ? (
                         <Avatar
-                          className="size-6 p-1 ring ring-border rounded-full flex-shrink-0"
+                          className="size-6 p-1 ring ring-border rounded-full shrink-0"
                           style={mention.icon?.style}
                         >
                           <AvatarImage
@@ -454,7 +454,7 @@ export default function PromptInput({
                           </AvatarFallback>
                         </Avatar>
                       ) : (
-                        <Button className="size-6 flex items-center justify-center ring ring-border rounded-full flex-shrink-0 p-0.5">
+                        <Button className="size-6 flex items-center justify-center ring ring-border rounded-full shrink-0 p-0.5">
                           {mention.type == "mcpServer" ? (
                             <MCPIcon className="size-3.5" />
                           ) : (
@@ -466,7 +466,7 @@ export default function PromptInput({
                         </Button>
                       )}
 
-                      <div className="flex flex-col flex-1 min-w-0">
+                      <div className="flex flex-col h-8 flex-1 min-w-0">
                         <span className="text-sm font-semibold truncate">
                           {mention.name}
                         </span>
@@ -480,7 +480,7 @@ export default function PromptInput({
                         variant={"ghost"}
                         size={"icon"}
                         disabled={!threadId}
-                        className="rounded-full hover:bg-input! flex-shrink-0"
+                        className="rounded-full hover:bg-input! shrink-0"
                         onClick={() => {
                           deleteMention(mention);
                         }}
@@ -492,8 +492,8 @@ export default function PromptInput({
                 })}
               </div>
             )}
-            <div className="flex flex-col gap-3.5 px-5 pt-2 pb-4">
-              <div className="relative min-h-[2rem]">
+            <div className="flex flex-col gap-1.5 px-3 pt-2 pb-2.5">
+              <div className="relative min-h-8">
                 <ChatMentionInput
                   input={input}
                   onChange={setInput}
@@ -524,10 +524,10 @@ export default function PromptInput({
                     <Button
                       variant={"ghost"}
                       size={"sm"}
-                      className="rounded-full hover:bg-input! p-2! data-[state=open]:bg-input!"
+                      className="rounded-full hover:bg-input! p-1.5! data-[state=open]:bg-input!"
                       disabled={!threadId}
                     >
-                      <PlusIcon />
+                      <PlusIcon className="size-4" />
                     </Button>
                   </DropdownMenuTrigger>
                   <DropdownMenuContent align="start" side="top">
@@ -587,7 +587,7 @@ export default function PromptInput({
                     <>
                       <ToolModeDropdown />
                       <ToolSelectDropdown
-                        className="mx-1"
+                        className="mx-0.5"
                         align="start"
                         side="top"
                         onSelectWorkflow={onSelectWorkflow}
@@ -614,7 +614,7 @@ export default function PromptInput({
                   <Button
                     variant={"ghost"}
                     size={"sm"}
-                    className="rounded-full group data-[state=open]:bg-input! hover:bg-input! me-1"
+                    className="rounded-full group data-[state=open]:bg-input! hover:bg-input! me-0.5 px-2!"
                     data-testid="model-selector-button"
                   >
                     {chatModel?.model ? (
@@ -677,10 +677,10 @@ export default function PromptInput({
                     {isLoading ? (
                       <Square
                         size={16}
-                        className="fill-muted-foreground text-muted-foreground"
+                        className="shrink-0 size-8 text-muted-foreground/50 hover:text-muted-foreground transition-colors"
                       />
                     ) : (
-                      <CornerRightUp size={16} />
+                      <CornerRightUp size={14} />
                     )}
                   </div>
                 )}
@@ -725,7 +725,7 @@ export default function PromptInput({
                         {file.isUploading && (
                           <div className="absolute inset-0 bg-background/90 flex rounded-lg flex-col items-center justify-center backdrop-blur-sm">
                             <Loader2 className="size-6 animate-spin text-foreground mb-2" />
-                            <div className="w-16 h-1 bg-muted rounded-full overflow-hidden">
+                            <div className="w-full bg-transparent border-none focus:ring-0 text-sm py-1.5 px-0 resize-none min-h-8 overflow-hidden">
                               <div
                                 className="h-full bg-primary transition-all duration-300"
                                 style={{ width: `${file.progress || 0}%` }}

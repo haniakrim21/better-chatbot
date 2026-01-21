@@ -55,6 +55,7 @@ interface Props {
   initialModel?: ChatModel;
   isEmbedded?: boolean;
   currentUserId?: string;
+  workflowId?: string;
 }
 
 export default function ChatBot({
@@ -65,6 +66,7 @@ export default function ChatBot({
   initialModel,
   isEmbedded = false,
   currentUserId,
+  workflowId,
 }: Props) {
   const [teamMembers, setTeamMembers] = useState<
     Record<string, { name: string | null; image: string | null }>
@@ -226,7 +228,9 @@ export default function ChatBot({
           toolChoice: latestRef.current.toolChoice,
           allowedAppDefaultToolkit:
             latestRef.current.mentions?.length || hasFilePart
-              ? []
+              ? (latestRef.current.allowedAppDefaultToolkit?.filter(
+                  (t) => t === "workflow",
+                ) ?? [])
               : latestRef.current.allowedAppDefaultToolkit,
           allowedMcpServers: latestRef.current.mentions?.length
             ? {}
@@ -241,6 +245,7 @@ export default function ChatBot({
           currentSelection:
             latestRef.current.canvas?.currentSelection || undefined,
           teamId: latestRef.current.currentTeamId || undefined,
+          workflowId: workflowId || undefined,
         };
         return { body: requestBody };
       },
@@ -296,10 +301,9 @@ export default function ChatBot({
       );
       if (terminalTool && "result" in terminalTool) {
         if (lastProcessedToolCallId.current === terminalTool.toolCallId) return;
-
+        lastProcessedToolCallId.current = terminalTool.toolCallId;
         const result = terminalTool.result as any;
         if (result?.status === "pending_client_execution") {
-          lastProcessedToolCallId.current = terminalTool.toolCallId;
           appStoreMutate((prev) => ({
             canvas: {
               ...prev.canvas,
@@ -311,27 +315,6 @@ export default function ChatBot({
         }
       }
 
-      // Handle edit-selection
-      const editTool = toolInvocations.find(
-        (t: any) =>
-          t.toolName === DefaultToolName.EditSelection && t.state === "result",
-      );
-      if (editTool && "result" in editTool) {
-        if (lastProcessedToolCallId.current === editTool.toolCallId) return;
-
-        const result = editTool.result as any;
-        if (result?.status === "success" && result.data) {
-          lastProcessedToolCallId.current = editTool.toolCallId;
-          appStoreMutate((prev) => ({
-            canvas: {
-              ...prev.canvas,
-              pendingEdit: result.data,
-            },
-          }));
-          // toast.info("Edits applied to canvas");
-        }
-      }
-
       // Handle UpdateWorkflowStructure
       const workflowTool = toolInvocations.find(
         (t: any) =>
@@ -340,10 +323,10 @@ export default function ChatBot({
       );
       if (workflowTool && "result" in workflowTool) {
         if (lastProcessedToolCallId.current === workflowTool.toolCallId) return;
+        lastProcessedToolCallId.current = workflowTool.toolCallId;
 
         const result = workflowTool.result as any;
         if (result?.success && result.workflowId) {
-          lastProcessedToolCallId.current = workflowTool.toolCallId;
           appStoreMutate((prev) => ({
             canvas: {
               ...prev.canvas,
@@ -493,8 +476,8 @@ export default function ChatBot({
     <>
       <div
         className={cn(
-          emptyMessage && "justify-center pb-24",
-          "flex flex-col min-w-0 relative h-full z-40",
+          emptyMessage && "justify-center h-full",
+          "flex flex-col min-w-0 relative h-full z-40 transition-all duration-300",
         )}
       >
         {isDragging && (
@@ -510,7 +493,9 @@ export default function ChatBot({
           </div>
         )}
         {emptyMessage ? (
-          <ChatGreeting agentName={agentName} agentAvatar={agentAvatar} />
+          <div className="flex items-center justify-center w-full px-4 mb-20">
+            <ChatGreeting agentName={agentName} agentAvatar={agentAvatar} />
+          </div>
         ) : (
           <>
             <div

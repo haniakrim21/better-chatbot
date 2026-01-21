@@ -112,7 +112,8 @@ export const chatApiSchemaRequestBodySchema = z.object({
   attachments: z.array(ChatAttachmentSchema).optional(),
   knowledgeBaseId: z.string().optional(),
   currentSelection: z.string().optional(),
-  teamId: z.string().optional(), // Added
+  teamId: z.string().optional(),
+  workflowId: z.string().optional(),
 });
 
 export type ChatApiSchemaRequestBody = z.infer<

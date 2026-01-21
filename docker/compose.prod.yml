@@ -10,12 +10,11 @@ services:
     environment:
       # Production settings
       - NODE_ENV=production
-      # Override DB and Redis hosts to point to docker service names
-      - POSTGRES_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-better_chatbot}
-      - DATABASE_URL=postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@postgres:5432/${POSTGRES_DB:-better_chatbot}
+      # Override Redis hosts to point to docker service names
       - REDIS_URL=redis://redis:6379
       - KV_URL=redis://redis:6379
       - FILE_STORAGE_TYPE=local
+
     env_file:
       - ../.env
     networks:

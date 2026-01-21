@@ -20,6 +20,7 @@ import {
   buildUserSystemPrompt,
   buildToolCallUnsupportedModelSystemPrompt,
   CANVAS_USAGE_PROMPT,
+  WORKFLOW_USAGE_PROMPT,
 } from "lib/ai/prompts";
 import {
   ChatApiSchemaRequestBody,
@@ -257,6 +258,41 @@ export class ChatService {
       mentions.push(...agent.instructions.mentions);
     }
 
+    const { workflowId } = body;
+    let workflowStructureContext = "";
+    if (workflowId) {
+      try {
+        const { workflowRepository } = await import("lib/db/repository");
+        const structure =
+          await workflowRepository.selectStructureById(workflowId);
+        if (structure) {
+          workflowStructureContext = `\n\n<current_workflow_structure>\n${JSON.stringify(
+            {
+              id: structure.id,
+              name: structure.name,
+              nodes: structure.nodes.map((n) => ({
+                id: n.id,
+                name: n.name,
+                kind: n.kind,
+                nodeConfig: n.nodeConfig,
+              })),
+              edges: structure.edges.map((e) => ({
+                id: e.id,
+                source: e.source,
+                target: e.target,
+                sourceHandle: e.sourceHandle,
+                targetHandle: e.targetHandle,
+              })),
+            },
+            null,
+            2,
+          )}\n</current_workflow_structure>\n\nYou are currently assisting the user with the workflow displayed above. You can use the workflow tools to modify its nodes and edges.`;
+        }
+      } catch (error) {
+        logger.error("Failed to fetch workflow structure for context", error);
+      }
+    }
+
     const useImageTool = Boolean(imageTool?.model);
 
     const isToolCallAllowed =
@@ -421,6 +457,8 @@ export class ChatService {
           buildMcpServerCustomizationsSystemPrompt(mcpServerCustomizations),
           !supportToolCall && buildToolCallUnsupportedModelSystemPrompt,
           CANVAS_USAGE_PROMPT,
+          WORKFLOW_USAGE_PROMPT,
+          workflowStructureContext,
           context,
         );
 

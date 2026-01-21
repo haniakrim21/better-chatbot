@@ -500,32 +500,35 @@ export const loadAppDefaultTools = (opt?: {
 }) =>
   safe(APP_DEFAULT_TOOL_KIT)
     .map((tools) => {
-      if (opt?.mentions?.length) {
-        const defaultToolMentions = opt.mentions.filter(
-          (m) => m.type == "defaultTool",
-        );
-        return Array.from(Object.values(tools)).reduce((acc, t) => {
-          const allowed = objectFlow(t).filter((_, k) => {
-            return defaultToolMentions.some((m) => m.name == k);
-          });
-          return { ...acc, ...allowed };
-        }, {});
-      }
-      const allowedAppDefaultToolkit =
+      const allowedCategories =
         opt?.allowedAppDefaultToolkit ?? Object.values(AppDefaultToolkit);
 
-      return (
-        allowedAppDefaultToolkit.reduce(
-          (acc, key) => {
-            // Disable webSearch if EXA_API_KEY is not configured
-            if (key === "webSearch" && !process.env.EXA_API_KEY) {
-              return acc;
-            }
-            return { ...acc, ...tools[key] };
-          },
-          {} as Record<string, Tool>,
-        ) || {}
-      );
+      let result: Record<string, Tool> = {};
+
+      // 1. Load tools from allowed categories
+      allowedCategories.forEach((key) => {
+        if (key === "webSearch" && !process.env.EXA_API_KEY) return;
+        if (tools[key]) {
+          result = { ...result, ...tools[key] };
+        }
+      });
+
+      // 2. Load tools from mentions (if any)
+      if (opt?.mentions?.length) {
+        const defaultToolMentions = opt.mentions.filter(
+          (m) => m.type === "defaultTool",
+        );
+        if (defaultToolMentions.length > 0) {
+          Object.values(tools).forEach((categoryTools) => {
+            const mentionedTools = objectFlow(categoryTools).filter((_, k) => {
+              return defaultToolMentions.some((m) => m.name === k);
+            });
+            result = { ...result, ...mentionedTools };
+          });
+        }
+      }
+
+      return result;
     })
     .ifFail((e) => {
       console.error(e);

@@ -313,4 +313,12 @@ export const CANVAS_USAGE_PROMPT = `
   - Do NOT output the content in the chat message if you are using the tool.
   - Just say "I've drafted the content for you..." or similar in the chat.
 - ACTION: default to "create" unless updating an existing doc.
-`.trim();
+`;
+
+export const WORKFLOW_USAGE_PROMPT = `
+### Workflow Automation Guidelines
+- You have access to tools to manage workflows (List, Get, Create, Update, Delete).
+- CRITICAL: Always use \`GetWorkflowStructure\` to fetch the current state before calling \`UpdateWorkflowStructure\` to avoid data loss.
+- When creating or updating nodes, ensure you provide valid \`position\` (x, y) coordinates and appropriate \`kind\` (e.g., LLM_GENERATION, SEARCH_CONDITION).
+- If you are assisting within a specific workflow, its ID will be provided in the system context.
+`;

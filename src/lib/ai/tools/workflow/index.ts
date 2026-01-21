@@ -7,6 +7,7 @@ import {
   convertUIEdgeToDBEdge,
   convertUINodeToDBNode,
 } from "lib/ai/workflow/shared.workflow";
+import { generateUUID } from "lib/utils";
 import { defaultObjectJsonSchema } from "lib/ai/workflow/shared.workflow";
 
 // Schema Definitions
@@ -131,50 +132,72 @@ export const updateWorkflowStructureTool = createTool({
     ); // false = write access
     if (!hasAccess) return "Unauthorized or Workflow not found";
 
-    const dbNodes = data.nodes.map((n) => {
-      // Construct a temporary UINode to reuse conversion logic
-      const uiNode: UINode = {
-        id: n.id,
-        position: n.position,
-        data: {
-          id: n.id,
-          name: n.name,
-          kind: n.kind,
-          outputSchema: defaultObjectJsonSchema, // Default if not provided
-          ...n.config,
-        } as any, // Cast because we might miss some specific node data fields
-        type: "default",
-      };
-      const dbNode = convertUINodeToDBNode(data.workflowId, uiNode);
+    // Map to store AI-provided IDs to valid UUIDs
+    const idMap: Record<string, string> = {};
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+
+    const ensureUUID = (id: string) => {
+      if (uuidRegex.test(id)) return id;
+      if (idMap[id]) return idMap[id];
+      const newId = generateUUID();
+      idMap[id] = newId;
+      return newId;
+    };
+
+    try {
+      const dbNodes = data.nodes.map((n) => {
+        const mappedId = ensureUUID(n.id);
+        // Construct a temporary UINode to reuse conversion logic
+        const uiNode: UINode = {
+          id: mappedId,
+          position: n.position,
+          data: {
+            id: mappedId,
+            name: n.name,
+            kind: n.kind,
+            outputSchema: defaultObjectJsonSchema, // Default if not provided
+            ...n.config,
+          } as any,
+          type: "default",
+        };
+        const dbNode = convertUINodeToDBNode(data.workflowId, uiNode);
+        return {
+          ...dbNode,
+          createdAt: new Date(),
+          updatedAt: new Date(),
+        };
+      });
+
+      const dbEdges = data.edges.map((e) => {
+        const dbEdge = convertUIEdgeToDBEdge(data.workflowId, {
+          ...e,
+          id: generateUUID(), // Edges usually need unique IDs, AI IDs might clash or be missing
+          source: ensureUUID(e.source),
+          target: ensureUUID(e.target),
+        } as any);
+        return {
+          ...dbEdge,
+          createdAt: new Date(),
+        };
+      });
+
+      await workflowRepository.saveStructure({
+        workflowId: data.workflowId,
+        nodes: dbNodes,
+        edges: dbEdges,
+        deleteNodes: data.deleteNodes?.map(ensureUUID),
+        deleteEdges: data.deleteEdges, // Edges are usually replaced, but keep if needed
+      });
+
+      return { success: true, workflowId: data.workflowId };
+    } catch (error) {
+      console.error("Failed to update workflow structure:", error);
       return {
-        ...dbNode,
-        createdAt: new Date(),
-        updatedAt: new Date(),
+        success: false,
+        error: error instanceof Error ? error.message : String(error),
       };
-    });
-
-    const dbEdges = data.edges.map((e) => {
-      const dbEdge = convertUIEdgeToDBEdge(data.workflowId, {
-        ...e,
-        id: e.id,
-        source: e.source,
-        target: e.target,
-      } as any);
-      return {
-        ...dbEdge,
-        createdAt: new Date(),
-      };
-    });
-
-    await workflowRepository.saveStructure({
-      workflowId: data.workflowId,
-      nodes: dbNodes,
-      edges: dbEdges,
-      deleteNodes: data.deleteNodes,
-      deleteEdges: data.deleteEdges,
-    });
-
-    return { success: true, workflowId: data.workflowId };
+    }
   },
 });
 
