@@ -47,6 +47,9 @@ pnpm docker:pg
 # Configure environment variables (.env file auto-created)
 # Add your API keys to .env file
 
+# Verify API setup (interactive confirmation tool)
+pnpm verify:api
+
 # Build and start
 pnpm build:local && pnpm start
 

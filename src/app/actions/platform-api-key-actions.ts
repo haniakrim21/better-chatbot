@@ -10,6 +10,8 @@ import { revalidatePath } from "next/cache";
 
 const CreatePlatformApiKeySchema = z.object({
   name: z.string().min(1).max(100),
+  scopes: z.string().optional(), // Comma-separated or JSON string
+  expiresInDays: z.string().optional(), // Optional expiration in days
 });
 
 const RevokePlatformApiKeySchema = z.object({
@@ -25,6 +27,8 @@ export const getPlatformApiKeys = validatedActionWithUser(
           id: PlatformApiKeyTable.id,
           name: PlatformApiKeyTable.name,
           prefix: PlatformApiKeyTable.prefix,
+          scopes: PlatformApiKeyTable.scopes,
+          expiresAt: PlatformApiKeyTable.expiresAt,
           createdAt: PlatformApiKeyTable.createdAt,
           lastUsedAt: PlatformApiKeyTable.lastUsedAt,
         })
@@ -56,18 +60,33 @@ export const createPlatformApiKey = validatedActionWithUser(
         userSession.id,
       );
 
+      let expiresAt: Date | null = null;
+      if (data.expiresInDays) {
+        const days = parseInt(data.expiresInDays);
+        if (!isNaN(days) && days > 0) {
+          expiresAt = new Date();
+          expiresAt.setDate(expiresAt.getDate() + days);
+        }
+      }
+
+      const scopes = data.scopes
+        ? data.scopes.split(",").map((s) => s.trim())
+        : ["*"]; // Default to full access if none provided
+
       await pgDb.insert(PlatformApiKeyTable).values({
         userId: userSession.id,
         name: data.name,
         keyHash: keyHash,
         prefix: prefix,
+        scopes: scopes,
+        expiresAt: expiresAt,
       });
 
       revalidatePath("/profile");
 
       return {
         success: true,
-        data: { key: plainKey }, // Only return plain key once
+        data: { key: plainKey },
       };
     } catch (error) {
       console.error("Failed to create platform API key:", error);
@@ -82,7 +101,10 @@ export const revokePlatformApiKey = validatedActionWithUser(
     try {
       await pgDb
         .update(PlatformApiKeyTable)
-        .set({ revokedAt: new Date() })
+        .set({
+          revokedAt: new Date(),
+          updatedAt: new Date(),
+        })
         .where(
           and(
             eq(PlatformApiKeyTable.id, data.id),

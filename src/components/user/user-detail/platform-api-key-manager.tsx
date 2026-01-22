@@ -24,17 +24,27 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Trash2, Plus, Loader2, Key, Copy, Check, Info } from "lucide-react";
+import { Trash2, Plus, Loader2, Key, Copy, Check } from "lucide-react";
 import { toast } from "sonner";
 import { ActionState } from "lib/action-utils";
-import { Alert, AlertDescription, AlertTitle } from "@/components/ui/alert";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogFooter,
+} from "@/components/ui/dialog";
 
 type PlatformApiKeyData = {
   id: string;
   name: string;
   prefix: string;
-  createdAt: Date;
-  lastUsedAt: Date | null;
+  scopes: string[] | null;
+  expiresAt: string | Date | null;
+  createdAt: string | Date;
+  lastUsedAt: string | Date | null;
 };
 
 export function PlatformApiKeyManager() {
@@ -45,6 +55,8 @@ export function PlatformApiKeyManager() {
   // New key state
   const [newKey, setNewKey] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [hasBeenCopied, setHasBeenCopied] = useState(false);
+  const [isSavedConfirmed, setIsSavedConfirmed] = useState(false);
   const [nameInput, setNameInput] = useState("");
 
   const loadKeys = async () => {
@@ -133,6 +145,7 @@ export function PlatformApiKeyManager() {
   const copyToClipboard = (text: string) => {
     navigator.clipboard.writeText(text);
     setCopied(true);
+    setHasBeenCopied(true);
     toast.success("Copied to clipboard");
     setTimeout(() => setCopied(false), 2000);
   };
@@ -151,24 +164,27 @@ export function PlatformApiKeyManager() {
         </CardDescription>
       </CardHeader>
       <CardContent className="space-y-6">
-        {/* New Key Alert */}
-        {newKey && (
-          <Alert className="bg-green-500/10 border-green-500/50 border-2">
-            <Info className="h-5 w-5 text-green-600" />
-            <AlertTitle className="text-lg font-bold">
-              ✅ New API Key Generated
-            </AlertTitle>
-            <AlertDescription className="space-y-4">
-              <p className="text-base font-semibold text-orange-600">
+        {/* New Key Dialog */}
+        <Dialog open={!!newKey} onOpenChange={() => {}}>
+          <DialogContent className="sm:max-w-md" hideClose>
+            <DialogHeader>
+              <DialogTitle className="flex items-center gap-2 text-green-600">
+                <Check className="h-5 w-5" />
+                API Key Generated Successfully
+              </DialogTitle>
+              <DialogDescription className="text-base font-semibold text-orange-600 pt-2">
                 ⚠️ IMPORTANT: Copy this key now! It will not be shown again.
-              </p>
-              <div className="flex items-center gap-2 bg-background p-3 rounded-lg border-2 border-primary/30 font-mono text-sm break-all">
+              </DialogDescription>
+            </DialogHeader>
+
+            <div className="space-y-4 py-4">
+              <div className="flex items-center gap-2 bg-muted p-3 rounded-lg border-2 border-primary/30 font-mono text-sm break-all shadow-inner">
                 <span className="flex-1 select-all">{newKey}</span>
                 <Button
                   variant="default"
                   size="sm"
-                  onClick={() => copyToClipboard(newKey)}
-                  className="shrink-0"
+                  onClick={() => newKey && copyToClipboard(newKey)}
+                  className={`shrink-0 ${!copied && !hasBeenCopied ? "animate-pulse shadow-[0_0_10px_rgba(var(--primary),0.5)]" : ""}`}
                 >
                   {copied ? (
                     <>
@@ -183,16 +199,58 @@ export function PlatformApiKeyManager() {
                   )}
                 </Button>
               </div>
+
+              <div className="flex items-stretch space-x-3 p-3 rounded-md border bg-muted/30 hover:bg-muted/50 transition-colors cursor-pointer group">
+                <Checkbox
+                  id="save-confirmation"
+                  checked={isSavedConfirmed}
+                  className="mt-1"
+                  onCheckedChange={(checked) =>
+                    setIsSavedConfirmed(checked as boolean)
+                  }
+                />
+                <Label
+                  htmlFor="save-confirmation"
+                  className="text-sm font-medium leading-relaxed cursor-pointer select-none"
+                >
+                  I have securely saved this API key. I understand it will never
+                  be shown again and cannot be recovered if lost.
+                </Label>
+              </div>
+            </div>
+
+            <DialogFooter className="sm:justify-between items-center gap-4">
+              <div className="flex-1">
+                {!hasBeenCopied && (
+                  <p className="text-xs text-destructive font-medium animate-pulse">
+                    Please copy the key first
+                  </p>
+                )}
+                {hasBeenCopied && !isSavedConfirmed && (
+                  <p className="text-xs text-orange-600 font-medium">
+                    Please confirm you've saved it
+                  </p>
+                )}
+              </div>
               <Button
-                variant="outline"
-                size="sm"
-                onClick={() => setNewKey(null)}
+                type="button"
+                onClick={() => {
+                  setNewKey(null);
+                  setHasBeenCopied(false);
+                  setIsSavedConfirmed(false);
+                }}
+                disabled={!hasBeenCopied || !isSavedConfirmed}
+                className={
+                  hasBeenCopied && isSavedConfirmed
+                    ? "bg-primary text-primary-foreground hover:bg-primary/90 min-w-[120px]"
+                    : "min-w-[120px]"
+                }
               >
                 I've saved it
               </Button>
-            </AlertDescription>
-          </Alert>
-        )}
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
 
         {/* Create Key Form */}
         {!newKey && (
@@ -231,6 +289,8 @@ export function PlatformApiKeyManager() {
               <TableRow>
                 <TableHead>Name</TableHead>
                 <TableHead>Key Prefix</TableHead>
+                <TableHead>Scopes</TableHead>
+                <TableHead>Expires</TableHead>
                 <TableHead>Created</TableHead>
                 <TableHead>Last Used</TableHead>
                 <TableHead className="text-right">Actions</TableHead>
@@ -258,6 +318,27 @@ export function PlatformApiKeyManager() {
                     <TableCell className="font-medium">{key.name}</TableCell>
                     <TableCell className="font-mono text-xs text-muted-foreground">
                       {key.prefix}...
+                    </TableCell>
+                    <TableCell>
+                      <div className="flex flex-wrap gap-1">
+                        {key.scopes?.map((scope) => (
+                          <span
+                            key={scope}
+                            className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-primary/10 text-primary border border-primary/20"
+                          >
+                            {scope}
+                          </span>
+                        )) || (
+                          <span className="text-muted-foreground text-xs">
+                            -
+                          </span>
+                        )}
+                      </div>
+                    </TableCell>
+                    <TableCell className="text-sm">
+                      {key.expiresAt
+                        ? new Date(key.expiresAt).toLocaleDateString()
+                        : "Never"}
                     </TableCell>
                     <TableCell className="text-sm">
                       {new Date(key.createdAt).toLocaleDateString()}

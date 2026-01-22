@@ -7,6 +7,7 @@ import {
   text,
   timestamp,
   json,
+  jsonb,
   uuid,
   boolean,
   unique,
@@ -638,6 +639,8 @@ export const PlatformApiKeyTable = pgTable("platform_api_key", {
   teamId: uuid("team_id").references(() => TeamTable.id, {
     onDelete: "set null",
   }),
+  scopes: jsonb("scopes").$type<string[]>(), // Array of permissions, e.g. ["chat:read", "workflow:execute"]
+  expiresAt: timestamp("expires_at"),
   lastUsedAt: timestamp("last_used_at"),
   createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
   updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),

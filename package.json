@@ -23,6 +23,7 @@
     "format": "biome format --write",
     "check-types": "tsc --noEmit",
     "initial:env": "tsx scripts/initial-env.ts",
+    "verify:api": "tsx scripts/verify-api-setup.ts",
     "openai-compatiable:init": "tsx scripts/init-openai-compatiable.ts",
     "openai-compatiable:parse": "tsx scripts/parse-openai-compatiable.ts",
     "postinstall": "./node_modules/.bin/tsx scripts/postinstall.ts",
