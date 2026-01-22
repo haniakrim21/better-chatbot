@@ -81,15 +81,23 @@ export function PlatformApiKeyManager() {
     try {
       const res = (await createPlatformApiKey(null, formData)) as ActionState;
 
+      console.log("[Platform API Key] Response:", res);
+
       if (res?.success && res.data) {
-        setNewKey((res.data as any).key);
+        const apiKey = (res.data as any).key;
+        console.log("[Platform API Key] Key created, length:", apiKey?.length);
+        setNewKey(apiKey);
         setNameInput("");
         loadKeys();
-        toast.success("Platform API key created");
+        toast.success(
+          "Platform API key created! Copy it now - it won't be shown again.",
+        );
       } else {
+        console.error("[Platform API Key] Creation failed:", res?.error);
         toast.error(res?.error || "Failed to create API key");
       }
     } catch (_e) {
+      console.error("[Platform API Key] Exception:", _e);
       toast.error("An error occurred");
     }
     setActionLoading(false);
@@ -145,25 +153,33 @@ export function PlatformApiKeyManager() {
       <CardContent className="space-y-6">
         {/* New Key Alert */}
         {newKey && (
-          <Alert className="bg-primary/5 border-primary/20">
-            <Info className="h-4 w-4" />
-            <AlertTitle>New API Key Generated</AlertTitle>
-            <AlertDescription className="space-y-3">
-              <p>
-                Please copy this key now. For your security, it will not be
-                shown again.
+          <Alert className="bg-green-500/10 border-green-500/50 border-2">
+            <Info className="h-5 w-5 text-green-600" />
+            <AlertTitle className="text-lg font-bold">
+              ✅ New API Key Generated
+            </AlertTitle>
+            <AlertDescription className="space-y-4">
+              <p className="text-base font-semibold text-orange-600">
+                ⚠️ IMPORTANT: Copy this key now! It will not be shown again.
               </p>
-              <div className="flex items-center gap-2 bg-background p-2 rounded border font-mono text-sm break-all">
-                <span className="flex-1">{newKey}</span>
+              <div className="flex items-center gap-2 bg-background p-3 rounded-lg border-2 border-primary/30 font-mono text-sm break-all">
+                <span className="flex-1 select-all">{newKey}</span>
                 <Button
-                  variant="ghost"
+                  variant="default"
                   size="sm"
                   onClick={() => copyToClipboard(newKey)}
+                  className="shrink-0"
                 >
                   {copied ? (
-                    <Check className="h-4 w-4" />
+                    <>
+                      <Check className="h-4 w-4 mr-2" />
+                      Copied!
+                    </>
                   ) : (
-                    <Copy className="h-4 w-4" />
+                    <>
+                      <Copy className="h-4 w-4 mr-2" />
+                      Copy Key
+                    </>
                   )}
                 </Button>
               </div>
