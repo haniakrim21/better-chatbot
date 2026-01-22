@@ -419,10 +419,10 @@ export default function PromptInput({
       if (data.threadId && !threadId) {
         router.push(`/chat/${data.threadId}`);
       }
-      toast.success("Camel multi-agent session started!");
+      toast.success("Multi-agent session started!");
     } catch (err) {
       console.error("Camel API Error:", err);
-      toast.error("Failed to start Camel session");
+      toast.error("Failed to start multi-agent session");
     }
   };
 

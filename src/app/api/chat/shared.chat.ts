@@ -278,12 +278,14 @@ export const workflowToVercelAITool = ({
   schema,
   dataStream,
   name,
+  userId,
 }: {
   id: string;
   name: string;
   description?: string;
   schema: ObjectJsonSchema7;
   dataStream: UIMessageStreamWriter;
+  userId: string;
 }): VercelAIWorkflowTool => {
   const toolName = name
     .replace(/[^a-zA-Z0-9\s]/g, "")
@@ -320,6 +322,7 @@ export const workflowToVercelAITool = ({
           const executor = createWorkflowExecutor({
             nodes: workflow.nodes,
             edges: workflow.edges,
+            userId,
           });
           toolResult.workflowIcon = workflow.icon;
 
@@ -432,12 +435,14 @@ export const workflowToVercelAITools = (
     schema: ObjectJsonSchema7;
   }[],
   dataStream: UIMessageStreamWriter,
+  userId: string,
 ) => {
   return workflows
     .map((v) =>
       workflowToVercelAITool({
         ...v,
         dataStream,
+        userId,
       }),
     )
     .reduce(
@@ -491,7 +496,9 @@ export const loadWorkFlowTools = (opt: {
         ? workflowRepository.selectAll(opt.userId, opt.teamIds)
         : [],
   )
-    .map((tools) => workflowToVercelAITools(tools, opt.dataStream))
+    .map((tools) =>
+      workflowToVercelAITools(tools, opt.dataStream, opt.userId || ""),
+    )
     .orElse({} as Record<string, VercelAIWorkflowTool>);
 
 export const loadAppDefaultTools = (opt?: {

@@ -4,16 +4,16 @@ import { chatRepository } from "lib/db/repository";
 import logger from "logger";
 import { generateUUID } from "lib/utils";
 
-export interface CamelRole {
+export interface MultiAgentRole {
   name: string;
   agentId: string;
   systemPromptPreset?: string;
 }
 
-export interface CamelSessionConfig {
+export interface MultiAgentSessionConfig {
   taskDescription: string;
-  userRole: CamelRole;
-  assistantRole: CamelRole;
+  userRole: MultiAgentRole;
+  assistantRole: MultiAgentRole;
   maxTurns: number;
   userId: string;
   threadId?: string;
@@ -23,7 +23,7 @@ export class MultiAgentOrchestrator {
   /**
    * Generates inception prompts for both User and Assistant agents
    */
-  private generateInceptionPrompts(config: CamelSessionConfig) {
+  private generateInceptionPrompts(config: MultiAgentSessionConfig) {
     const { taskDescription, userRole, assistantRole } = config;
 
     const userSystemPrompt = `You are a ${userRole.name}. 
@@ -46,7 +46,7 @@ Wait for the ${userRole.name} to provide instructions.`;
    * Runs a complete Camel Role-Playing session
    */
   async runSession(
-    config: CamelSessionConfig,
+    config: MultiAgentSessionConfig,
     onProgress?: (message: UIMessage) => void,
   ) {
     const { userId, maxTurns, userRole, assistantRole } = config;
@@ -61,7 +61,9 @@ Wait for the ${userRole.name} to provide instructions.`;
       "Please start our collaboration on: " + config.taskDescription;
     let isFinished = false;
 
-    logger.info(`Starting Camel Session: ${threadId} (Max Turns: ${maxTurns})`);
+    logger.info(
+      `Starting Multi-Agent Session: ${threadId} (Max Turns: ${maxTurns})`,
+    );
 
     // Update thread title to reflect the task
     try {
@@ -86,7 +88,7 @@ Wait for the ${userRole.name} to provide instructions.`;
         ? userRole.name
         : assistantRole.name;
 
-      logger.debug(`Camel Turn ${turn}: ${currentSenderLabel}`);
+      logger.debug(`Turn ${turn}: ${currentSenderLabel}`);
 
       try {
         // Construct prompt for the current agent
@@ -119,11 +121,11 @@ Wait for the ${userRole.name} to provide instructions.`;
 
         if (response.content.includes("<TASK_DONE>")) {
           isFinished = true;
-          logger.info(`Camel Session ${threadId} completed via tag.`);
+          logger.info(`Multi-Agent Session ${threadId} completed via tag.`);
         }
       } catch (error) {
         logger.error(
-          `Camel Session ${threadId} failed at turn ${turn}:`,
+          `Multi-Agent Session ${threadId} failed at turn ${turn}:`,
           error,
         );
         throw error;

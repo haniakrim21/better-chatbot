@@ -21,7 +21,7 @@ export enum NodeKind {
   Tool = "tool", // MCP tool execution node
   Http = "http", // HTTP request node
   Template = "template", // Template processing node
-  MultiAgent = "multiagent", // Camel-AI multi-agent session node
+  MultiAgent = "multiagent", // Multi-agent session node
   Code = "code", // Code execution node (future implementation)
   Output = "output", // Exit point of workflow - produces final result
 }
@@ -136,7 +136,7 @@ export type LLMNodeData = BaseWorkflowNodeDataData<{
 };
 
 /**
- * Multi-Agent (Camel) node: Runs an autonomous collaboration between two agents
+ * Multi-Agent node: Runs an autonomous collaboration between two agents
  * Outputs the final result of the collaborative session
  */
 export type MultiAgentNodeData = BaseWorkflowNodeDataData<{

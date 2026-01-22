@@ -113,7 +113,20 @@ export class ChatService {
       }
     }
 
-    // Check Usage Quota if no custom API key is present
+    // Check for environment variable API key if no user key is set
+    if (!apiKey && chatModel?.provider) {
+      const providerMap: Record<string, string | undefined> = {
+        openai: process.env.OPENAI_API_KEY,
+        google: process.env.GOOGLE_GENERATIVE_AI_API_KEY,
+        anthropic: process.env.ANTHROPIC_API_KEY,
+        xai: process.env.XAI_API_KEY,
+        groq: process.env.GROQ_API_KEY,
+        openRouter: process.env.OPENROUTER_API_KEY,
+      };
+      apiKey = providerMap[chatModel.provider];
+    }
+
+    // Check Usage Quota if no custom API key is present (neither user nor env)
     if (!apiKey) {
       try {
         const { UsageTrackingTable } = await import("lib/db/pg/schema.pg");
@@ -628,7 +641,7 @@ export class ChatService {
   }
 
   /**
-   * Non-streaming version of processRequest for service-to-service calls (e.g. Camel-AI)
+   * Non-streaming version of processRequest for service-to-service calls (e.g. Multi-Agent)
    */
   async processServiceRequest(params: {
     userId: string;

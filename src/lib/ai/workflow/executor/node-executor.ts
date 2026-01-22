@@ -517,7 +517,7 @@ export const templateNodeExecutor: NodeExecutor<TemplateNodeData> = ({
 
 /**
  * Multi-Agent Node Executor
- * Runs an autonomous Camel-AI session between two specified agents.
+ * Runs an autonomous multi-agent session between two specified agents.
  *
  * Workflow:
  * 1. Resolves agent IDs and task description (with mentions)

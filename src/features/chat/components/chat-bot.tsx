@@ -216,9 +216,6 @@ export default function ChatBot({
             (p: any) => p?.type !== "source-url",
           ),
         } as typeof lastMessage;
-        const hasFilePart = lastMessage.parts?.some(
-          (p) => (p as any)?.type === "file",
-        );
 
         const requestBody: ChatApiSchemaRequestBody = {
           ...body,
@@ -226,12 +223,7 @@ export default function ChatBot({
           chatModel:
             (body as { model: ChatModel })?.model ?? latestRef.current.model,
           toolChoice: latestRef.current.toolChoice,
-          allowedAppDefaultToolkit:
-            latestRef.current.mentions?.length || hasFilePart
-              ? (latestRef.current.allowedAppDefaultToolkit?.filter(
-                  (t) => t === "workflow",
-                ) ?? [])
-              : latestRef.current.allowedAppDefaultToolkit,
+          allowedAppDefaultToolkit: latestRef.current.allowedAppDefaultToolkit,
           allowedMcpServers: latestRef.current.mentions?.length
             ? {}
             : latestRef.current.allowedMcpServers,

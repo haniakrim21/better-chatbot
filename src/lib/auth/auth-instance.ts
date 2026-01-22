@@ -115,12 +115,9 @@ const options = {
     "https://www.nabdai.io",
   ],
   socialProviders: socialAuthenticationProviders,
-} as any;
+} satisfies BetterAuthOptions;
 
-export const auth = betterAuth({
-  ...options,
-  plugins: [...(options.plugins ?? [])],
-});
+export const auth = betterAuth(options);
 
 export const getSession = async () => {
   try {

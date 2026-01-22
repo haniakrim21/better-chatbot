@@ -155,7 +155,7 @@ export default function MentionInput({
         const json = editor.getJSON() as TipTapMentionJsonContent;
         // Get Markdown content instead of plain text to preserve formatting
         const text =
-          (editor.storage.markdown as any)?.getMarkdown() || editor.getText();
+          (editor.storage as any).markdown?.getMarkdown() || editor.getText();
         const mentions = json?.content
           ?.flatMap(({ content }) => {
             return content

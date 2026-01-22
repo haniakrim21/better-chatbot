@@ -162,7 +162,11 @@ describe("createWorkflowExecutor", () => {
       createEdge("e2", "noop", "end"),
     ];
 
-    const executor = createWorkflowExecutor({ nodes, edges });
+    const executor = createWorkflowExecutor({
+      nodes,
+      edges,
+      userId: "test-user",
+    });
 
     const visitedNodes: string[] = [];
     executor.subscribe((event: any) => {
@@ -233,7 +237,11 @@ describe("createWorkflowExecutor", () => {
     ];
 
     // Test TRUE path
-    const executor1 = createWorkflowExecutor({ nodes, edges });
+    const executor1 = createWorkflowExecutor({
+      nodes,
+      edges,
+      userId: "test-user",
+    });
     const visitedNodesTrue: string[] = [];
     const inputDataTrue: Record<string, unknown> = { shouldGoTrue: true };
 
@@ -259,7 +267,11 @@ describe("createWorkflowExecutor", () => {
     expect(visitedNodesTrue).not.toContain("false-path");
 
     // Test FALSE path
-    const executor2 = createWorkflowExecutor({ nodes, edges });
+    const executor2 = createWorkflowExecutor({
+      nodes,
+      edges,
+      userId: "test-user",
+    });
     const visitedNodesFalse: string[] = [];
     const inputDataFalse: Record<string, unknown> = { shouldGoTrue: false };
 
@@ -324,7 +336,11 @@ describe("createWorkflowExecutor", () => {
     ];
 
     // Test ADMIN path
-    const executor1 = createWorkflowExecutor({ nodes, edges });
+    const executor1 = createWorkflowExecutor({
+      nodes,
+      edges,
+      userId: "test-user",
+    });
     const visitedNodesAdmin: string[] = [];
     const inputDataAdmin: Record<string, unknown> = { userRole: "admin" };
 
@@ -350,7 +366,11 @@ describe("createWorkflowExecutor", () => {
     expect(visitedNodesAdmin).not.toContain("user-path");
 
     // Test USER path
-    const executor2 = createWorkflowExecutor({ nodes, edges });
+    const executor2 = createWorkflowExecutor({
+      nodes,
+      edges,
+      userId: "test-user",
+    });
     const visitedNodesUser: string[] = [];
     const inputDataUser: Record<string, unknown> = { userRole: "user" };
 
@@ -399,7 +419,11 @@ describe("createWorkflowExecutor", () => {
       createEdge("e7", "join", "end"),
     ];
 
-    const executor = createWorkflowExecutor({ nodes, edges });
+    const executor = createWorkflowExecutor({
+      nodes,
+      edges,
+      userId: "test-user",
+    });
 
     const visitedNodes: string[] = [];
     const nodeExecutionCounts: Record<string, number> = {};
@@ -506,7 +530,11 @@ describe("createWorkflowExecutor", () => {
     ];
 
     // Test PARALLEL path
-    const executor1 = createWorkflowExecutor({ nodes, edges });
+    const executor1 = createWorkflowExecutor({
+      nodes,
+      edges,
+      userId: "test-user",
+    });
     const visitedNodesParallel: string[] = [];
     const inputDataParallel: Record<string, unknown> = { useParallel: true };
 
@@ -532,7 +560,11 @@ describe("createWorkflowExecutor", () => {
     expect(visitedNodesParallel).not.toContain("single-path");
 
     // Test SINGLE path
-    const executor2 = createWorkflowExecutor({ nodes, edges });
+    const executor2 = createWorkflowExecutor({
+      nodes,
+      edges,
+      userId: "test-user",
+    });
     const visitedNodesSingle: string[] = [];
     const inputDataSingle: Record<string, unknown> = { useParallel: false };
 
@@ -570,7 +602,11 @@ describe("createWorkflowExecutor", () => {
       createEdge("e2", "middle", "end"),
     ];
 
-    const executor = createWorkflowExecutor({ nodes, edges });
+    const executor = createWorkflowExecutor({
+      nodes,
+      edges,
+      userId: "test-user",
+    });
 
     const events: any[] = [];
     const inputData: Record<string, unknown> = {

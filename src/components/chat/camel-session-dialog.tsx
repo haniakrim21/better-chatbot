@@ -97,7 +97,7 @@ export function CamelSessionDialog({
         <DialogHeader>
           <DialogTitle className="flex items-center gap-2">
             <Users2 className="size-5 text-primary" />
-            Camel Multi-Agent Session
+            Multi-Agent Session
           </DialogTitle>
           <DialogDescription>
             Two agents will collaborate autonomously to solve your task.

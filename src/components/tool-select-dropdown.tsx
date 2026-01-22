@@ -894,6 +894,18 @@ function AppDefaultToolKitSelector() {
         case AppDefaultToolkit.Code:
           icon = CodeIcon;
           break;
+        case AppDefaultToolkit.Workflow:
+          icon = Waypoints;
+          break;
+        case AppDefaultToolkit.Canvas:
+          icon = MousePointer2;
+          break;
+        case AppDefaultToolkit.Compute:
+          icon = Loader;
+          break;
+        case AppDefaultToolkit.Rag:
+          icon = Package;
+          break;
       }
       return {
         label,

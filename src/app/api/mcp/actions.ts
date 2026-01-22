@@ -286,8 +286,7 @@ export async function resolveMcpConfigAction(url: string) {
       data: {
         name: derivedName,
         config: {
-          command: "npx",
-          args: ["-y", "@smithery/cli", "run", packageName],
+          url: `https://server.smithery.ai/${packageName}/mcp`,
         },
       },
     };

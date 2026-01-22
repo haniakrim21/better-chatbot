@@ -30,11 +30,11 @@ export async function POST(req: Request) {
       await chatRepository.insertThread({
         id: threadId,
         userId,
-        title: `Camel Session: ${task.slice(0, 30)}...`,
+        title: `Multi-Agent Session: ${task.slice(0, 30)}...`,
       });
     }
 
-    // Start the Camel session in the background
+    // Start the Multi-Agent session in the background
     // We don't await the full run here if we want to return the threadId immediately,
     // but for simplicity in V1 we might want to return after the first turn or just let it run.
 
@@ -52,13 +52,13 @@ export async function POST(req: Request) {
           maxTurns: turns,
         });
       } catch (err) {
-        logger.error("Background Camel Session failed:", err);
+        logger.error("Background Multi-Agent Session failed:", err);
       }
     })();
 
     return NextResponse.json({ threadId, status: "started" });
   } catch (error) {
-    logger.error("Camel API Error:", error);
+    logger.error("Multi-Agent API Error:", error);
     return NextResponse.json(
       { error: "Internal Server Error" },
       { status: 500 },

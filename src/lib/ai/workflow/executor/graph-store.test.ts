@@ -7,6 +7,7 @@ describe("workflow-store", () => {
     const store = createGraphStore({
       nodes: [],
       edges: [],
+      userId: "test-user",
     });
     const context = store();
 
@@ -92,6 +93,7 @@ describe("workflow-store", () => {
         } as unknown as DBNode,
       ],
       edges: [],
+      userId: "test-user",
     });
     const context = store();
     expect(

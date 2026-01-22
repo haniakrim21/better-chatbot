@@ -6,7 +6,6 @@ import {
   Copy,
   Loader,
   ChevronDownIcon,
-  ChevronUp,
   RefreshCw,
   X,
   Trash2,
@@ -558,13 +557,11 @@ export const ReasoningPart = memo(function ReasoningPart({
 });
 ReasoningPart.displayName = "ReasoningPart";
 
-const loading = memo(function Loading() {
-  return (
-    <div className="px-6 py-4">
-      <div className="h-44 w-full rounded-md opacity-0" />
-    </div>
-  );
-});
+const Loading = () => (
+  <div className="px-6 py-4">
+    <div className="h-44 w-full rounded-md opacity-0" />
+  </div>
+);
 
 const PieChart = dynamic(
   () =>
@@ -573,7 +570,7 @@ const PieChart = dynamic(
     ),
   {
     ssr: false,
-    loading,
+    loading: Loading,
   },
 );
 
@@ -584,7 +581,7 @@ const BarChart = dynamic(
     ),
   {
     ssr: false,
-    loading,
+    loading: Loading,
   },
 );
 
@@ -595,7 +592,7 @@ const LineChart = dynamic(
     ),
   {
     ssr: false,
-    loading,
+    loading: Loading,
   },
 );
 
@@ -606,7 +603,7 @@ const InteractiveTable = dynamic(
     ),
   {
     ssr: false,
-    loading,
+    loading: Loading,
   },
 );
 
@@ -617,7 +614,7 @@ const WebSearchToolInvocation = dynamic(
     ),
   {
     ssr: false,
-    loading,
+    loading: Loading,
   },
 );
 
@@ -628,7 +625,7 @@ const CodeExecutor = dynamic(
     ),
   {
     ssr: false,
-    loading,
+    loading: Loading,
   },
 );
 
@@ -639,7 +636,7 @@ const ImageGeneratorToolInvocation = dynamic(
     ),
   {
     ssr: false,
-    loading,
+    loading: Loading,
   },
 );
 

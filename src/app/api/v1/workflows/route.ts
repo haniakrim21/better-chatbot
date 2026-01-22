@@ -23,9 +23,7 @@ export async function GET(req: NextRequest) {
   try {
     // Fetch workflows
     // Assuming selectWorkflowsByUserId exists and behaves similarly to agents
-    const workflows = await workflowRepository.selectWorkflowsByUserId(
-      keyRecord.userId,
-    );
+    const workflows = await workflowRepository.selectByUserId(keyRecord.userId);
 
     const formattedWorkflows = workflows.map((wf) => ({
       id: wf.id,
