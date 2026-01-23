@@ -142,12 +142,40 @@ export function PlatformApiKeyManager() {
     setActionLoading(false);
   };
 
-  const copyToClipboard = (text: string) => {
-    navigator.clipboard.writeText(text);
-    setCopied(true);
-    setHasBeenCopied(true);
-    toast.success("Copied to clipboard");
-    setTimeout(() => setCopied(false), 2000);
+  const copyToClipboard = async (text: string) => {
+    try {
+      if (navigator.clipboard && window.isSecureContext) {
+        await navigator.clipboard.writeText(text);
+        setCopied(true);
+        setHasBeenCopied(true);
+        toast.success("Copied to clipboard");
+      } else {
+        // Fallback for non-secure contexts or missing clipboard API
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        textArea.style.position = "fixed";
+        textArea.style.left = "-999999px";
+        textArea.style.top = "-999999px";
+        document.body.appendChild(textArea);
+        textArea.focus();
+        textArea.select();
+        const successful = document.execCommand("copy");
+        textArea.remove();
+
+        if (successful) {
+          setCopied(true);
+          setHasBeenCopied(true);
+          toast.success("Copied to clipboard (fallback)");
+        } else {
+          throw new Error("Copy command failed");
+        }
+      }
+    } catch (err) {
+      console.error("Copy failed:", err);
+      toast.error("Failed to copy. Please select and copy manually.");
+    } finally {
+      setTimeout(() => setCopied(false), 2000);
+    }
   };
 
   return (
@@ -178,8 +206,11 @@ export function PlatformApiKeyManager() {
             </DialogHeader>
 
             <div className="space-y-4 py-4">
-              <div className="flex items-center gap-2 bg-muted p-3 rounded-lg border-2 border-primary/30 font-mono text-sm break-all shadow-inner">
-                <span className="flex-1 select-all">{newKey}</span>
+              <div
+                onCopy={() => setHasBeenCopied(true)}
+                className="flex items-center gap-2 bg-muted p-3 rounded-lg border-2 border-primary/30 font-mono text-sm break-all shadow-inner relative overflow-hidden"
+              >
+                <code className="flex-1 select-all pr-12">{newKey}</code>
                 <Button
                   variant="default"
                   size="sm"
