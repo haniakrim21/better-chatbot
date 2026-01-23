@@ -632,6 +632,7 @@ export const PlatformApiKeyTable = pgTable("platform_api_key", {
   id: uuid("id").primaryKey().notNull().defaultRandom(),
   name: text("name").notNull(),
   keyHash: text("key_hash").notNull().unique(), // Hashed for secure verification
+  encryptedKey: text("encrypted_key"), // Encrypted for "Reveal" and "Copy" actions
   prefix: text("prefix").notNull(), // First 10 chars for identification, e.g. "nbd_abc123"
   userId: uuid("user_id")
     .notNull()

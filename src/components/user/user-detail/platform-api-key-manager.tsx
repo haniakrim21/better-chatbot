@@ -5,6 +5,7 @@ import {
   getPlatformApiKeys,
   createPlatformApiKey,
   revokePlatformApiKey,
+  revealPlatformApiKey,
 } from "@/app/actions/platform-api-key-actions";
 import { Button } from "@/components/ui/button";
 import {
@@ -24,7 +25,16 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Trash2, Plus, Loader2, Key, Copy, Check } from "lucide-react";
+import {
+  Trash2,
+  Plus,
+  Loader2,
+  Key,
+  Copy,
+  Check,
+  Eye,
+  EyeOff,
+} from "lucide-react";
 import { toast } from "sonner";
 import { ActionState } from "lib/action-utils";
 import { Checkbox } from "@/components/ui/checkbox";
@@ -58,6 +68,11 @@ export function PlatformApiKeyManager() {
   const [hasBeenCopied, setHasBeenCopied] = useState(false);
   const [isSavedConfirmed, setIsSavedConfirmed] = useState(false);
   const [nameInput, setNameInput] = useState("");
+
+  // Reveal state
+  const [revealedKeys, setRevealedKeys] = useState<Record<string, string>>({});
+  const [revealingId, setRevealingId] = useState<string | null>(null);
+  const [copiedId, setCopiedId] = useState<string | null>(null);
 
   const loadKeys = async () => {
     setLoading(true);
@@ -140,6 +155,42 @@ export function PlatformApiKeyManager() {
       toast.error("An error occurred");
     }
     setActionLoading(false);
+  };
+
+  const handleRevealKey = async (id: string) => {
+    if (revealedKeys[id]) {
+      // Toggle off
+      const next = { ...revealedKeys };
+      delete next[id];
+      setRevealedKeys(next);
+      return;
+    }
+
+    setRevealingId(id);
+    const formData = new FormData();
+    formData.append("id", id);
+
+    try {
+      const res = (await revealPlatformApiKey(null, formData)) as ActionState;
+      if (res?.success && res.data) {
+        setRevealedKeys((prev) => ({
+          ...prev,
+          [id]: (res.data as any).key,
+        }));
+      } else {
+        toast.error(res?.error || "Failed to reveal API key");
+      }
+    } catch {
+      toast.error("An error occurred while revealing the key");
+    } finally {
+      setRevealingId(null);
+    }
+  };
+
+  const handleCopyKey = async (id: string, key: string) => {
+    await copyToClipboard(key);
+    setCopiedId(id);
+    setTimeout(() => setCopiedId(null), 2000);
   };
 
   const copyToClipboard = async (text: string) => {
@@ -347,8 +398,16 @@ export function PlatformApiKeyManager() {
                 keys.map((key) => (
                   <TableRow key={key.id}>
                     <TableCell className="font-medium">{key.name}</TableCell>
-                    <TableCell className="font-mono text-xs text-muted-foreground">
-                      {key.prefix}...
+                    <TableCell className="font-mono text-xs">
+                      {revealedKeys[key.id] ? (
+                        <span className="text-primary break-all">
+                          {revealedKeys[key.id]}
+                        </span>
+                      ) : (
+                        <span className="text-muted-foreground">
+                          {key.prefix}...
+                        </span>
+                      )}
                     </TableCell>
                     <TableCell>
                       <div className="flex flex-wrap gap-1">
@@ -380,15 +439,50 @@ export function PlatformApiKeyManager() {
                         : "Never"}
                     </TableCell>
                     <TableCell className="text-right">
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        className="text-destructive hover:bg-destructive/10"
-                        onClick={() => handleRevokeKey(key.id)}
-                        disabled={actionLoading}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
+                      <div className="flex justify-end gap-1">
+                        {revealedKeys[key.id] ? (
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            className="h-8 w-8 text-primary"
+                            onClick={() =>
+                              handleCopyKey(key.id, revealedKeys[key.id])
+                            }
+                          >
+                            {copiedId === key.id ? (
+                              <Check className="h-4 w-4" />
+                            ) : (
+                              <Copy className="h-4 w-4" />
+                            )}
+                          </Button>
+                        ) : null}
+
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8"
+                          onClick={() => handleRevealKey(key.id)}
+                          disabled={revealingId === key.id}
+                        >
+                          {revealingId === key.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : revealedKeys[key.id] ? (
+                            <EyeOff className="h-4 w-4" />
+                          ) : (
+                            <Eye className="h-4 w-4" />
+                          )}
+                        </Button>
+
+                        <Button
+                          variant="ghost"
+                          size="icon"
+                          className="h-8 w-8 text-destructive hover:bg-destructive/10"
+                          onClick={() => handleRevokeKey(key.id)}
+                          disabled={actionLoading}
+                        >
+                          <Trash2 className="h-4 w-4" />
+                        </Button>
+                      </div>
                     </TableCell>
                   </TableRow>
                 ))

@@ -169,6 +169,13 @@
       "when": 1769125292370,
       "tag": "0023_dashing_monster_badoon",
       "breakpoints": true
+    },
+    {
+      "idx": 24,
+      "version": "7",
+      "when": 1769154009096,
+      "tag": "0024_mature_carmella_unuscione",
+      "breakpoints": true
     }
   ]
 }

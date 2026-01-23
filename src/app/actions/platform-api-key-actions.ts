@@ -7,6 +7,7 @@ import { pgDb } from "lib/db/pg/db.pg";
 import { generateApiKey } from "lib/auth/api-key";
 import { eq, and, isNull } from "drizzle-orm";
 import { revalidatePath } from "next/cache";
+import { encrypt, decrypt } from "lib/encryption";
 
 const CreatePlatformApiKeySchema = z.object({
   name: z.string().min(1).max(100),
@@ -80,6 +81,7 @@ export const createPlatformApiKey = validatedActionWithUser(
         prefix: prefix,
         scopes: scopes,
         expiresAt: expiresAt,
+        encryptedKey: encrypt(plainKey),
       });
 
       revalidatePath("/profile");
@@ -117,6 +119,46 @@ export const revokePlatformApiKey = validatedActionWithUser(
     } catch (error) {
       console.error("Failed to revoke platform API key:", error);
       return { success: false, error: "Failed to revoke platform API key" };
+    }
+  },
+);
+
+export const revealPlatformApiKey = validatedActionWithUser(
+  RevokePlatformApiKeySchema, // We can reuse this as it just needs the ID
+  async (data, _, userSession) => {
+    try {
+      const [record] = await pgDb
+        .select({
+          encryptedKey: PlatformApiKeyTable.encryptedKey,
+        })
+        .from(PlatformApiKeyTable)
+        .where(
+          and(
+            eq(PlatformApiKeyTable.id, data.id),
+            eq(PlatformApiKeyTable.userId, userSession.id),
+            isNull(PlatformApiKeyTable.revokedAt),
+          ),
+        )
+        .limit(1);
+
+      if (!record || !record.encryptedKey) {
+        return {
+          success: false,
+          error: record
+            ? "This key was created before reveal was supported and cannot be recovered."
+            : "Key not found",
+        };
+      }
+
+      const plainKey = decrypt(record.encryptedKey);
+
+      return {
+        success: true,
+        data: { key: plainKey },
+      };
+    } catch (error) {
+      console.error("Failed to reveal platform API key:", error);
+      return { success: false, error: "Failed to reveal platform API key" };
     }
   },
 );
