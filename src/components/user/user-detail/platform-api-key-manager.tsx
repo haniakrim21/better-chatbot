@@ -232,9 +232,14 @@ export function PlatformApiKeyManager() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <Key className="h-5 w-5 text-primary" />
-          Platform API Keys
+        <CardTitle className="flex items-center justify-between gap-2">
+          <div className="flex items-center gap-2">
+            <Key className="h-5 w-5 text-primary" />
+            Platform API Keys
+          </div>
+          <span className="text-[10px] text-muted-foreground font-normal opacity-50">
+            v1.1-reveal
+          </span>
         </CardTitle>
         <CardDescription>
           Generate API keys to use Nabd platform functions (Agents, Workflows)
@@ -460,9 +465,10 @@ export function PlatformApiKeyManager() {
                         <Button
                           variant="ghost"
                           size="icon"
-                          className="h-8 w-8"
+                          className="h-8 w-8 text-primary hover:text-primary/80"
                           onClick={() => handleRevealKey(key.id)}
                           disabled={revealingId === key.id}
+                          title={revealedKeys[key.id] ? "Hide" : "Reveal"}
                         >
                           {revealingId === key.id ? (
                             <Loader2 className="h-4 w-4 animate-spin" />
