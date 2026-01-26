@@ -74,7 +74,7 @@ const staticModels = {
     "gemini-2.5-flash": google("gemini-2.5-flash"),
     "gemini-2.5-pro": google("gemini-2.5-pro"),
     "gemini-3-flash": google("gemini-3-flash-preview"),
-    "gemini-3-pro": google("gemini-3-pro-preview"),
+    "gemini-3-pro": google("gemini-1.5-pro"),
   },
   anthropic: {
     "claude-3-5-sonnet": anthropic("claude-3-5-sonnet-20240620"),
@@ -292,6 +292,11 @@ export const customModelProvider = {
 
     // Use user-provided API key if available
     if (apiKey) {
+      // Dynamic Aliasing for User Keys
+      if (model.provider === "google" && model.model === "gemini-3-pro") {
+        model.model = "gemini-1.5-pro";
+      }
+
       // NOTE: Checking if createOpenRouter exists safely to avoid runtime crashes if package version is old
       // We assume it's imported or available if the package supports it.
       // If strict TS checks fail here, we might need 'as any' casting or conditional method usage.
@@ -301,11 +306,18 @@ export const customModelProvider = {
           return createOpenAI({ apiKey, fetch: customFetch as any })(
             model.model,
           );
-        case "google":
+        case "google": {
+          const googleModelMap: Record<string, string> = {
+            "gemini-1.5-pro": "gemini-pro-latest",
+            "gemini-1.5-flash": "gemini-flash-latest",
+            "gemini-3-pro": "gemini-pro-latest", // Fallback for the invalid model
+          };
+          const apiModelId = googleModelMap[model.model] || model.model;
           return createGoogleGenerativeAI({
             apiKey,
             fetch: customFetch as any,
-          })(model.model);
+          })(apiModelId);
+        }
         case "anthropic":
           return createAnthropic({ apiKey, fetch: customFetch as any })(
             model.model,

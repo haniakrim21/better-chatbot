@@ -524,11 +524,53 @@ export class ChatService {
 
         // Truncate messages to prevent context length errors
         // Keep the most recent messages to stay within context window
-        const MAX_MESSAGES = 40;
-        let truncatedMessages =
-          messages.length > MAX_MESSAGES
-            ? messages.slice(-MAX_MESSAGES)
-            : messages;
+        // Heuristic: 1 token ~= 4 chars. 50k chars ~= 12.5k tokens.
+        // This is a safe upper bound for most modern models (GPT-4o, Claude 3.5, etc.)
+        const MAX_CONTEXT_CHARS = 50000;
+        let runningCharCount = 0;
+        let truncatedMessages: UIMessage[] = [];
+
+        // Iterate backwards to keep the most recent messages
+        for (let i = messages.length - 1; i >= 0; i--) {
+          const msg = messages[i];
+          let msgLength = 0;
+
+          for (const part of msg.parts) {
+            const p = part as any; // Cast to any to handle all part types without TS errors
+            if (p.type === "text") {
+              msgLength += (p.text || "").length;
+            } else if (
+              p.type === "image" ||
+              p.type === "file" ||
+              p.imageUrl ||
+              p.image
+            ) {
+              // Heuristic: Large files/images consume significant context.
+              // Assign a heavy weight. 1M tokens is the hard limit, but we want to stay well below.
+              // Let's assume an image is ~1k tokens -> ~4k chars.
+              // But to be safe and "dont show this error", we treat them as expensive.
+              msgLength += 10000;
+            }
+          }
+
+          if (runningCharCount + msgLength > MAX_CONTEXT_CHARS) {
+            // If the single latest message is too big, we still have to let it through (or part of it)
+            // but we stop adding older history.
+            if (truncatedMessages.length === 0) {
+              truncatedMessages.push(msg);
+            }
+            break;
+          }
+
+          runningCharCount += msgLength;
+          truncatedMessages.unshift(msg);
+        }
+
+        // Always ensure at least the last user message is present if possible,
+        // effectively protecting against empty context if a single message is massive (though unlikely to help if it's > max context alone)
+        if (truncatedMessages.length === 0 && messages.length > 0) {
+          truncatedMessages.push(messages[messages.length - 1]);
+        }
 
         // Ensure we don't start with a tool result without its assistant call
         // This is a common cause of "messages do not match the ModelMessage[] schema"

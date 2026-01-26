@@ -318,7 +318,20 @@ export const workflowToVercelAITool = ({
           }),
         )
         .map((workflow) => {
-          if (!workflow) throw new Error("Not Found Workflow");
+          if (!workflow) {
+            // Log the missing workflow for debugging
+            logger.error(
+              `[Workflow Tool] Workflow not found: ${id} (${name}). The workflow may have been deleted or the user may not have access.`,
+            );
+            // Return a graceful error instead of throwing
+            toolResult.endedAt = Date.now();
+            toolResult.status = "fail";
+            toolResult.error = {
+              name: "WorkflowNotFound",
+              message: `The workflow "${name}" could not be found. It may have been deleted or you may not have access to it.`,
+            };
+            return null; // Signal to skip execution
+          }
           const executor = createWorkflowExecutor({
             nodes: workflow.nodes,
             edges: workflow.edges,
@@ -385,6 +398,11 @@ export const workflowToVercelAITool = ({
           );
         })
         .map((result) => {
+          // If workflow was not found, result will be null
+          if (result === null) {
+            return toolResult; // Return the error result we set earlier
+          }
+
           toolResult.endedAt = Date.now();
           toolResult.status = result.isOk ? "success" : "fail";
           toolResult.error = result.error
@@ -408,13 +426,13 @@ export const workflowToVercelAITool = ({
           return toolResult;
         })
         .ifFail((err) => {
-          return {
-            error: {
-              name: err?.name || "ERROR",
-              message: errorToString(err),
-              history,
-            },
+          toolResult.endedAt = Date.now();
+          toolResult.status = "fail";
+          toolResult.error = {
+            name: err?.name || "ERROR",
+            message: errorToString(err),
           };
+          return toolResult;
         })
         .unwrap();
     },

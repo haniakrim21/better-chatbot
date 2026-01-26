@@ -1,1 +1,1 @@
-ALTER TABLE "platform_api_key" ALTER COLUMN "scopes" SET DATA TYPE jsonb;
+ALTER TABLE "platform_api_key" ALTER COLUMN "scopes" SET DATA TYPE jsonb USING to_jsonb("scopes");

@@ -1,14 +1,11 @@
 import {
-  FilePart,
   ImagePart,
   ModelMessage,
   ToolResultPart,
   tool as createTool,
 } from "ai";
-import {
-  generateImageWithNanoBanana,
-  generateImageWithOpenAI,
-} from "lib/ai/image/generate-image";
+import { generateImageWithOpenAI } from "lib/ai/image/generate-image";
+import { generateImageWithImagen } from "lib/ai/image/generate-image-new";
 import { serverFileStorage } from "lib/file-storage";
 import { safe } from "ts-safe";
 import { z } from "zod";
@@ -42,35 +39,44 @@ export const nanoBananaTool = createTool({
   parameters: imageToolParameters,
   inputSchema: imageToolParameters,
   execute: async ({ mode = "create" }: any, context: any) => {
-    const { messages, abortSignal } = context;
+    const { messages } = context;
     try {
-      let hasFoundImage = false;
+      // Simplified Logic: Just get the prompt.
+      // We no longer rely on complex history processing for Imagen 3/4 as it accepts a single prompt.
 
-      // Get latest 6 messages and extract only the most recent image for editing context
-      // This prevents multiple image references that could confuse the image generation model
-      const latestMessages = messages
-        .slice(-6)
+      let finalPrompt = "";
+
+      // 1. Try to get prompt from the tool arguments if we add them later (currently empty schema)
+      // 2. Fallback: Get the last user message text
+      const lastUserMsg = messages
+        .slice()
         .reverse()
-        .map((m) => {
-          if (m.role != "tool") return m;
-          if (hasFoundImage) return m; // Skip if we already found an image
-          const fileParts = m.content.flatMap(convertToImageToolPartToFilePart);
-          if (fileParts.length === 0) return m;
-          hasFoundImage = true; // Mark that we found the most recent image
-          return {
-            ...m,
-            role: "assistant",
-            content: fileParts,
-          };
-        })
-        .filter((v) => Boolean(v?.content?.length))
-        .reverse() as ModelMessage[];
+        .find((m: any) => m.role === "user");
 
-      const images = await generateImageWithNanoBanana({
-        prompt: "",
-        abortSignal,
-        messages: latestMessages,
-      });
+      if (lastUserMsg) {
+        if (typeof lastUserMsg.content === "string") {
+          finalPrompt = lastUserMsg.content;
+        } else if (Array.isArray(lastUserMsg.content)) {
+          finalPrompt = lastUserMsg.content
+            .filter((p: any) => p.type === "text")
+            .map((p: any) => p.text)
+            .join(" ");
+        }
+      }
+
+      if (!finalPrompt) {
+        // As a last resort, try to infer from the assistant's previous thought or context if absolutely needed,
+        // but for now, we'll return a helpful error to the user if no prompt is found.
+        return {
+          images: [],
+          mode,
+          model: "imagen-4.0-generate-001",
+          guide:
+            "I couldn't find a clear description of the image you want me to generate. Please provide a description.",
+        };
+      }
+
+      const images = await generateImageWithImagen(finalPrompt);
 
       const resultImages = await safe(images.images)
         .map((images) => {
@@ -104,11 +110,11 @@ export const nanoBananaTool = createTool({
       return {
         images: resultImages,
         mode,
-        model: "gemini-2.5-flash-image",
+        model: "imagen-4.0-generate-001",
         guide:
           resultImages.length > 0
-            ? "The image has been successfully generated and is now displayed above. If you need any edits, modifications, or adjustments to the image, please let me know."
-            : "I apologize, but the image generation was not successful. To help me create a better image for you, could you please provide more specific details about what you'd like to see? For example:\n\n• What style are you looking for? (realistic, cartoon, abstract, etc.)\n• What colors or mood should the image have?\n• Are there any specific objects, people, or scenes you want included?\n• What size or format would work best for your needs?\n\nPlease share these details and I'll try generating the image again with your specifications.",
+            ? "The image has been successfully generated and is now displayed above."
+            : "I apologize, but the image generation was not successful.",
       };
     } catch (e) {
       logger.error(e);
@@ -218,15 +224,4 @@ function convertToImageToolPartToImagePart(part: ToolResultPart): ImagePart[] {
       image: image.url,
       mediaType: image.mimeType,
     }));
-}
-
-function convertToImageToolPartToFilePart(part: ToolResultPart): FilePart[] {
-  if (part.toolName !== ImageToolName) return [];
-  if (!(toAny(part).output as any)?.value?.images?.length) return [];
-  const result = (part.output as any).value as ImageToolResult;
-  return result.images.map((image) => ({
-    type: "file",
-    mediaType: image.mimeType!,
-    data: image.url,
-  }));
 }
