@@ -1,7 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { pgDb as db } from "@/lib/db/pg/db.pg";
 import { DocumentTable, DocumentChunkTable } from "@/lib/db/pg/schema.pg";
-import { parsePDF, chunkText } from "@/lib/rag/process-document";
+import { parsePDF, chunkText, parseExcel } from "@/lib/rag/process-document";
 import { generateEmbeddings } from "@/lib/rag/embeddings";
 import { eq } from "drizzle-orm";
 
@@ -45,6 +45,15 @@ export async function POST(req: NextRequest) {
       if (type === "application/pdf") {
         console.log("Parsing PDF...");
         text = await parsePDF(buffer);
+      } else if (
+        type ===
+          "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" || // .xlsx
+        type === "application/vnd.ms-excel" || // .xls
+        name.endsWith(".xlsx") ||
+        name.endsWith(".xls")
+      ) {
+        console.log("Parsing Excel...");
+        text = await parseExcel(buffer);
       } else {
         console.log("Reading text file...");
         text = buffer.toString("utf-8"); // Fallback for txt/md
@@ -64,12 +73,15 @@ export async function POST(req: NextRequest) {
         metadata: { index: i },
       }));
 
-      // Batch insert chunks
-      // Drizzle batch insert
-      if (chunkRecords.length > 0) {
-        await db.insert(DocumentChunkTable).values(chunkRecords);
+      // Batch insert chunks in smaller groups to avoid parameter limit
+      const BATCH_SIZE = 50;
+      for (let i = 0; i < chunkRecords.length; i += BATCH_SIZE) {
+        const batch = chunkRecords.slice(i, i + BATCH_SIZE);
+        if (batch.length > 0) {
+          await db.insert(DocumentChunkTable).values(batch);
+        }
       }
-      console.log("Chunks inserted");
+      console.log(`Inserted ${chunkRecords.length} chunks in batches`);
 
       await db
         .update(DocumentTable)

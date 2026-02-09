@@ -8,6 +8,7 @@ const nextConfig = {
     NO_HTTPS: process.env.NO_HTTPS,
   },
   serverExternalPackages: ["pg", "drizzle-orm", "sharp"],
+  transpilePackages: ["markdown-it", "tiptap-markdown"],
   experimental: {
     taint: false,
     authInterrupts: false,
@@ -25,6 +26,11 @@ const nextConfig = {
         "nabdai.sliplane.app",
         "nabd.sliplane.app",
       ],
+    },
+    turbo: {
+      resolveAlias: {
+        "markdown-it": "markdown-it/dist/index.cjs.js",
+      },
     },
   },
   eslint: {

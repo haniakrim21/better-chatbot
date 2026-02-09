@@ -111,6 +111,11 @@ export interface MCPRepository {
   ): Promise<McpServerSelect[]>;
   deleteById(id: string): Promise<void>;
   existsByServerName(name: string): Promise<boolean>;
+  existsByServerNameForUser(
+    name: string,
+    userId: string,
+    teamIds?: string[],
+  ): Promise<boolean>;
 
   updateVisibility(id: string, visibility: "public" | "private"): Promise<void>;
   incrementUsage(id: string): Promise<void>;

@@ -12,6 +12,7 @@ import { CreateFolderDialog } from "./create-folder-dialog";
 import { CreateFileDialog } from "./create-file-dialog";
 import Link from "next/link";
 import { Button } from "ui/button";
+import { DocumentActions } from "./document-actions";
 
 export default async function KnowledgeDetailPage(props: {
   params: Promise<{ id: string }>;
@@ -109,9 +110,14 @@ export default async function KnowledgeDetailPage(props: {
                       {doc.type || "Unknown type"}
                     </p>
                   </div>
-                  <span className="text-xs px-2 py-1 bg-secondary rounded-full">
+                  <span className="text-xs px-2 py-1 bg-secondary rounded-full me-2">
                     {doc.status || "ready"}
                   </span>
+                  <DocumentActions
+                    documentId={doc.id}
+                    knowledgeBaseId={doc.knowledgeBaseId}
+                    documentName={doc.name}
+                  />
                 </div>
               ))
             )}

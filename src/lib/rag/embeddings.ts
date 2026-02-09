@@ -1,7 +1,7 @@
 import { embed, embedMany } from "ai";
-import { openai } from "lib/ai/models";
+import { google } from "lib/ai/models";
 
-const embeddingModel = openai.textEmbeddingModel("text-embedding-3-small");
+const embeddingModel = google.textEmbeddingModel("text-embedding-004");
 
 export async function generateEmbedding(text: string): Promise<number[]> {
   try {

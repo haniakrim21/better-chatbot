@@ -14,6 +14,10 @@ services:
       - REDIS_URL=redis://redis:6379
       - KV_URL=redis://redis:6379
       - FILE_STORAGE_TYPE=local
+      # Override DB to point to docker service name (internal network)
+      # Hardcoding credentials to avoid substitution issues containing 'your_username'
+      - POSTGRES_URL=postgresql://postgres:postgres@postgres:5432/better_chatbot
+      - DATABASE_URL=postgresql://postgres:postgres@postgres:5432/better_chatbot
 
     env_file:
       - ../.env
@@ -26,7 +30,6 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-
 
   caddy:
     image: caddy:alpine

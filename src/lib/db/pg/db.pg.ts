@@ -5,6 +5,7 @@ import {
 } from "drizzle-orm/node-postgres";
 
 import * as schema from "./schema.pg";
+import logger from "logger";
 
 // class MyLogger implements Logger {
 //   logQuery(query: string, params: unknown[]): void {
@@ -16,9 +17,10 @@ let _pgDb: NodePgDatabase<typeof schema> | null = null;
 
 function initPgDb(): NodePgDatabase<typeof schema> {
   if (!process.env.POSTGRES_URL) {
-    throw new Error(
-      "POSTGRES_URL environment variable is not set. Please configure it in your environment.",
-    );
+    const errorMessage =
+      "POSTGRES_URL environment variable is not set. Please configure it in your environment.";
+    logger.error(errorMessage);
+    throw new Error(errorMessage);
   }
   const pool = new Pool({
     connectionString: process.env.POSTGRES_URL,

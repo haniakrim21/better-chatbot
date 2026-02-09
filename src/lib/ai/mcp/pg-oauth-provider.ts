@@ -17,6 +17,7 @@ import { generateUUID } from "lib/utils";
 import { pgMcpOAuthRepository } from "lib/db/pg/repositories/mcp-oauth-repository.pg";
 import { McpOAuthSession } from "app-types/mcp";
 import { ConsolaInstance } from "consola";
+import { pgMcpRepository } from "lib/db/pg/repositories/mcp-repository.pg";
 
 /**
  * PostgreSQL-based OAuth client provider for MCP servers
@@ -48,6 +49,35 @@ export class PgOAuthClientProvider implements OAuthClientProvider {
 
   private async initializeOAuth() {
     if (this.initialized) return;
+
+    // Validate UUID and attempt resolution if needed
+    const uuidRegex =
+      /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i;
+    if (!uuidRegex.test(this.config.mcpServerId)) {
+      this.logger.warn(
+        `Invalid UUID for mcpServerId: ${this.config.mcpServerId}. Attempting lookup by name: ${this.config.name}`,
+      );
+      try {
+        const server = await pgMcpRepository.selectByServerName(
+          this.config.name,
+        );
+        if (server) {
+          this.config.mcpServerId = server.id;
+          this.logger.info(
+            `Resolved Name ${this.config.name} to UUID ${server.id}`,
+          );
+        } else {
+          this.logger.warn(
+            `Could not resolve MCP server UUID from name ${this.config.name}. OAuth functionality disabled.`,
+          );
+          return;
+        }
+      } catch (error) {
+        this.logger.error("Failed to resolve MCP server ID", error);
+        return;
+      }
+    }
+
     // 0. If a constructor state was provided (callback/hand-off), adopt it first
     if (this.config.state) {
       const session = await pgMcpOAuthRepository.getSessionByState(

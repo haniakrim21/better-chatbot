@@ -23,6 +23,21 @@ const {
   socialAuthenticationProviders,
 } = getAuthConfig();
 
+logger.info("Initializing Better Auth instance...", {
+  hasSecret: !!process.env.BETTER_AUTH_SECRET,
+  betterAuthUrl: process.env.BETTER_AUTH_URL,
+  publicBaseUrl: process.env.NEXT_PUBLIC_BASE_URL,
+  emailEnabled: emailAndPasswordEnabled,
+  signUpEnabled: signUpEnabled,
+  socialProviders: Object.keys(socialAuthenticationProviders),
+});
+
+if (!process.env.BETTER_AUTH_SECRET) {
+  logger.error(
+    "BETTER_AUTH_SECRET is missing! This will cause authentication to fail.",
+  );
+}
+
 const options = {
   secret: process.env.BETTER_AUTH_SECRET!,
   plugins: [

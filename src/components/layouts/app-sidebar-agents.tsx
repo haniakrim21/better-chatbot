@@ -22,6 +22,7 @@ import { useCallback, useMemo, useState } from "react";
 import { useAgents } from "@/hooks/queries/use-agents";
 import { Avatar, AvatarFallback, AvatarImage } from "ui/avatar";
 import { AgentDropdown } from "../agent/agent-dropdown";
+import { toast } from "sonner";
 
 import { appStore } from "@/app/store";
 import { useRouter } from "next/navigation";
@@ -77,6 +78,8 @@ export function AppSidebarAgents({ userRole }: { userRole?: string | null }) {
             return prev;
           }
 
+          toast.success(`${agent.name} selected`);
+
           return {
             threadMentions: {
               ...prev.threadMentions,
@@ -88,7 +91,7 @@ export function AppSidebarAgents({ userRole }: { userRole?: string | null }) {
           };
         });
       } else {
-        router.push("/");
+        router.push(`/?agentId=${agent.id}`);
 
         appStore.setState(() => ({
           pendingThreadMention: newMention,

@@ -1,13 +1,13 @@
 "use client";
 
-import { useState, useRef, useEffect } from "react";
+import { cn } from "lib/utils";
+import { ExternalLink, X } from "lucide-react";
+import { useEffect, useRef, useState } from "react";
 import { useStore } from "zustand";
 import { appStore } from "@/app/store";
+import { Button } from "@/components/ui/button";
 import { CanvasEditor } from "./canvas-editor";
 import { TerminalPanel, TerminalPanelRef } from "./terminal-panel";
-import { X, ExternalLink } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { cn } from "lib/utils";
 
 export function CanvasPanel() {
   const { canvas, mutate } = useStore(appStore);
@@ -19,15 +19,35 @@ export function CanvasPanel() {
   useEffect(() => {
     if (canvas.pendingCommand && terminalRef.current) {
       setActiveTab("terminal");
-      const { command, args, cwd } = canvas.pendingCommand;
-      terminalRef.current.executeCommand(command, args, cwd);
+      const { command, args, cwd, toolCallId } = canvas.pendingCommand;
 
-      // Clear pending command
+      // Clear pending command first to prevent re-execution
       mutate({
         canvas: {
           ...canvas,
           pendingCommand: null,
         },
+      });
+
+      // Execute and store result in appStore for chat-bot to pick up
+      terminalRef.current.executeCommand(command, args, cwd).then((result) => {
+        mutate((prev) => ({
+          canvas: {
+            ...prev.canvas,
+            lastCommandResult: {
+              command,
+              args,
+              exitCode: result.exitCode,
+              output:
+                result.output.length > 5000
+                  ? result.output.slice(0, 5000) +
+                    "\n...(output truncated for AI context)"
+                  : result.output,
+              error: result.error,
+              toolCallId: toolCallId || "",
+            },
+          },
+        }));
       });
     }
   }, [canvas.pendingCommand, mutate, canvas]);

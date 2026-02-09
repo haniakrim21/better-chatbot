@@ -11,6 +11,8 @@ import { NextIntlClientProvider } from "next-intl";
 import { getLocale, getMessages } from "next-intl/server";
 import { BackgroundAnimated } from "@/components/background-animated";
 import { ThesysProvider } from "@/components/thesys-provider";
+import Script from "next/script";
+
 const geistSans = Geist({
   variable: "--font-geist-sans",
   subsets: ["latin"],
@@ -65,6 +67,15 @@ export default async function RootLayout({
             </NextIntlClientProvider>
           </ThemeStyleProvider>
         </ThemeProvider>
+        <Script id="markdown-it-isspace-patch" strategy="beforeInteractive">
+          {`
+            if (typeof window !== 'undefined') {
+              window.isSpace = function(code) {
+                return code === 0x09 || code === 0x20;
+              };
+            }
+          `}
+        </Script>
       </body>
     </html>
   );

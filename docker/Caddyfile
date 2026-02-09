@@ -1,3 +1,7 @@
 nabdai.io {
-    reverse_proxy better-chatbot:3000
+    reverse_proxy better-chatbot:3000 {
+        transport http {
+            response_header_timeout 10m
+        }
+    }
 }

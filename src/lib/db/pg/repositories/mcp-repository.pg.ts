@@ -137,6 +137,23 @@ export const pgMcpRepository: MCPRepository = {
 
     return !!result;
   },
+
+  async existsByServerNameForUser(name, userId, teamIds = []) {
+    const [result] = await db
+      .select({ id: McpServerTable.id })
+      .from(McpServerTable)
+      .where(
+        sql`${McpServerTable.name} = ${name} AND (${or(
+          eq(McpServerTable.userId, userId),
+          eq(McpServerTable.visibility, "public"),
+          teamIds.length > 0
+            ? inArray(McpServerTable.teamId, teamIds)
+            : undefined,
+        )})`,
+      );
+
+    return !!result;
+  },
   async incrementUsage(id) {
     await db
       .update(McpServerTable)

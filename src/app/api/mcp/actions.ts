@@ -136,7 +136,21 @@ export async function saveMcpClientAction(
 }
 
 export async function existMcpClientByServerNameAction(serverName: string) {
-  return await mcpRepository.existsByServerName(serverName);
+  if (FILE_BASED_MCP_CONFIG) {
+    return await mcpRepository.existsByServerName(serverName);
+  }
+
+  const currentUser = await getCurrentUser();
+  if (!currentUser) {
+    return false;
+  }
+
+  const teamIds = await userRepository.getTeamsByUserId(currentUser.id);
+  return await mcpRepository.existsByServerNameForUser(
+    serverName,
+    currentUser.id,
+    teamIds,
+  );
 }
 
 export async function removeMcpClientAction(id: string) {

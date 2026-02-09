@@ -43,7 +43,11 @@ export const generateImageWithImagen = async (
         images: images
           .map((img: any) => {
             // Try all possible property names seen in docs and testing
-            const b64 = img.imageBytes || img.image?.base64 || img.base64;
+            const b64 =
+              img.imageBytes ||
+              img.image?.base64 ||
+              img.image?.imageBytes ||
+              img.base64;
             if (!b64) return null;
 
             return {

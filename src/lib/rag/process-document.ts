@@ -6,6 +6,22 @@ export async function parsePDF(buffer: Buffer): Promise<string> {
   return data.text;
 }
 
+export async function parseExcel(buffer: Buffer): Promise<string> {
+  const XLSX = await import("xlsx");
+  const workbook = XLSX.read(buffer, { type: "buffer" });
+  let text = "";
+
+  workbook.SheetNames.forEach((sheetName) => {
+    const sheet = workbook.Sheets[sheetName];
+    // Convert sheet to CSV first (or text/json) - utils.sheet_to_txt is not always available or good
+    // Let's use sheet_to_csv or sheet_to_json and map values
+    const sheetText = XLSX.utils.sheet_to_csv(sheet, { FS: " ", RS: "\n" });
+    text += `\n--- Sheet: ${sheetName} ---\n${sheetText}`;
+  });
+
+  return text;
+}
+
 export function chunkText(
   text: string,
   maxLength: number = 1000,

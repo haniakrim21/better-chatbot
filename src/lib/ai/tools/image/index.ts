@@ -7,7 +7,7 @@ import {
 import { generateImageWithOpenAI } from "lib/ai/image/generate-image";
 import { generateImageWithImagen } from "lib/ai/image/generate-image-new";
 import { serverFileStorage } from "lib/file-storage";
-import { safe } from "ts-safe";
+
 import { z } from "zod";
 import { ImageToolName } from "..";
 import logger from "logger";
@@ -76,36 +76,37 @@ export const nanoBananaTool = createTool({
         };
       }
 
+      console.log("[NanoBananaTool] Final Prompt:", finalPrompt);
       const images = await generateImageWithImagen(finalPrompt);
+      console.log(
+        "[NanoBananaTool] Images Result Count:",
+        images.images.length,
+      );
 
-      const resultImages = await safe(images.images)
-        .map((images) => {
-          return Promise.all(
-            images.map(async (image) => {
-              try {
-                const uploadedImage = await serverFileStorage.upload(
-                  Buffer.from(image.base64, "base64"),
-                  {
-                    contentType: "image/png",
-                    filename: `image-${Date.now()}.png`,
-                  },
-                );
-                return {
-                  url: uploadedImage.sourceUrl,
-                  mimeType: "image/png",
-                };
-              } catch (e) {
-                logger.error(e);
-                logger.info(`upload image failed. using base64`);
-                return {
-                  url: `data:${image.mimeType};base64,${image.base64}`,
-                  mimeType: image.mimeType,
-                };
-              }
-            }),
-          );
-        })
-        .unwrap();
+      const resultImages = await Promise.all(
+        images.images.map(async (image) => {
+          try {
+            const uploadedImage = await serverFileStorage.upload(
+              Buffer.from(image.base64, "base64"),
+              {
+                contentType: "image/png",
+                filename: `image-${Date.now()}.png`,
+              },
+            );
+            return {
+              url: uploadedImage.sourceUrl,
+              mimeType: "image/png",
+            };
+          } catch (e) {
+            logger.error(e);
+            logger.info(`upload image failed. using base64`);
+            return {
+              url: `data:${image.mimeType};base64,${image.base64}`,
+              mimeType: image.mimeType,
+            };
+          }
+        }),
+      );
 
       return {
         images: resultImages,

@@ -243,3 +243,53 @@ export async function getDocument(id: string) {
     .where(eq(DocumentTable.id, id));
   return doc;
 }
+
+export async function deleteDocument(
+  documentId: string,
+  knowledgeBaseId: string,
+) {
+  const session = await getSession();
+  if (!session) throw new Error("Unauthorized");
+  const userId = session.user.id;
+
+  // Check permissions via KB ownership
+  const [kb] = await db
+    .select()
+    .from(KnowledgeBaseTable)
+    .where(eq(KnowledgeBaseTable.id, knowledgeBaseId));
+
+  if (!kb) throw new Error("Knowledge Base not found");
+
+  let canDelete = false;
+  if (kb.userId === userId) {
+    canDelete = true;
+  } else if (kb.teamId) {
+    const [membership] = await db
+      .select({ role: TeamMemberTable.role })
+      .from(TeamMemberTable)
+      .where(
+        and(
+          eq(TeamMemberTable.teamId, kb.teamId),
+          eq(TeamMemberTable.userId, userId),
+        ),
+      );
+    // Allow members to delete documents? Or just admins?
+    // Usually members can add/remove content. Let's allow members for now, or match KB delete strictness.
+    // For now, let's keep it consistent with KB delete: owner or admin.
+    // Actually, for *documents* inside a team KB, members usually generally have edit rights.
+    // But to be safe, let's stick to owner/admin first, or reuse the pattern.
+    if (
+      membership &&
+      (membership.role === "owner" || membership.role === "admin")
+    ) {
+      canDelete = true;
+    }
+  }
+
+  if (!canDelete) {
+    throw new Error("Unauthorized");
+  }
+
+  await db.delete(DocumentTable).where(eq(DocumentTable.id, documentId));
+  revalidatePath(`/knowledge/${knowledgeBaseId}`);
+}

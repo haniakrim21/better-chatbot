@@ -21,6 +21,7 @@ try {
   // No-op for non-React contexts
 }
 import { parseEnvBoolean } from "../utils";
+import logger from "logger";
 
 function parseSocialAuthConfigs() {
   const configs: {
@@ -114,7 +115,10 @@ export function getAuthConfig(): AuthConfig {
   const result = AuthConfigSchema.safeParse(rawConfig);
 
   if (!result.success) {
-    throw new Error(`Invalid auth configuration: ${result.error.message}`);
+    logger.error("Invalid auth configuration:", result.error.format());
+    throw new Error(
+      `Invalid auth configuration. Please check your environment variables. Error: ${result.error.message}`,
+    );
   }
 
   return result.data;

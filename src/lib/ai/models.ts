@@ -8,6 +8,7 @@ import { createXai } from "@ai-sdk/xai";
 import { LanguageModelV2, createOpenRouter } from "@openrouter/ai-sdk-provider";
 import { createGroq } from "@ai-sdk/groq";
 import { LanguageModel } from "ai";
+import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
 import { fetch, Agent } from "undici";
 
 const agent = new Agent({
@@ -73,8 +74,8 @@ const staticModels = {
     "gemini-2.0-flash-exp": google("gemini-2.0-flash-exp"),
     "gemini-2.5-flash": google("gemini-2.5-flash"),
     "gemini-2.5-pro": google("gemini-2.5-pro"),
-    "gemini-3-flash": google("gemini-3-flash-preview"),
-    "gemini-3-pro": google("gemini-1.5-pro"),
+    "gemini-3-flash": google("gemini-flash-latest"),
+    "gemini-3-pro": google("gemini-pro-latest"),
   },
   anthropic: {
     "claude-3-5-sonnet": anthropic("claude-3-5-sonnet-20240620"),
@@ -253,8 +254,6 @@ export const getFilePartSupportedMimeTypes = (model: LanguageModel) => {
   return staticFilePartSupportByModel.get(model) ?? [];
 };
 
-import { createOpenAICompatible } from "@ai-sdk/openai-compatible";
-
 const fallbackModel = staticModels.openai["gpt-4o"];
 
 export const customModelProvider = {
@@ -281,7 +280,7 @@ export const customModelProvider = {
         // We pass the requested model ID, but Thesys might ignore it or route it.
         // If no model is requested, we default to 'gpt-4o' as a safe placeholder for Thesys.
         // Thesys requires specific model IDs, so we default to a known valid one.
-        const defaultThesysModel = "c1/openai/gpt-5/v-20251230";
+        const defaultThesysModel = "c1/openai/gpt-4o";
         return thesysProvider(defaultThesysModel);
       } catch (e) {
         console.error("Failed to create Thesys model", e);

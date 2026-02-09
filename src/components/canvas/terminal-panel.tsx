@@ -1,11 +1,17 @@
 "use client";
 
-import { useEffect, useRef, forwardRef, useImperativeHandle } from "react";
-import { Terminal } from "@xterm/xterm";
 import { FitAddon } from "@xterm/addon-fit";
+import { Terminal } from "@xterm/xterm";
+import { forwardRef, useEffect, useImperativeHandle, useRef } from "react";
 import "@xterm/xterm/css/xterm.css";
 import { cn } from "lib/utils";
 import { getWebContainerInstance } from "lib/webcontainer/instance";
+
+export interface CommandResult {
+  exitCode: number;
+  output: string;
+  error?: string;
+}
 
 export interface TerminalPanelRef {
   write: (data: string) => void;
@@ -15,7 +21,7 @@ export interface TerminalPanelRef {
     command: string,
     args: string[],
     cwd?: string,
-  ) => Promise<void>;
+  ) => Promise<CommandResult>;
 }
 
 interface TerminalPanelProps {
@@ -38,9 +44,17 @@ export const TerminalPanel = forwardRef<TerminalPanelRef, TerminalPanelProps>(
       clear: () => {
         terminalRef.current?.clear();
       },
-      executeCommand: async (command: string, args: string[], cwd?: string) => {
+      executeCommand: async (
+        command: string,
+        args: string[],
+        cwd?: string,
+      ): Promise<CommandResult> => {
         const term = terminalRef.current;
-        if (!term) return;
+        if (!term) {
+          return { exitCode: 1, output: "", error: "Terminal not initialized" };
+        }
+
+        let capturedOutput = "";
 
         try {
           term.writeln(`\r\n\x1b[1;34m$ ${command} ${args.join(" ")}\x1b[0m`);
@@ -54,6 +68,7 @@ export const TerminalPanel = forwardRef<TerminalPanelRef, TerminalPanelProps>(
           process.output.pipeTo(
             new WritableStream({
               write(data) {
+                capturedOutput += data;
                 term.write(data);
               },
             }),
@@ -64,8 +79,15 @@ export const TerminalPanel = forwardRef<TerminalPanelRef, TerminalPanelProps>(
           if (exitCode !== 0) {
             term.writeln(`\r\n\x1b[1;31mExit code: ${exitCode}\x1b[0m`);
           }
+
+          return { exitCode, output: capturedOutput };
         } catch (error: any) {
           term.writeln(`\r\n\x1b[1;31mError: ${error.message}\x1b[0m`);
+          return {
+            exitCode: 1,
+            output: capturedOutput,
+            error: error.message,
+          };
         }
       },
     }));
