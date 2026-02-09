@@ -1,23 +1,26 @@
 "use client";
 
+import { ChatExportSummary } from "app-types/chat-export";
+import { MCPServerInfo } from "app-types/mcp";
 import { UserPreferences } from "app-types/user";
 import { authClient } from "auth/client";
+import { formatDistanceToNow } from "date-fns";
+import { notify } from "lib/notify";
 import { fetcher } from "lib/utils";
-import { useObjectState } from "@/hooks/use-object-state";
 import {
   AlertCircle,
   ArrowLeft,
+  Brain,
   LinkIcon,
   Loader,
   Share2,
   Trash2,
 } from "lucide-react";
 import { useTranslations } from "next-intl";
-import { useMemo, useState } from "react";
+import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import useSWR from "swr";
 import { safe } from "ts-safe";
-
 import { Button } from "ui/button";
 import { ExamplePlaceholder } from "ui/example-placeholder";
 import { Input } from "ui/input";
@@ -25,11 +28,8 @@ import { Label } from "ui/label";
 import { Skeleton } from "ui/skeleton";
 import { Textarea } from "ui/textarea";
 import { McpServerCustomizationContent } from "@/components/mcp-customization-popup";
-import { MCPServerInfo } from "app-types/mcp";
 import { useMcpList } from "@/hooks/queries/use-mcp-list";
-import { ChatExportSummary } from "app-types/chat-export";
-import { formatDistanceToNow } from "date-fns";
-import { notify } from "lib/notify";
+import { useObjectState } from "@/hooks/use-object-state";
 
 export function UserInstructionsContent() {
   const t = useTranslations();
@@ -457,6 +457,143 @@ export function ExportsManagementContent() {
           </div>
         )}
       </div>
+    </div>
+  );
+}
+
+type UserMemory = {
+  id: string;
+  content: string;
+  category: string;
+  createdAt: string;
+};
+
+export function MemoryManagementContent() {
+  const t = useTranslations("Chat.ChatPreferences");
+  const [memories, setMemories] = useState<UserMemory[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [deletingId, setDeletingId] = useState<string | null>(null);
+  const [deletingAll, setDeletingAll] = useState(false);
+
+  const fetchMemories = useCallback(async () => {
+    try {
+      const res = await fetch("/api/memory");
+      const data = await res.json();
+      setMemories(Array.isArray(data) ? data : []);
+    } catch {
+      // ignore
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => {
+    fetchMemories();
+  }, [fetchMemories]);
+
+  const handleDelete = async (id: string) => {
+    setDeletingId(id);
+    try {
+      await fetch(`/api/memory/${id}`, { method: "DELETE" });
+      setMemories((prev) => prev.filter((m) => m.id !== id));
+      toast.success(t("memoryDeleted"));
+    } catch {
+      toast.error(t("failedToDeleteMemory"));
+    } finally {
+      setDeletingId(null);
+    }
+  };
+
+  const handleDeleteAll = async () => {
+    setDeletingAll(true);
+    try {
+      await fetch("/api/memory", { method: "DELETE" });
+      setMemories([]);
+      toast.success(t("allMemoriesDeleted"));
+    } catch {
+      toast.error(t("failedToDeleteMemory"));
+    } finally {
+      setDeletingAll(false);
+    }
+  };
+
+  const categoryColors: Record<string, string> = {
+    preference: "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300",
+    fact: "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300",
+    project:
+      "bg-purple-100 text-purple-800 dark:bg-purple-900 dark:text-purple-300",
+    style:
+      "bg-orange-100 text-orange-800 dark:bg-orange-900 dark:text-orange-300",
+    general: "bg-gray-100 text-gray-800 dark:bg-gray-900 dark:text-gray-300",
+  };
+
+  return (
+    <div className="space-y-6">
+      <div>
+        <h3 className="text-xl font-semibold flex items-center gap-2">
+          <Brain className="size-5" />
+          {t("memory")}
+        </h3>
+        <p className="text-muted-foreground text-sm mt-1">
+          {t("memoryDescription")}
+        </p>
+      </div>
+
+      {loading ? (
+        <div className="space-y-3">
+          {Array.from({ length: 3 }).map((_, i) => (
+            <Skeleton key={i} className="h-14 w-full" />
+          ))}
+        </div>
+      ) : memories.length === 0 ? (
+        <div className="text-muted-foreground text-center py-8 text-sm">
+          {t("noMemories")}
+        </div>
+      ) : (
+        <>
+          <div className="flex justify-end">
+            <Button
+              variant="destructive"
+              size="sm"
+              onClick={handleDeleteAll}
+              disabled={deletingAll}
+            >
+              {deletingAll && <Loader className="mr-2 size-4 animate-spin" />}
+              {t("deleteAllMemories")}
+            </Button>
+          </div>
+          <div className="space-y-2">
+            {memories.map((memory) => (
+              <div
+                key={memory.id}
+                className="flex items-start justify-between gap-3 p-3 rounded-lg border bg-muted/30"
+              >
+                <div className="flex-1 min-w-0">
+                  <p className="text-sm">{memory.content}</p>
+                  <span
+                    className={`inline-block mt-1 text-xs px-2 py-0.5 rounded-full ${categoryColors[memory.category] || categoryColors.general}`}
+                  >
+                    {memory.category}
+                  </span>
+                </div>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="shrink-0"
+                  onClick={() => handleDelete(memory.id)}
+                  disabled={deletingId === memory.id}
+                >
+                  {deletingId === memory.id ? (
+                    <Loader className="size-4 animate-spin" />
+                  ) : (
+                    <Trash2 className="size-4 hover:text-destructive" />
+                  )}
+                </Button>
+              </div>
+            ))}
+          </div>
+        </>
+      )}
     </div>
   );
 }

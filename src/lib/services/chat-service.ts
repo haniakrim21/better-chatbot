@@ -7,49 +7,58 @@ import {
   Tool,
   UIMessage,
 } from "ai";
-import { customModelProvider, isToolCallUnsupportedModel } from "lib/ai/models";
-import { mcpClientsManager } from "lib/ai/mcp/mcp-manager";
-import { agentRepository, chatRepository } from "lib/db/repository";
-import { userRepository } from "lib/db/repository";
-import { pgDb as db } from "lib/db/pg/db.pg";
-import { KnowledgeBaseTable } from "lib/db/pg/schema.pg";
-import { and, eq, or, inArray, sql } from "drizzle-orm";
-import globalLogger from "logger";
-import {
-  buildMcpServerCustomizationsSystemPrompt,
-  buildUserSystemPrompt,
-  buildToolCallUnsupportedModelSystemPrompt,
-  CANVAS_USAGE_PROMPT,
-  WORKFLOW_USAGE_PROMPT,
-} from "lib/ai/prompts";
 import {
   ChatApiSchemaRequestBody,
   ChatMention,
   ChatMetadata,
 } from "app-types/chat";
-import { errorIf, safe } from "ts-safe";
+import { colorize } from "consola/utils";
+import { and, eq, inArray, or, sql } from "drizzle-orm";
+import { mcpClientsManager } from "lib/ai/mcp/mcp-manager";
+import { extractAndSaveMemories } from "lib/ai/memory/extract-memories";
+import { customModelProvider, isToolCallUnsupportedModel } from "lib/ai/models";
 import {
-  excludeToolExecution,
-  handleError,
-  manualToolExecuteByLastMessage,
-  mergeSystemPrompt,
-  extractInProgressToolPart,
-  filterMcpServerCustomizations,
-  loadMcpTools,
-  loadWorkFlowTools,
-  loadAppDefaultTools,
-  convertToSavePart,
-} from "@/app/api/chat/shared.chat";
+  buildAppDefaultToolsSystemPrompt,
+  buildMcpServerCustomizationsSystemPrompt,
+  buildPersonalityPresetPrompt,
+  buildToolCallUnsupportedModelSystemPrompt,
+  buildUserSystemPrompt,
+  CANVAS_USAGE_PROMPT,
+  WORKFLOW_USAGE_PROMPT,
+} from "lib/ai/prompts";
+import { ImageToolName, VideoToolName } from "lib/ai/tools";
+import { nanoBananaTool, openaiImageTool } from "lib/ai/tools/image";
+import { videoTool } from "lib/ai/tools/video";
+import { pgDb as db } from "lib/db/pg/db.pg";
+import { KnowledgeBaseTable } from "lib/db/pg/schema.pg";
+import {
+  agentRepository,
+  chatRepository,
+  memoryRepository,
+  skillRepository,
+  userRepository,
+} from "lib/db/repository";
+import { serverFileStorage } from "lib/file-storage";
+import { generateUUID } from "lib/utils";
+import globalLogger from "logger";
+import { errorIf, safe } from "ts-safe";
 import {
   rememberAgentAction,
   rememberMcpServerCustomizationsAction,
 } from "@/app/api/chat/actions";
-import { colorize } from "consola/utils";
-import { generateUUID } from "lib/utils";
-import { nanoBananaTool, openaiImageTool } from "lib/ai/tools/image";
-import { ImageToolName } from "lib/ai/tools";
+import {
+  convertToSavePart,
+  excludeToolExecution,
+  extractInProgressToolPart,
+  filterMcpServerCustomizations,
+  handleError,
+  loadAppDefaultTools,
+  loadMcpTools,
+  loadWorkFlowTools,
+  manualToolExecuteByLastMessage,
+  mergeSystemPrompt,
+} from "@/app/api/chat/shared.chat";
 import { buildCsvIngestionPreviewParts } from "@/lib/ai/ingest/csv-ingest";
-import { serverFileStorage } from "lib/file-storage";
 import { getSession } from "@/lib/auth/server";
 
 type Session = NonNullable<Awaited<ReturnType<typeof getSession>>>;
@@ -77,6 +86,7 @@ export class ChatService {
       knowledgeBaseId,
       currentSelection,
       teamId,
+      personalityPreset,
     } = body;
 
     let id = rawId;
@@ -122,6 +132,7 @@ export class ChatService {
         xai: process.env.XAI_API_KEY,
         groq: process.env.GROQ_API_KEY,
         openRouter: process.env.OPENROUTER_API_KEY,
+        thesys: process.env.THESYS_API_KEY,
       };
       apiKey = providerMap[chatModel.provider];
     }
@@ -271,6 +282,24 @@ export class ChatService {
       mentions.push(...agent.instructions.mentions);
     }
 
+    // Load skills attached to the agent
+    let skillsContext = "";
+    if (agent?.id) {
+      try {
+        const agentSkills = await skillRepository.selectSkillsByAgentId(
+          agent.id,
+        );
+        if (agentSkills.length > 0) {
+          const skillPrompts = agentSkills
+            .map((s) => `<skill name="${s.name}">\n${s.instructions}\n</skill>`)
+            .join("\n");
+          skillsContext = `<agent_skills>\n${skillPrompts}\n</agent_skills>`;
+        }
+      } catch (e) {
+        logger.error("Failed to load agent skills", e);
+      }
+    }
+
     const { workflowId } = body;
     let workflowStructureContext = "";
     if (workflowId) {
@@ -309,9 +338,7 @@ export class ChatService {
     const useImageTool = Boolean(imageTool?.model);
 
     const isToolCallAllowed =
-      supportToolCall &&
-      (toolChoice != "none" || mentions.length > 0) &&
-      !useImageTool;
+      supportToolCall && (toolChoice != "none" || mentions.length > 0);
 
     const metadata: ChatMetadata = {
       agentId: agent?.id,
@@ -465,8 +492,32 @@ export class ChatService {
           context += `\n\n<current_canvas_selection>\n${currentSelection}\n</current_canvas_selection>\n\nThe user has selected the text above in the canvas. Use this as context for their request, especially if they refer to "this" or "selected text". To edit it, use the 'EditSelection' tool.`;
         }
 
-        const systemPrompt = mergeSystemPrompt(
+        // Inject user memories
+        let memoryContext = "";
+        try {
+          const memories = await memoryRepository.selectByUserId(
+            session.user.id,
+          );
+          if (memories.length > 0) {
+            const memoryLines = memories
+              .slice(0, 20)
+              .map((m) => `- ${m.content}`)
+              .join("\n");
+            memoryContext = `
+<user_memories>
+These are facts you have learned about this user from previous conversations. Use them to personalize your responses when relevant, but do not explicitly mention that you are using memories:
+${memoryLines}
+</user_memories>`;
+          }
+        } catch (e) {
+          logger.error("Failed to fetch user memories", e);
+        }
+
+        const baseSystemPrompt = mergeSystemPrompt(
           buildUserSystemPrompt(session.user, userPreferences, agent),
+          memoryContext,
+          skillsContext,
+          buildPersonalityPresetPrompt(personalityPreset),
           buildMcpServerCustomizationsSystemPrompt(mcpServerCustomizations),
           !supportToolCall && buildToolCallUnsupportedModelSystemPrompt,
           CANVAS_USAGE_PROMPT,
@@ -475,19 +526,34 @@ export class ChatService {
           context,
         );
 
-        const IMAGE_TOOL: Record<string, Tool> = useImageTool
-          ? {
-              [ImageToolName]:
-                imageTool?.model === "google"
-                  ? nanoBananaTool
-                  : openaiImageTool,
-            }
-          : {};
-        const vercelAITooles = safe({
+        const APP_DEFAULT_TOOLS_PROMPT = buildAppDefaultToolsSystemPrompt(
+          allowedAppDefaultToolkit ?? [],
+        );
+
+        const systemPrompt = mergeSystemPrompt(
+          baseSystemPrompt,
+          APP_DEFAULT_TOOLS_PROMPT,
+        );
+
+        const IMAGE_TOOL: Record<string, Tool> = {};
+        if (chatModel?.provider === "google") {
+          IMAGE_TOOL[ImageToolName] = nanoBananaTool;
+          IMAGE_TOOL[VideoToolName] = videoTool;
+        } else if (chatModel?.provider === "openai") {
+          IMAGE_TOOL[ImageToolName] = openaiImageTool;
+        }
+        const vercelAITools = safe({
           ...MCP_TOOLS,
           ...WORKFLOW_TOOLS,
         })
           .map((t) => {
+            if (
+              toolChoice === "none" ||
+              (message.metadata as ChatMetadata)?.toolChoice === "none"
+            ) {
+              return {};
+            }
+
             const bindingTools =
               toolChoice === "manual" ||
               (message.metadata as ChatMetadata)?.toolChoice === "manual"
@@ -500,14 +566,20 @@ export class ChatService {
             };
           })
           .unwrap();
-        metadata.toolCount = Object.keys(vercelAITooles).length;
+        metadata.toolCount = Object.keys(vercelAITools).length;
 
         const allowedMcpTools = Object.values(allowedMcpServers ?? {})
           .map((t) => t.tools)
           .flat();
 
+        if (Object.keys(APP_DEFAULT_TOOLS).length > 0) {
+          logger.info(
+            `App Default Tools Loaded: ${Object.keys(APP_DEFAULT_TOOLS).join(", ")}`,
+          );
+        }
+
         logger.info(
-          `${agent ? `agent: ${agent.name}, ` : ""}tool mode: ${toolChoice}, mentions: ${mentions.length}`,
+          `${agent ? `agent: ${agent.name}, ` : ""}tool mode: ${toolChoice}, mentions: ${mentions.length}, default toolkits: ${(allowedAppDefaultToolkit ?? []).join(", ")}`,
         );
 
         logger.info(
@@ -520,6 +592,7 @@ export class ChatService {
             `binding tool count APP_DEFAULT: ${Object.keys(APP_DEFAULT_TOOLS ?? {}).length}, MCP: ${Object.keys(MCP_TOOLS ?? {}).length}, Workflow: ${Object.keys(WORKFLOW_TOOLS ?? {}).length}`,
           );
         }
+
         logger.info(`model: ${chatModel?.provider}/${chatModel?.model}`);
 
         // Truncate messages to prevent context length errors
@@ -605,12 +678,11 @@ export class ChatService {
           messages: coreMessages,
           experimental_transform: smoothStream({ chunking: "word" }),
           maxRetries: 2,
-          tools: vercelAITooles,
+          tools: vercelAITools,
           stopWhen: stepCountIs(10),
           toolChoice: "auto",
           abortSignal: reqSignal,
         });
-        result.consumeStream();
         dataStream.merge(
           result.toUIMessageStream({
             messageMetadata: ({ part }) => {
@@ -671,6 +743,24 @@ export class ChatService {
           agentRepository.updateAgent(agent.id, session.user.id, {
             updatedAt: new Date(),
           } as any);
+        }
+
+        // Async memory extraction (fire-and-forget)
+        const userText = message.parts
+          .filter((p: any) => p.type === "text")
+          .map((p: any) => p.text)
+          .join(" ");
+        const assistantText = responseMessage.parts
+          .filter((p: any) => p.type === "text")
+          .map((p: any) => p.text)
+          .join(" ");
+        if (userText.length > 20) {
+          extractAndSaveMemories({
+            userId: session.user.id,
+            userMessage: userText,
+            assistantMessage: assistantText,
+            threadId: thread!.id,
+          }).catch(() => {});
         }
       },
       onError: handleError,

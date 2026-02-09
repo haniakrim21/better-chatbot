@@ -1,11 +1,11 @@
 "use client";
 
+import { isShortcutEvent, Shortcuts } from "lib/keyboard-shortcuts";
+import { Brain, Share2, UserIcon, X } from "lucide-react";
+import { useTranslations } from "next-intl";
 import { useEffect, useMemo, useState } from "react";
 import { AutoHeight } from "ui/auto-height";
-
-import { appStore } from "@/app/store";
-import { useShallow } from "zustand/shallow";
-import { isShortcutEvent, Shortcuts } from "lib/keyboard-shortcuts";
+import { Button } from "ui/button";
 import {
   Drawer,
   DrawerContent,
@@ -13,15 +13,15 @@ import {
   DrawerPortal,
   DrawerTitle,
 } from "ui/drawer";
-import {
-  MCPInstructionsContent,
-  UserInstructionsContent,
-  ExportsManagementContent,
-} from "./chat-preferences-content";
-import { UserIcon, X, Share2 } from "lucide-react";
-import { Button } from "ui/button";
-import { useTranslations } from "next-intl";
 import { MCPIcon } from "ui/mcp-icon";
+import { useShallow } from "zustand/shallow";
+import { appStore } from "@/app/store";
+import {
+  ExportsManagementContent,
+  MCPInstructionsContent,
+  MemoryManagementContent,
+  UserInstructionsContent,
+} from "./chat-preferences-content";
 
 export function ChatPreferencesPopup() {
   const [openChatPreferences, appStoreMutate] = appStore(
@@ -43,6 +43,10 @@ export function ChatPreferencesPopup() {
       {
         label: t("Chat.ChatPreferences.myExports"),
         icon: <Share2 className="w-4 h-4" />,
+      },
+      {
+        label: t("Chat.ChatPreferences.memory"),
+        icon: <Brain className="w-4 h-4" />,
       },
     ];
   }, [t]);
@@ -157,6 +161,8 @@ export function ChatPreferencesPopup() {
                           <MCPInstructionsContent />
                         ) : tab == 2 ? (
                           <ExportsManagementContent />
+                        ) : tab == 3 ? (
+                          <MemoryManagementContent />
                         ) : null}
                       </>
                     )}
