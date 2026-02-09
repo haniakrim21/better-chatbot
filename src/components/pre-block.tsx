@@ -1,22 +1,23 @@
 "use client";
 
+import { toJsxRuntime } from "hast-util-to-jsx-runtime";
+import { cn } from "lib/utils";
+import { CheckIcon, CopyIcon } from "lucide-react";
+import dynamic from "next/dynamic";
+import { useTheme } from "next-themes";
 import type { JSX } from "react";
-import {
-  bundledLanguages,
-  codeToHast,
-  type BundledLanguage,
-} from "shiki/bundle/web";
 import { Fragment, useLayoutEffect, useState } from "react";
 import { jsx, jsxs } from "react/jsx-runtime";
-import { toJsxRuntime } from "hast-util-to-jsx-runtime";
+import {
+  type BundledLanguage,
+  bundledLanguages,
+  codeToHast,
+} from "shiki/bundle/web";
 import { safe } from "ts-safe";
-import { cn } from "lib/utils";
-import { useTheme } from "next-themes";
 import { Button } from "ui/button";
-import { CheckIcon, CopyIcon } from "lucide-react";
 import JsonView from "ui/json-view";
 import { useCopy } from "@/hooks/use-copy";
-import dynamic from "next/dynamic";
+import { ArtifactPreview } from "./artifact-preview";
 
 // Dynamically import MermaidDiagram component
 const MermaidDiagram = dynamic(
@@ -140,15 +141,25 @@ export function PreBlock({ children }: { children: any }) {
       .watch(() => setLoading(false));
   }, [theme, language, code]);
 
+  const isPreviewable =
+    language === "html" ||
+    language === "htm" ||
+    language === "svg" ||
+    (code &&
+      (code.trim().startsWith("<!DOCTYPE") || code.trim().startsWith("<html")));
+
   // For other code blocks, render as before
   return (
-    <div
-      className={cn(
-        loading && "animate-pulse",
-        "text-sm flex bg-secondary/40 shadow border flex-col rounded relative my-4 overflow-hidden",
-      )}
-    >
-      {component}
+    <div>
+      <div
+        className={cn(
+          loading && "animate-pulse",
+          "text-sm flex bg-secondary/40 shadow border flex-col rounded relative my-4 overflow-hidden",
+        )}
+      >
+        {component}
+      </div>
+      {isPreviewable && <ArtifactPreview code={code} language={language} />}
     </div>
   );
 }

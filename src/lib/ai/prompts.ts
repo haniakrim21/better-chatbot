@@ -1,10 +1,10 @@
-import { McpServerCustomizationsPrompt, MCPToolInfo } from "app-types/mcp";
-
+import { Agent } from "app-types/agent";
+import { PersonalityPreset } from "app-types/chat";
+import { MCPToolInfo, McpServerCustomizationsPrompt } from "app-types/mcp";
 import { UserPreferences } from "app-types/user";
 import { User } from "better-auth";
-import { createMCPToolId } from "./mcp/mcp-tool-id";
 import { format } from "date-fns";
-import { Agent } from "app-types/agent";
+import { createMCPToolId } from "./mcp/mcp-tool-id";
 
 export const CREATE_THREAD_TITLE_PROMPT = `
 You are a chat title generation expert.
@@ -96,6 +96,8 @@ You can assist with:
 - Analysis and problem-solving across various domains
 - Using available tools and resources to complete tasks
 - Adapting communication to user preferences and context
+- Generating images using the 'ImageManager' tool when requested.
+- Generating videos using the 'VideoManager' tool when requested.
 </general_capabilities>`;
 
   // Communication preferences
@@ -124,11 +126,45 @@ ${userPreferences.responseStyleExample}
 
 - When using tools, briefly mention which tool you'll use with natural phrases
 - Examples: "I'll search for that information", "Let me check the weather", "I'll run some calculations"
-- Use \`mermaid\` code blocks for diagrams and charts when helpful
+- **CRITICAL**: Use specific visualization tools (like PieChart, BarChart) when presenting numerical data or comparisons instead of just text or markdown tables.
+- Use \`mermaid\` code blocks for diagrams and flowcharts only if a specific tool is not more appropriate.
 </communication_preferences>`;
   }
 
   return prompt.trim();
+};
+
+export const buildAppDefaultToolsSystemPrompt = (
+  allowedAppDefaultToolkit: string[],
+) => {
+  if (allowedAppDefaultToolkit.length === 0) return "";
+
+  const TOOL_DESCRIPTIONS: Record<string, string> = {
+    visualization:
+      "You have access to data visualization tools (PieChart, BarChart, LineChart, Table). Use them to present data visually when requested or when it would improve understanding of complex information.",
+    webSearch:
+      "You can search the web for real-time information using Exa Search. Use this for news, current events, or technical documentation.",
+    code: "You can execute code in a secure sandbox (Javascript/Node.js or Python). Use this for complex calculations, data processing, or logic verification.",
+    canvas:
+      "You can draft and edit long-form content in a dedicated workspace using the Canvas (DraftContent tool).",
+    compute:
+      "You can run terminal commands in a local environment. Use this for file system operations or specialized compute tasks.",
+    rag: "You can retrieve specific knowledge from the uploaded knowledge base to provide more accurate and context-aware responses.",
+    document:
+      "You can generate downloadable documents (PDF, XLSX, PPTX) using the GenerateDocument tool. Use this when users ask to create reports, spreadsheets, or presentations.",
+  };
+
+  const activeInstructions = allowedAppDefaultToolkit
+    .map((key) => TOOL_DESCRIPTIONS[key])
+    .filter(Boolean);
+
+  if (activeInstructions.length === 0) return "";
+
+  return `
+### Activated Capabilities
+You currently have the following expanded capabilities enabled. Use them proactively when they can provide a better user experience:
+${activeInstructions.map((ins) => `- ${ins}`).join("\n")}
+`.trim();
 };
 
 export const buildSpeechSystemPrompt = (
@@ -322,3 +358,47 @@ export const WORKFLOW_USAGE_PROMPT = `
 - When creating or updating nodes, ensure you provide valid \`position\` (x, y) coordinates and appropriate \`kind\` (e.g., LLM_GENERATION, SEARCH_CONDITION).
 - If you are assisting within a specific workflow, its ID will be provided in the system context.
 `;
+
+const PERSONALITY_PROMPTS: Record<
+  Exclude<PersonalityPreset, "default">,
+  string
+> = {
+  concise: `
+### Response Style: Concise
+- Keep responses brief and to the point — prefer 1-3 sentences when possible.
+- Use bullet points for lists instead of paragraphs.
+- Skip pleasantries and filler; go straight to the answer.
+- Only elaborate when the user explicitly asks for more detail.
+- Prefer code snippets over explanations when answering technical questions.`,
+
+  detailed: `
+### Response Style: Detailed
+- Provide thorough, comprehensive responses with full context and reasoning.
+- Break complex topics into clearly labeled sections with headers.
+- Include examples, edge cases, and considerations where relevant.
+- Explain trade-offs and alternatives when making recommendations.
+- Summarize key takeaways at the end of longer responses.`,
+
+  creative: `
+### Response Style: Creative
+- Use vivid language, metaphors, and analogies to make responses engaging.
+- Approach problems from unconventional angles; think outside the box.
+- Suggest imaginative and novel solutions alongside practical ones.
+- Use storytelling techniques when explaining concepts.
+- Be playful with language while remaining accurate and helpful.`,
+
+  technical: `
+### Response Style: Technical
+- Use precise technical terminology and formal language.
+- Include code examples, algorithms, or formal notation where appropriate.
+- Reference specifications, RFCs, documentation, and best practices.
+- Discuss performance implications, complexity, and architectural trade-offs.
+- Structure responses with clear technical rigor: problem, analysis, solution, verification.`,
+};
+
+export const buildPersonalityPresetPrompt = (
+  preset?: PersonalityPreset,
+): string => {
+  if (!preset || preset === "default") return "";
+  return PERSONALITY_PROMPTS[preset] ?? "";
+};
