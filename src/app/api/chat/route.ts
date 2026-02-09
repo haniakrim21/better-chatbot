@@ -8,6 +8,9 @@ const logger = globalLogger.withDefaults({
   message: colorize("blackBright", `Chat API: `),
 });
 
+// Set max duration to 10 minutes to allow for long-running video generation
+export const maxDuration = 600;
+
 export async function POST(request: Request) {
   try {
     const json = await request.json();

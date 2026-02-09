@@ -1,5 +1,5 @@
-import { z } from "zod";
 import { tool } from "ai";
+import { z } from "zod";
 
 export const draftContentTool = tool({
   description:
@@ -15,8 +15,6 @@ export const draftContentTool = tool({
       ),
   }),
   execute: async ({ title, content, action }) => {
-    // Import dynamically or at top-level. Top level is circular? No.
-    // But we need to use 'repository' and 'getSession'
     const { canvasDocumentRepository } = await import("lib/db/repository");
     const { getSession } = await import("auth/server");
 
@@ -25,11 +23,60 @@ export const draftContentTool = tool({
       throw new Error("Unauthorized");
     }
 
+    if (action === "update" || action === "append") {
+      // Try to find an existing document with this title for the user
+      // We search the most recent documents to find a match
+      const { pgDb: db } = await import("lib/db/pg/db.pg");
+      const { CanvasDocumentTable } = await import("lib/db/pg/schema.pg");
+      const { eq, and, desc } = await import("drizzle-orm");
+
+      const [existing] = await db
+        .select()
+        .from(CanvasDocumentTable)
+        .where(
+          and(
+            eq(CanvasDocumentTable.userId, session.user.id),
+            eq(CanvasDocumentTable.title, title),
+          ),
+        )
+        .orderBy(desc(CanvasDocumentTable.updatedAt))
+        .limit(1);
+
+      if (existing) {
+        const newContent =
+          action === "append"
+            ? `${existing.content || ""}\n\n${content}`
+            : content;
+
+        const doc = await canvasDocumentRepository.updateDocument(existing.id, {
+          title,
+          content: newContent,
+          userId: session.user.id,
+          threadId: existing.threadId,
+        });
+
+        return {
+          status: "success",
+          message:
+            action === "append"
+              ? `Appended content to "${title}"`
+              : `Updated content for "${title}"`,
+          data: {
+            documentId: doc.id,
+            title,
+            content: newContent,
+            action,
+          },
+        };
+      }
+      // Fall through to create if no existing document found
+    }
+
     const doc = await canvasDocumentRepository.createDocument({
       title,
       content,
       userId: session.user.id,
-      threadId: null, // We don't have threadId in method args yet, could pass it potentially?
+      threadId: null,
     });
 
     return {

@@ -1,34 +1,39 @@
 "use client";
+import { getShortcutKeyList, Shortcuts } from "lib/keyboard-shortcuts";
 import {
+  BarChart3,
+  BookOpen,
+  BookOpenIcon,
+  Compass,
+  FileText,
+  FolderOpenIcon,
+  FolderSearchIcon,
+  MousePointer2,
+  PlusIcon,
+  Timer,
+  UsersIcon,
+  Waypoints,
+} from "lucide-react";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useCallback, useState } from "react";
+import { MCPIcon } from "ui/mcp-icon";
+import {
+  SidebarGroup,
+  SidebarGroupContent,
+  SidebarMenu,
   SidebarMenuAction,
   SidebarMenuButton,
+  SidebarMenuItem,
   SidebarMenuSub,
   SidebarMenuSubButton,
   SidebarMenuSubItem,
   useSidebar,
 } from "ui/sidebar";
-import { Tooltip, TooltipContent, TooltipTrigger } from "ui/tooltip";
-import { SidebarMenu, SidebarMenuItem } from "ui/sidebar";
-import { SidebarGroupContent } from "ui/sidebar";
-
-import { SidebarGroup } from "ui/sidebar";
-import Link from "next/link";
-import { getShortcutKeyList, Shortcuts } from "lib/keyboard-shortcuts";
-import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
-import { MCPIcon } from "ui/mcp-icon";
-import { WriteIcon } from "ui/write-icon";
-import {
-  FolderOpenIcon,
-  FolderSearchIcon,
-  PlusIcon,
-  Waypoints,
-  BookOpenIcon,
-  UsersIcon,
-  Compass,
-} from "lucide-react";
-import { useCallback, useState } from "react";
 import { Skeleton } from "ui/skeleton";
+import { Tooltip, TooltipContent, TooltipTrigger } from "ui/tooltip";
+import { WriteIcon } from "ui/write-icon";
 import { useArchives } from "@/hooks/queries/use-archives";
 import { ArchiveDialog } from "../archive-dialog";
 
@@ -120,6 +125,66 @@ export function AppSidebarMenus() {
                 <SidebarMenuButton className="font-semibold">
                   <UsersIcon className="size-4" />
                   Teams
+                </SidebarMenuButton>
+              </Link>
+            </SidebarMenuItem>
+          </Tooltip>
+        </SidebarMenu>
+        <SidebarMenu>
+          <Tooltip>
+            <SidebarMenuItem>
+              <Link href="/canvas">
+                <SidebarMenuButton className="font-semibold">
+                  <MousePointer2 className="size-4" />
+                  {t("Layout.canvas")}
+                </SidebarMenuButton>
+              </Link>
+            </SidebarMenuItem>
+          </Tooltip>
+        </SidebarMenu>
+        <SidebarMenu>
+          <Tooltip>
+            <SidebarMenuItem>
+              <Link href="/analytics">
+                <SidebarMenuButton className="font-semibold">
+                  <BarChart3 className="size-4" />
+                  {t("Layout.analytics")}
+                </SidebarMenuButton>
+              </Link>
+            </SidebarMenuItem>
+          </Tooltip>
+        </SidebarMenu>
+        <SidebarMenu>
+          <Tooltip>
+            <SidebarMenuItem>
+              <Link href="/prompts">
+                <SidebarMenuButton className="font-semibold">
+                  <FileText className="size-4" />
+                  {t("Layout.prompts")}
+                </SidebarMenuButton>
+              </Link>
+            </SidebarMenuItem>
+          </Tooltip>
+        </SidebarMenu>
+        <SidebarMenu>
+          <Tooltip>
+            <SidebarMenuItem>
+              <Link href="/automations">
+                <SidebarMenuButton className="font-semibold">
+                  <Timer className="size-4" />
+                  {t("Layout.automations")}
+                </SidebarMenuButton>
+              </Link>
+            </SidebarMenuItem>
+          </Tooltip>
+        </SidebarMenu>
+        <SidebarMenu>
+          <Tooltip>
+            <SidebarMenuItem>
+              <Link href="/skills">
+                <SidebarMenuButton className="font-semibold">
+                  <BookOpen className="size-4" />
+                  {t("Layout.skills")}
                 </SidebarMenuButton>
               </Link>
             </SidebarMenuItem>

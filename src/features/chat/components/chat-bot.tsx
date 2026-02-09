@@ -1,40 +1,32 @@
 "use client";
 
 import { useChat } from "@ai-sdk/react";
-import { toast } from "sonner";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import PromptInput from "./prompt-input";
-import clsx from "clsx";
-import { appStore } from "@/app/store";
-import { cn, generateUUID, truncateString } from "lib/utils";
-import { ErrorMessage, PreviewMessage } from "./message";
-import { ChatGreeting } from "./chat-greeting";
-import { DefaultToolName } from "lib/ai/tools";
-import { AnimatePresence, motion } from "framer-motion";
-import { useThreadFileUploader } from "@/hooks/use-thread-file-uploader";
-import { useFileDragOverlay } from "@/hooks/use-file-drag-overlay";
-
-import { useShallow } from "zustand/shallow";
 import {
   DefaultChatTransport,
   isToolUIPart,
   lastAssistantMessageIsCompleteWithToolCalls,
   TextUIPart,
 } from "ai";
-
-import { safe } from "ts-safe";
-import { mutate } from "swr";
 import {
   ChatApiSchemaRequestBody,
   ChatAttachment,
   ChatModel,
 } from "app-types/chat";
-import { useToRef } from "@/hooks/use-latest";
+import clsx from "clsx";
+import { AnimatePresence, motion } from "framer-motion";
+import { DefaultToolName } from "lib/ai/tools";
 import { isShortcutEvent, Shortcuts } from "lib/keyboard-shortcuts";
-import { Button } from "ui/button";
-import { deleteThreadAction } from "@/app/api/chat/actions";
+import { getTeamMembers } from "lib/teams/actions";
+import { cn, generateUUID, truncateString } from "lib/utils";
+import { ArrowDown, FilePlus, Loader } from "lucide-react";
 import { useRouter } from "next/navigation";
-import { ArrowDown, Loader, FilePlus } from "lucide-react";
+import { useTranslations } from "next-intl";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
+import { mutate } from "swr";
+
+import { safe } from "ts-safe";
+import { Button } from "ui/button";
 import {
   Dialog,
   DialogContent,
@@ -43,10 +35,18 @@ import {
   DialogHeader,
   DialogTitle,
 } from "ui/dialog";
-import { useTranslations } from "next-intl";
 import { Think } from "ui/think";
+import { useShallow } from "zustand/shallow";
+import { deleteThreadAction } from "@/app/api/chat/actions";
+import { appStore } from "@/app/store";
 import { useGenerateThreadTitle } from "@/hooks/queries/use-generate-thread-title";
-import { getTeamMembers } from "lib/teams/actions";
+import { useFileDragOverlay } from "@/hooks/use-file-drag-overlay";
+import { useToRef } from "@/hooks/use-latest";
+import { useThreadFileUploader } from "@/hooks/use-thread-file-uploader";
+import { ChatGreeting } from "./chat-greeting";
+import { ErrorMessage, PreviewMessage } from "./message";
+import PromptInput from "./prompt-input";
+
 interface Props {
   threadId: string;
   initialMessages: any[];
@@ -98,6 +98,7 @@ export default function ChatBot({
     threadKnowledgeBase,
     canvas,
     currentTeamId,
+    personalityPreset,
   ] = appStore(
     useShallow((state) => [
       state.mutate,
@@ -112,6 +113,7 @@ export default function ChatBot({
       state.threadKnowledgeBase,
       state.canvas,
       state.currentTeamId,
+      state.personalityPreset,
     ]),
   );
 
@@ -238,6 +240,7 @@ export default function ChatBot({
             latestRef.current.canvas?.currentSelection || undefined,
           teamId: latestRef.current.currentTeamId || undefined,
           workflowId: workflowId || undefined,
+          personalityPreset: latestRef.current.personalityPreset || undefined,
         };
         return { body: requestBody };
       },
@@ -300,7 +303,10 @@ export default function ChatBot({
             canvas: {
               ...prev.canvas,
               isOpen: true,
-              pendingCommand: result.data,
+              pendingCommand: {
+                ...result.data,
+                toolCallId: terminalTool.toolCallId,
+              },
             },
           }));
           toast.info("Executing terminal command...");
@@ -331,6 +337,32 @@ export default function ChatBot({
     }
   }, [messages, appStoreMutate]);
 
+  // Watch for terminal command results from canvas and feed them back to AI
+  useEffect(() => {
+    const result = canvas.lastCommandResult;
+    if (!result || !result.toolCallId) return;
+
+    // Clear the result from store immediately to prevent re-processing
+    appStoreMutate((prev) => ({
+      canvas: {
+        ...prev.canvas,
+        lastCommandResult: null,
+      },
+    }));
+
+    // Feed the execution result back to the AI
+    addToolResult({
+      tool: DefaultToolName.RunTerminalCommand,
+      toolCallId: result.toolCallId,
+      output: JSON.stringify({
+        status: "executed",
+        exitCode: result.exitCode,
+        output: result.output,
+        ...(result.error ? { error: result.error } : {}),
+      }),
+    });
+  }, [canvas.lastCommandResult, addToolResult, appStoreMutate]);
+
   const latestRef = useToRef({
     toolChoice,
     model,
@@ -344,6 +376,7 @@ export default function ChatBot({
     knowledgeBaseId: threadKnowledgeBase[threadId],
     canvas,
     currentTeamId,
+    personalityPreset,
   });
 
   const isLoading = useMemo(

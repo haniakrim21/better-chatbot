@@ -89,7 +89,10 @@ const PurePreviewMessage = ({
           className,
         )}
       >
-        <div className="flex flex-col gap-4 w-full">
+        <div
+          id={`message-${message.id}`}
+          className="flex flex-col gap-4 w-full"
+        >
           {(message.metadata as any)?.camelRole && (
             <div className="flex items-center gap-2 mb-1 opacity-80 animate-in fade-in slide-in-from-top-1">
               <div className="text-[10px] font-bold uppercase tracking-wider bg-primary/20 text-primary px-1.5 py-0.5 rounded-sm border border-primary/20">

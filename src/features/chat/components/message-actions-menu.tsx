@@ -1,42 +1,46 @@
 "use client";
 
-import { useTranslations } from "next-intl";
+import { UseChatHelpers } from "@ai-sdk/react";
+import { UIMessage } from "ai";
+import {
+  exportMessageAsDOCX,
+  exportMessageAsPDFFromElement,
+} from "lib/utils/export-message";
 import {
   ArrowDown,
   ArrowUp,
   Bot,
   Copy,
+  Download,
+  FileText,
+  GitBranch,
   MoreHorizontal,
   RefreshCw,
   Trash,
   User,
 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { toast } from "sonner";
+import { Button } from "ui/button";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
   DropdownMenuSeparator,
-  DropdownMenuTrigger,
   DropdownMenuSub,
-  DropdownMenuSubTrigger,
   DropdownMenuSubContent,
+  DropdownMenuSubTrigger,
+  DropdownMenuTrigger,
 } from "ui/dropdown-menu";
-import { Button } from "ui/button";
-import { UIMessage } from "ai";
-import { UseChatHelpers } from "@ai-sdk/react";
-import { toast } from "sonner";
 import {
+  branchFromMessageAction,
   deleteMessageAction,
-  deleteMessagesByChatIdAfterTimestampAction,
   deleteMessagesAfterMessageAction,
+  deleteMessagesByChatIdAfterTimestampAction,
   updateMessageAction,
 } from "@/app/api/chat/actions";
 import { useCopy } from "@/hooks/use-copy";
-import {
-  exportMessageAsPDF,
-  exportMessageAsDOCX,
-} from "lib/utils/export-message";
-import { Download, FileText } from "lucide-react";
 
 interface MessageActionsMenuProps {
   message: UIMessage;
@@ -55,12 +59,21 @@ export function MessageActionsMenu({
 }: MessageActionsMenuProps) {
   const t = useTranslations();
   const { copy } = useCopy();
+  const router = useRouter();
 
   const getMessageText = (msg: UIMessage) => {
     return (msg.parts || [])
-      .filter((p) => p.type === "text")
-      .map((p) => (p as any).text)
-      .join("");
+      .map((p: any) => {
+        if (p.type === "text") return p.text;
+        if (p.type === "tool-invocation") {
+          return `\n[Tool: ${p.toolName}]\nInput: ${JSON.stringify(p.args, null, 2)}\n`;
+        }
+        if (p.type === "tool-result") {
+          return `\nSource: ${p.toolName}\nResult: ${typeof p.result === "string" ? p.result : JSON.stringify(p.result, null, 2)}\n`;
+        }
+        return "";
+      })
+      .join("\n");
   };
 
   const handleRoleChange = async (newRole: "user" | "assistant" | "system") => {
@@ -137,6 +150,23 @@ export function MessageActionsMenu({
     }
   };
 
+  const handleBranch = async () => {
+    if (!threadId) {
+      toast.error("Cannot branch: no thread context");
+      return;
+    }
+    try {
+      const result = await branchFromMessageAction({
+        threadId,
+        messageId: message.id,
+      });
+      toast.success(`Branched to "${result.title}"`);
+      router.push(`/?threadId=${result.threadId}`);
+    } catch (_error) {
+      toast.error("Failed to branch conversation");
+    }
+  };
+
   return (
     <DropdownMenu>
       <DropdownMenuTrigger asChild data-testid="message-actions-menu-trigger">
@@ -197,6 +227,13 @@ export function MessageActionsMenu({
 
             <DropdownMenuSeparator />
 
+            {threadId && (
+              <DropdownMenuItem onClick={handleBranch}>
+                <GitBranch className="mr-2 h-4 w-4" />
+                Branch from here
+              </DropdownMenuItem>
+            )}
+
             <DropdownMenuSeparator />
 
             <DropdownMenuSub>
@@ -206,23 +243,33 @@ export function MessageActionsMenu({
               </DropdownMenuSubTrigger>
               <DropdownMenuSubContent>
                 <DropdownMenuItem
-                  onClick={() =>
-                    exportMessageAsPDF(
-                      getMessageText(message),
+                  onClick={() => {
+                    const promise = exportMessageAsPDFFromElement(
+                      `message-${message.id}`,
                       `message-${message.id}.pdf`,
-                    )
-                  }
+                    );
+                    toast.promise(promise, {
+                      loading: "Generating professional PDF...",
+                      success: "PDF downloaded",
+                      error: "Failed to generate PDF",
+                    });
+                  }}
                 >
                   <FileText className="mr-2 h-4 w-4" />
                   PDF
                 </DropdownMenuItem>
                 <DropdownMenuItem
-                  onClick={() =>
-                    exportMessageAsDOCX(
-                      getMessageText(message),
+                  onClick={() => {
+                    const promise = exportMessageAsDOCX(
+                      `message-${message.id}`,
                       `message-${message.id}.docx`,
-                    )
-                  }
+                    );
+                    toast.promise(promise, {
+                      loading: "Generating rich DOCX with charts...",
+                      success: "DOCX downloaded",
+                      error: "Failed to generate DOCX",
+                    });
+                  }}
                 >
                   <FileText className="mr-2 h-4 w-4" />
                   DOCX

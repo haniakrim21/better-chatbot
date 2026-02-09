@@ -1,69 +1,62 @@
 "use client";
 
-import { FileUIPart, getToolName, ToolUIPart, UIMessage } from "ai";
-import {
-  Check,
-  Copy,
-  Loader,
-  ChevronDownIcon,
-  RefreshCw,
-  X,
-  Trash2,
-  ChevronRight,
-  TriangleAlert,
-  HammerIcon,
-  EllipsisIcon,
-  FileIcon,
-  Download,
-} from "lucide-react";
-import { MessageActionsMenu } from "./message-actions-menu";
-
-import { Tooltip, TooltipContent, TooltipTrigger } from "ui/tooltip";
-import { Button } from "ui/button";
-import { Badge } from "ui/badge";
-import { Markdown } from "@/components/markdown";
-import { cn, safeJSONParse } from "lib/utils";
-import JsonView from "ui/json-view";
-import { useMemo, useState, memo, useEffect, useRef, useCallback } from "react";
-
 import type { UseChatHelpers } from "@ai-sdk/react";
-import { useCopy } from "@/hooks/use-copy";
-
-import { AnimatePresence, motion } from "framer-motion";
-import { SelectModel } from "@/components/select-model";
-import {
-  deleteMessageAction,
-  deleteMessagesByChatIdAfterTimestampAction,
-} from "@/app/api/chat/actions";
-
-import { toast } from "sonner";
-import { safe } from "ts-safe";
+import { FileUIPart, getToolName, ToolUIPart, UIMessage } from "ai";
 import { ChatMetadata, ChatModel, ManualToolConfirmTag } from "app-types/chat";
-
-import { useTranslations } from "next-intl";
-import { extractMCPToolId } from "lib/ai/mcp/mcp-tool-id";
-import { Separator } from "ui/separator";
-
-import { TextShimmer } from "ui/text-shimmer";
-import equal from "lib/equal";
 import {
   VercelAIWorkflowToolStreamingResult,
   VercelAIWorkflowToolStreamingResultTag,
 } from "app-types/workflow";
-import { Avatar, AvatarFallback, AvatarImage } from "ui/avatar";
-import { DefaultToolName, ImageToolName } from "lib/ai/tools";
+import { AnimatePresence, motion } from "framer-motion";
+import { extractMCPToolId } from "lib/ai/mcp/mcp-tool-id";
+import { DefaultToolName, ImageToolName, VideoToolName } from "lib/ai/tools";
+import { BACKGROUND_COLORS, EMOJI_DATA } from "lib/const";
+import equal from "lib/equal";
 import {
-  Shortcut,
   getShortcutKeyList,
   isShortcutEvent,
+  Shortcut,
 } from "lib/keyboard-shortcuts";
-
-import { WorkflowInvocation } from "@/components/tool-invocation/workflow-invocation";
-import dynamic from "next/dynamic";
 import { notify } from "lib/notify";
+import { cn, safeJSONParse } from "lib/utils";
+import {
+  Check,
+  ChevronDownIcon,
+  ChevronRight,
+  Copy,
+  Download,
+  EllipsisIcon,
+  FileIcon,
+  HammerIcon,
+  Loader,
+  RefreshCw,
+  Trash2,
+  TriangleAlert,
+  X,
+} from "lucide-react";
+import dynamic from "next/dynamic";
+import { useTranslations } from "next-intl";
+import { memo, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
+import { safe } from "ts-safe";
+import { Avatar, AvatarFallback, AvatarImage } from "ui/avatar";
+import { Badge } from "ui/badge";
+import { Button } from "ui/button";
+import JsonView from "ui/json-view";
 import { ModelProviderIcon } from "ui/model-provider-icon";
+import { Separator } from "ui/separator";
+import { TextShimmer } from "ui/text-shimmer";
+import { Tooltip, TooltipContent, TooltipTrigger } from "ui/tooltip";
+import {
+  deleteMessageAction,
+  deleteMessagesByChatIdAfterTimestampAction,
+} from "@/app/api/chat/actions";
 import { appStore } from "@/app/store";
-import { BACKGROUND_COLORS, EMOJI_DATA } from "lib/const";
+import { Markdown } from "@/components/markdown";
+import { SelectModel } from "@/components/select-model";
+import { WorkflowInvocation } from "@/components/tool-invocation/workflow-invocation";
+import { useCopy } from "@/hooks/use-copy";
+import { MessageActionsMenu } from "./message-actions-menu";
 
 type ExtendedUIMessage = UIMessage & { userId?: string };
 
@@ -333,6 +326,7 @@ export const AssistMessagePart = memo(function AssistMessagePart({
                 setMessages={setMessages}
                 // onEdit={() => setMode("edit")}
                 isReadOnly={readonly}
+                threadId={threadId}
               />
             </>
           )}
@@ -629,10 +623,43 @@ const CodeExecutor = dynamic(
   },
 );
 
+const HttpRequestToolInvocation = dynamic(
+  () =>
+    import("@/components/tool-invocation/http-request").then(
+      (mod) => mod.HttpRequestToolInvocation,
+    ),
+  {
+    ssr: false,
+    loading: Loading,
+  },
+);
+
+const DocumentGenerateToolInvocation = dynamic(
+  () =>
+    import("@/components/tool-invocation/document-generate").then(
+      (mod) => mod.DocumentGenerateToolInvocation,
+    ),
+  {
+    ssr: false,
+    loading: Loading,
+  },
+);
+
 const ImageGeneratorToolInvocation = dynamic(
   () =>
     import("@/components/tool-invocation/image-generator").then(
       (mod) => mod.ImageGeneratorToolInvocation,
+    ),
+  {
+    ssr: false,
+    loading: Loading,
+  },
+);
+
+const VideoGeneratorToolInvocation = dynamic(
+  () =>
+    import("@/components/tool-invocation/video-generator").then(
+      (mod) => mod.VideoGeneratorToolInvocation,
     ),
   {
     ssr: false,
@@ -797,6 +824,13 @@ export const ToolMessagePart = memo(
         return <ImageGeneratorToolInvocation part={part} />;
       }
 
+      if (
+        toolName === VideoToolName ||
+        toolName.toLowerCase().includes("video")
+      ) {
+        return <VideoGeneratorToolInvocation part={part} />;
+      }
+
       if (toolName === DefaultToolName.JavascriptExecution) {
         return (
           <CodeExecutor
@@ -815,6 +849,19 @@ export const ToolMessagePart = memo(
             key={part.toolCallId}
             onResult={onToolCallDirect}
             type="python"
+          />
+        );
+      }
+
+      if (toolName === DefaultToolName.Http) {
+        return <HttpRequestToolInvocation part={part} />;
+      }
+
+      if (toolName === DefaultToolName.GenerateDocument) {
+        return (
+          <DocumentGenerateToolInvocation
+            result={output ?? result}
+            state={state}
           />
         );
       }

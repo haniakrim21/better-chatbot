@@ -1,61 +1,55 @@
 "use client";
 
+import { UIMessage, UseChatHelpers } from "@ai-sdk/react";
+import { Editor } from "@tiptap/react";
+import { FileUIPart, TextUIPart } from "ai";
+import { AgentSummary } from "app-types/agent";
+import { ChatMention, ChatModel } from "app-types/chat";
+import { WorkflowSummary } from "app-types/workflow";
+import { DefaultToolName } from "lib/ai/tools";
+import { EMOJI_DATA } from "lib/const";
+import equal from "lib/equal";
 import {
   AudioWaveformIcon,
   ChevronDown,
   CornerRightUp,
   FileIcon,
   FileTextIcon,
-  ImagesIcon,
   Loader2,
   PaperclipIcon,
   PlusIcon,
   Square,
   XIcon,
 } from "lucide-react";
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Button } from "ui/button";
-import { UIMessage, UseChatHelpers } from "@ai-sdk/react";
-import { SelectModel } from "@/components/select-model";
-import { appStore, UploadedFile } from "@/app/store";
-import { useShallow } from "zustand/shallow";
-import { ChatMention, ChatModel } from "app-types/chat";
 import dynamic from "next/dynamic";
-import { ToolModeDropdown } from "@/components/tool-mode-dropdown";
-
-import { ToolSelectDropdown } from "@/components/tool-select-dropdown";
-import { Tooltip, TooltipContent, TooltipTrigger } from "ui/tooltip";
 import { useTranslations } from "next-intl";
-import { Editor } from "@tiptap/react";
-import { WorkflowSummary } from "app-types/workflow";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "ui/avatar";
-import equal from "lib/equal";
-import { MCPIcon } from "ui/mcp-icon";
-import { DefaultToolName } from "lib/ai/tools";
-import { DefaultToolIcon } from "@/components/default-tool-icon";
-import { OpenAIIcon } from "ui/openai-icon";
-import { GrokIcon } from "ui/grok-icon";
+import { Button } from "ui/button";
 import { ClaudeIcon } from "ui/claude-icon";
-import { GeminiIcon } from "ui/gemini-icon";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuPortal,
-  DropdownMenuSub,
-  DropdownMenuSubContent,
-  DropdownMenuSubTrigger,
   DropdownMenuTrigger,
 } from "ui/dropdown-menu";
-import { cn } from "@/lib/utils";
-import { useThreadFileUploader } from "@/hooks/use-thread-file-uploader";
-
-import { EMOJI_DATA } from "lib/const";
-import { AgentSummary } from "app-types/agent";
-import { FileUIPart, TextUIPart } from "ai";
-import { toast } from "sonner";
-import { isFilePartSupported, isIngestSupported } from "@/lib/ai/file-support";
+import { GeminiIcon } from "ui/gemini-icon";
+import { GrokIcon } from "ui/grok-icon";
+import { MCPIcon } from "ui/mcp-icon";
+import { OpenAIIcon } from "ui/openai-icon";
+import { Tooltip, TooltipContent, TooltipTrigger } from "ui/tooltip";
+import { useShallow } from "zustand/shallow";
+import { appStore, UploadedFile } from "@/app/store";
+import { DefaultToolIcon } from "@/components/default-tool-icon";
+import { PersonalityPresetSelector } from "@/components/personality-preset-selector";
+import { SelectModel } from "@/components/select-model";
+import { ToolModeDropdown } from "@/components/tool-mode-dropdown";
+import { ToolSelectDropdown } from "@/components/tool-select-dropdown";
 import { useChatModels } from "@/hooks/queries/use-chat-models";
+import { useThreadFileUploader } from "@/hooks/use-thread-file-uploader";
+import { isFilePartSupported, isIngestSupported } from "@/lib/ai/file-support";
+import { cn } from "@/lib/utils";
 
 interface PromptInputProps {
   placeholder?: string;
@@ -73,11 +67,11 @@ interface PromptInputProps {
   onFocus?: () => void;
 }
 
-import { VoiceToTextButton } from "@/features/chat/components/voice-to-text-button";
-import { PromptEnhancer } from "@/features/chat/components/prompt-enhancer";
-import { CamelSessionDialog } from "@/components/chat/camel-session-dialog";
-import { useRouter } from "next/navigation";
 import { Users2 } from "lucide-react";
+import { useRouter } from "next/navigation";
+import { CamelSessionDialog } from "@/components/chat/camel-session-dialog";
+import { PromptEnhancer } from "@/features/chat/components/prompt-enhancer";
+import { VoiceToTextButton } from "@/features/chat/components/voice-to-text-button";
 
 const ChatMentionInput = dynamic(() => import("./chat-mention-input"), {
   ssr: false,
@@ -344,13 +338,17 @@ export default function PromptInput({
   );
 
   const submit = () => {
-    if (isLoading) return;
     if (uploadedFiles.some((file) => file.isUploading)) {
       toast.error("Please wait for files to finish uploading before sending.");
       return;
     }
     const userMessage = input?.trim() || "";
     if (userMessage.length === 0) return;
+
+    // Live steering: if AI is streaming, stop it first then send the new message
+    if (isLoading) {
+      onStop();
+    }
 
     setInput("");
     const attachmentParts = uploadedFiles.reduce<
@@ -565,32 +563,6 @@ export default function PromptInput({
                       {t("uploadImage")}
                     </DropdownMenuItem>
 
-                    <DropdownMenuSub>
-                      <DropdownMenuSubTrigger className="cursor-pointer">
-                        <ImagesIcon className="me-4 size-4 text-muted-foreground" />
-                        <span className="me-4">{t("generateImage")}</span>
-                      </DropdownMenuSubTrigger>
-                      <DropdownMenuPortal>
-                        <DropdownMenuSubContent>
-                          <DropdownMenuItem
-                            disabled={modelInfo?.isToolCallUnsupported}
-                            onClick={() => handleGenerateImage("google")}
-                            className="cursor-pointer"
-                          >
-                            <GeminiIcon className="me-2 size-4" />
-                            Gemini (Nano Banana)
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            disabled={modelInfo?.isToolCallUnsupported}
-                            onClick={() => handleGenerateImage("openai")}
-                            className="cursor-pointer"
-                          >
-                            <OpenAIIcon className="me-2 size-4" />
-                            OpenAI
-                          </DropdownMenuItem>
-                        </DropdownMenuSubContent>
-                      </DropdownMenuPortal>
-                    </DropdownMenuSub>
                     <DropdownMenuItem
                       className="cursor-pointer"
                       onClick={() => setIsCamelDialogOpen(true)}
@@ -601,33 +573,22 @@ export default function PromptInput({
                   </DropdownMenuContent>
                 </DropdownMenu>
 
-                {!toolDisabled &&
-                  (imageToolModel ? (
-                    <Button
-                      variant={"ghost"}
-                      size={"sm"}
-                      className="rounded-full hover:bg-input! p-2! group/image-generator text-primary"
-                      onClick={() => handleGenerateImage()}
-                    >
-                      <ImagesIcon className="size-3.5" />
-                      {t("generateImage")}
-                      <XIcon className="size-3 group-hover/image-generator:opacity-100 opacity-0 transition-opacity duration-200" />
-                    </Button>
-                  ) : (
-                    <>
-                      <ToolModeDropdown />
-                      <ToolSelectDropdown
-                        className="mx-0.5"
-                        align="start"
-                        side="top"
-                        onSelectWorkflow={onSelectWorkflow}
-                        onSelectAgent={onSelectAgent}
-                        onGenerateImage={handleGenerateImage}
-                        onSelectKB={handleSelectKB}
-                        mentions={mentions}
-                      />
-                    </>
-                  ))}
+                {!toolDisabled && (
+                  <>
+                    <ToolModeDropdown />
+                    <ToolSelectDropdown
+                      className="mx-0.5"
+                      align="start"
+                      side="top"
+                      onSelectWorkflow={onSelectWorkflow}
+                      onSelectAgent={onSelectAgent}
+                      onGenerateImage={handleGenerateImage}
+                      onSelectKB={handleSelectKB}
+                      mentions={mentions}
+                    />
+                  </>
+                )}
+                <PersonalityPresetSelector disabled={isLoading} />
                 <VoiceToTextButton
                   onTranscript={(text) => setInput(input + text)}
                   disabled={isLoading || voiceDisabled}
@@ -692,6 +653,18 @@ export default function PromptInput({
                       </Button>
                     </TooltipTrigger>
                     <TooltipContent>{t("VoiceChat.title")}</TooltipContent>
+                  </Tooltip>
+                ) : isLoading && input.trim().length > 0 ? (
+                  <Tooltip>
+                    <TooltipTrigger asChild>
+                      <div
+                        onClick={submit}
+                        className="fade-in animate-in cursor-pointer rounded-full p-2 bg-primary text-primary-foreground hover:bg-primary/90 transition-all duration-200"
+                      >
+                        <CornerRightUp size={14} />
+                      </div>
+                    </TooltipTrigger>
+                    <TooltipContent>{t("steerHint")}</TooltipContent>
                   </Tooltip>
                 ) : (
                   <div

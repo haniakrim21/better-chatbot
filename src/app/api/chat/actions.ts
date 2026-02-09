@@ -7,14 +7,20 @@ import {
   LanguageModel,
   type UIMessage,
 } from "ai";
+import { Agent } from "app-types/agent";
 
+import type { ChatModel, ChatThread } from "app-types/chat";
+import { MCPToolInfo, McpServerCustomizationsPrompt } from "app-types/mcp";
+import { ObjectJsonSchema7 } from "app-types/util";
+import { getSession } from "auth/server";
+import { JSONSchema7 } from "json-schema";
+import { customModelProvider } from "lib/ai/models";
 import {
   CREATE_THREAD_TITLE_PROMPT,
   generateExampleToolSchemaPrompt,
 } from "lib/ai/prompts";
-
-import type { ChatModel, ChatThread } from "app-types/chat";
-
+import { serverCache } from "lib/cache";
+import { CacheKeys } from "lib/cache/cache-keys";
 import {
   agentRepository,
   chatExportRepository,
@@ -22,18 +28,9 @@ import {
   mcpMcpToolCustomizationRepository,
   mcpServerCustomizationRepository,
 } from "lib/db/repository";
-import { customModelProvider } from "lib/ai/models";
-import { toAny } from "lib/utils";
-import { McpServerCustomizationsPrompt, MCPToolInfo } from "app-types/mcp";
-import { serverCache } from "lib/cache";
-import { CacheKeys } from "lib/cache/cache-keys";
-import { getSession } from "auth/server";
-import logger from "logger";
-
-import { JSONSchema7 } from "json-schema";
-import { ObjectJsonSchema7 } from "app-types/util";
 import { jsonSchemaToZod } from "lib/json-schema-to-zod";
-import { Agent } from "app-types/agent";
+import { toAny } from "lib/utils";
+import logger from "logger";
 
 export async function getUserId() {
   const session = await getSession();
@@ -266,6 +263,61 @@ export async function rememberAgentAction(
     await serverCache.set(key, cachedAgent);
   }
   return cachedAgent as Agent | undefined;
+}
+
+export async function branchFromMessageAction({
+  threadId,
+  messageId,
+}: {
+  threadId: string;
+  messageId: string;
+}) {
+  const userId = await getUserId();
+
+  // Verify access
+  const hasAccess = await chatRepository.checkAccess(threadId, userId);
+  if (!hasAccess) {
+    throw new Error("Unauthorized");
+  }
+
+  // Fetch the source thread
+  const sourceThread = await chatRepository.selectThread(threadId);
+  if (!sourceThread) {
+    throw new Error("Thread not found");
+  }
+
+  // Fetch all messages up to and including the target message
+  const allMessages = await chatRepository.selectMessagesByThreadId(threadId);
+  const targetIndex = allMessages.findIndex((m) => m.id === messageId);
+  if (targetIndex === -1) {
+    throw new Error("Message not found in thread");
+  }
+  const messagesToCopy = allMessages.slice(0, targetIndex + 1);
+
+  // Create a new thread
+  const newThreadId = crypto.randomUUID();
+  const newThread = await chatRepository.insertThread({
+    id: newThreadId,
+    title: `${sourceThread.title} (branch)`,
+    userId,
+    teamId: sourceThread.teamId,
+  });
+
+  // Copy messages into the new thread with new IDs
+  const newMessages = messagesToCopy.map((m) => ({
+    id: crypto.randomUUID(),
+    threadId: newThreadId,
+    role: m.role,
+    parts: m.parts,
+    metadata: m.metadata,
+    userId: m.userId,
+  }));
+
+  if (newMessages.length > 0) {
+    await chatRepository.insertMessages(newMessages);
+  }
+
+  return { threadId: newThread.id, title: newThread.title };
 }
 
 export async function exportChatAction({
