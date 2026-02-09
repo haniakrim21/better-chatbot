@@ -7,6 +7,7 @@ export enum AppDefaultToolkit {
   Canvas = "canvas",
   Compute = "compute",
   Rag = "rag",
+  Document = "document",
 }
 
 export enum DefaultToolName {
@@ -28,6 +29,7 @@ export enum DefaultToolName {
   EditSelection = "EditSelection",
   RunTerminalCommand = "RunTerminalCommand",
   RetrieveKnowledge = "RetrieveKnowledge",
+  GenerateDocument = "GenerateDocument",
 }
 
 export const SequentialThinkingToolName = "SequentialThinking";
@@ -35,3 +37,4 @@ export const SequentialThinkingToolName = "SequentialThinking";
 // WebContainer Tools
 export * from "./compute/execute";
 export const ImageToolName = "ImageManager";
+export const VideoToolName = "VideoManager";

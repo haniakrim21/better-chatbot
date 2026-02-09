@@ -1,24 +1,25 @@
-import { createPieChartTool } from "./visualization/create-pie-chart";
-import { createBarChartTool } from "./visualization/create-bar-chart";
-import { createLineChartTool } from "./visualization/create-line-chart";
-import { createTableTool } from "./visualization/create-table";
-import { exaSearchTool, exaContentsTool } from "./web/web-search";
-import { AppDefaultToolkit, DefaultToolName } from ".";
 import { Tool } from "ai";
-import { httpFetchTool } from "./http/fetch";
-import { jsExecutionTool } from "./code/js-run-tool";
-import { pythonExecutionTool } from "./code/python-run-tool";
-import {
-  listWorkflowsTool,
-  getWorkflowStructureTool,
-  createWorkflowTool,
-  updateWorkflowStructureTool,
-  deleteWorkflowTool,
-} from "./workflow";
+import { AppDefaultToolkit, DefaultToolName } from ".";
 import { draftContentTool } from "./canvas/draft-content";
 import { editSelectionTool } from "./canvas/edit-selection";
+import { jsExecutionTool } from "./code/js-run-tool";
+import { pythonExecutionTool } from "./code/python-run-tool";
 import { runTerminalCommandTool } from "./compute/execute";
+import { generateDocumentTool } from "./document/generate";
+import { httpFetchTool } from "./http/fetch";
 import { retrieveKnowledgeTool } from "./rag/retrieve";
+import { createBarChartTool } from "./visualization/create-bar-chart";
+import { createLineChartTool } from "./visualization/create-line-chart";
+import { createPieChartTool } from "./visualization/create-pie-chart";
+import { createTableTool } from "./visualization/create-table";
+import { exaContentsTool, exaSearchTool } from "./web/web-search";
+import {
+  createWorkflowTool,
+  deleteWorkflowTool,
+  getWorkflowStructureTool,
+  listWorkflowsTool,
+  updateWorkflowStructureTool,
+} from "./workflow";
 
 export const APP_DEFAULT_TOOL_KIT: Record<
   AppDefaultToolkit,
@@ -57,5 +58,8 @@ export const APP_DEFAULT_TOOL_KIT: Record<
   },
   [AppDefaultToolkit.Rag]: {
     [DefaultToolName.RetrieveKnowledge]: retrieveKnowledgeTool,
+  },
+  [AppDefaultToolkit.Document]: {
+    [DefaultToolName.GenerateDocument]: generateDocumentTool,
   },
 };

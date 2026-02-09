@@ -1,12 +1,17 @@
-import { create } from "zustand";
-import { persist } from "zustand/middleware";
-import { ChatMention, ChatModel, ChatThread } from "app-types/chat";
-import { AllowedMCPServer, MCPServerInfo } from "app-types/mcp";
-import { OPENAI_VOICE } from "lib/ai/speech/open-ai/use-voice-chat.openai";
-import { WorkflowSummary } from "app-types/workflow";
-import { AppDefaultToolkit } from "lib/ai/tools";
 import { AgentSummary } from "app-types/agent";
 import { ArchiveWithItemCount } from "app-types/archive";
+import {
+  ChatMention,
+  ChatModel,
+  ChatThread,
+  PersonalityPreset,
+} from "app-types/chat";
+import { AllowedMCPServer, MCPServerInfo } from "app-types/mcp";
+import { WorkflowSummary } from "app-types/workflow";
+import { OPENAI_VOICE } from "lib/ai/speech/open-ai/use-voice-chat.openai";
+import { AppDefaultToolkit } from "lib/ai/tools";
+import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 export interface UploadedFile {
   id: string;
@@ -46,11 +51,13 @@ export interface AppState {
     [threadId: string]: string | undefined;
   };
   toolPresets: {
+    id?: string;
     allowedMcpServers?: Record<string, AllowedMCPServer>;
     allowedAppDefaultToolkit?: AppDefaultToolkit[];
     name: string;
   }[];
   chatModel?: ChatModel;
+  personalityPreset: PersonalityPreset;
   openShortcutsPopup: boolean;
   openChatPreferences: boolean;
   openUserSettings: boolean;
@@ -76,6 +83,7 @@ export interface AppState {
       command: string;
       args: string[];
       cwd?: string;
+      toolCallId?: string;
     } | null;
     currentSelection: string | null;
     pendingEdit?: {
@@ -83,6 +91,14 @@ export interface AppState {
       replacement?: string;
     } | null;
     pendingWorkflowUpdateId?: string | null;
+    lastCommandResult?: {
+      command: string;
+      args: string[];
+      exitCode: number;
+      output: string;
+      error?: string;
+      toolCallId: string;
+    } | null;
   };
 }
 
@@ -115,6 +131,7 @@ const initialState: AppState = {
   ],
   toolPresets: [],
   chatModel: undefined,
+  personalityPreset: "default",
   openShortcutsPopup: false,
   openChatPreferences: false,
   mcpCustomizationPopup: undefined,
@@ -139,6 +156,7 @@ const initialState: AppState = {
     currentSelection: null,
     pendingEdit: null,
     pendingWorkflowUpdateId: null,
+    lastCommandResult: null,
   },
 };
 
@@ -152,6 +170,8 @@ export const appStore = create<AppState & AppDispatch>()(
       name: "mc-app-store-v2.0.1",
       partialize: (state) => ({
         chatModel: state.chatModel || initialState.chatModel,
+        personalityPreset:
+          state.personalityPreset || initialState.personalityPreset,
         toolChoice: state.toolChoice || initialState.toolChoice,
         allowedMcpServers:
           state.allowedMcpServers || initialState.allowedMcpServers,

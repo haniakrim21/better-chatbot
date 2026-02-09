@@ -1,7 +1,12 @@
 "use client";
 
-import { appStore } from "@/app/store";
+import { AgentSummary } from "app-types/agent";
+import { ChatMention } from "app-types/chat";
 import { AllowedMCPServer, MCPServerInfo } from "app-types/mcp";
+import { WorkflowSummary } from "app-types/workflow";
+import { authClient } from "auth/client";
+import { redriectMcpOauth } from "lib/ai/mcp/oauth-redirect";
+import { AppDefaultToolkit } from "lib/ai/tools";
 import { cn, objectFlow } from "lib/utils";
 import {
   ArrowUpRightIcon,
@@ -11,7 +16,6 @@ import {
   CodeIcon,
   GlobeIcon,
   HardDriveUploadIcon,
-  ImagesIcon,
   InfoIcon,
   Loader,
   MessageCircle,
@@ -25,11 +29,15 @@ import {
   X,
 } from "lucide-react";
 import Link from "next/link";
+import { useTranslations } from "next-intl";
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
+import { safe } from "ts-safe";
+import { Avatar, AvatarFallback, AvatarImage } from "ui/avatar";
 import { Badge } from "ui/badge";
 import { Button } from "ui/button";
 import { Checkbox } from "ui/checkbox";
+import { CountAnimation } from "ui/count-animation";
 import {
   Dialog,
   DialogContent,
@@ -53,35 +61,17 @@ import {
 } from "ui/dropdown-menu";
 import { Input } from "ui/input";
 import { MCPIcon } from "ui/mcp-icon";
-
-import { useTranslations } from "next-intl";
-
+import { Separator } from "ui/separator";
+import { handleErrorWithToast } from "ui/shared-toast";
 import { Switch } from "ui/switch";
+import { Tooltip, TooltipContent, TooltipTrigger } from "ui/tooltip";
 import { useShallow } from "zustand/shallow";
+import { appStore } from "@/app/store";
+import { useAgents } from "@/hooks/queries/use-agents";
 import { useMcpList } from "@/hooks/queries/use-mcp-list";
 import { useWorkflowToolList } from "@/hooks/queries/use-workflow-tool-list";
-import { Avatar, AvatarFallback, AvatarImage } from "ui/avatar";
-import { WorkflowSummary } from "app-types/workflow";
-import { WorkflowGreeting } from "./workflow/workflow-greeting";
-import { AppDefaultToolkit } from "lib/ai/tools";
-import { ChatMention } from "app-types/chat";
-import { CountAnimation } from "ui/count-animation";
-
-import { Separator } from "ui/separator";
-import { Tooltip, TooltipContent, TooltipTrigger } from "ui/tooltip";
-import { AgentSummary } from "app-types/agent";
-import { authClient } from "auth/client";
-
-import { Alert, AlertDescription, AlertTitle } from "ui/alert";
-import { safe } from "ts-safe";
-import { mutate } from "swr";
-import { handleErrorWithToast } from "ui/shared-toast";
-import { useAgents } from "@/hooks/queries/use-agents";
-import { redriectMcpOauth } from "lib/ai/mcp/oauth-redirect";
-import { GeminiIcon } from "ui/gemini-icon";
-import { useChatModels } from "@/hooks/queries/use-chat-models";
-import { OpenAIIcon } from "ui/openai-icon";
 import { KnowledgeBaseSelector } from "./knowledge-base-selector";
+import { WorkflowGreeting } from "./workflow/workflow-greeting";
 
 interface ToolSelectDropdownProps {
   align?: "start" | "end" | "center";
@@ -100,7 +90,7 @@ const calculateToolCount = (
   mcpList: (MCPServerInfo & { id: string })[],
 ) => {
   return mcpList.reduce((acc, server) => {
-    const count = allowedMcpServers[server.id]?.tools?.length;
+    const count = allowedMcpServers[server.id]?.tools?.length ?? 0;
     return acc + count;
   }, 0);
 };
@@ -128,18 +118,6 @@ export function ToolSelectDropdown({
 
   const t = useTranslations("Chat.Tool");
   const { isLoading } = useMcpList();
-  const { data: providers } = useChatModels();
-  const [globalModel] = appStore(useShallow((state) => [state.chatModel]));
-
-  const modelInfo = useMemo(() => {
-    const provider = providers?.find(
-      (provider) => provider.provider === globalModel?.provider,
-    );
-    const model = provider?.models.find(
-      (model) => model.name === globalModel?.model,
-    );
-    return model;
-  }, [providers, globalModel]);
 
   useWorkflowToolList({
     refreshInterval: 1000 * 60 * 5,
@@ -174,6 +152,7 @@ export function ToolSelectDropdown({
     allowedMcpServers,
     toolChoice,
     mcpList,
+    t,
   ]);
 
   const triggerButton = useMemo(() => {
@@ -221,13 +200,20 @@ export function ToolSelectDropdown({
         )}
       </Button>
     );
-  }, [mentions?.length, bindingTools.length, isLoading, open]);
+  }, [
+    mentions?.length,
+    bindingTools.length,
+    isLoading,
+    open,
+    agentMention,
+    className,
+  ]);
 
   useEffect(() => {
     if (bindingTools.length > 128) {
       toast("Too many tools selected, please select less than 128 tools");
     }
-  }, [bindingTools.length > 128]);
+  }, [bindingTools.length]);
 
   return (
     <DropdownMenu open={open} onOpenChange={setOpen}>
@@ -249,22 +235,33 @@ export function ToolSelectDropdown({
         </div>
       </DropdownMenuTrigger>
       <DropdownMenuContent className="md:w-72" align={align} side={side}>
-        <WorkflowToolSelector onSelectWorkflow={onSelectWorkflow} />
-        <div className="py-1">
-          <DropdownMenuSeparator />
-        </div>
-        <AgentSelector onSelectAgent={onSelectAgent} />
-        <div className="py-1">
-          <DropdownMenuSeparator />
-        </div>
-        <ImageGeneratorSelector
-          onGenerateImage={onGenerateImage}
-          modelInfo={modelInfo}
+        <WorkflowToolSelector
+          onSelectWorkflow={(w) => {
+            onSelectWorkflow?.(w);
+            setOpen(false);
+            toast.success(`Workflow "${w.name}" selected`);
+          }}
         />
         <div className="py-1">
           <DropdownMenuSeparator />
         </div>
-        <KnowledgeBaseSelector onSelectKB={onSelectKB} />
+        <AgentSelector
+          onSelectAgent={(a) => {
+            onSelectAgent?.(a);
+            setOpen(false);
+            toast.success(`Agent "${a.name}" selected`);
+          }}
+        />
+        <div className="py-1">
+          <DropdownMenuSeparator />
+        </div>
+
+        <KnowledgeBaseSelector
+          onSelectKB={(kbId) => {
+            onSelectKB?.(kbId);
+            setOpen(false);
+          }}
+        />
         <div className="py-1">
           <DropdownMenuSeparator />
         </div>
@@ -281,6 +278,44 @@ export function ToolSelectDropdown({
         </div>
       </DropdownMenuContent>
     </DropdownMenu>
+  );
+}
+
+function DefaultToolSwitch({
+  toolkit,
+  label,
+  icon: Icon,
+  checked,
+  onToggle,
+}: {
+  toolkit: AppDefaultToolkit;
+  label: string;
+  icon: any;
+  checked: boolean;
+  onToggle: (toolkit: AppDefaultToolkit) => void;
+}) {
+  const handleToggle = (e: React.MouseEvent) => {
+    e.preventDefault();
+    onToggle(toolkit);
+    if (!checked) {
+      toast.success(`${label} activated`);
+    } else {
+      toast(`${label} deactivated`);
+    }
+  };
+
+  return (
+    <DropdownMenuItem
+      className={cn(
+        "cursor-pointer font-semibold text-xs text-muted-foreground",
+        checked && "text-foreground",
+      )}
+      onClick={handleToggle}
+    >
+      <Icon className={cn("size-3.5", checked && "text-foreground")} />
+      {label}
+      <Switch className="ms-auto" checked={checked} />
+    </DropdownMenuItem>
   );
 }
 
@@ -302,7 +337,29 @@ function ToolPresets() {
   );
   const [open, setOpen] = useState(false);
   const [presetName, setPresetName] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
   const t = useTranslations();
+
+  // Fetch presets from server on mount
+  useEffect(() => {
+    fetch("/api/preset")
+      .then((res) => (res.ok ? res.json() : []))
+      .then((serverPresets: any[]) => {
+        if (serverPresets.length > 0) {
+          appStoreMutate({
+            toolPresets: serverPresets.map((p) => ({
+              id: p.id,
+              name: p.name,
+              allowedMcpServers: p.allowedMcpServers ?? undefined,
+              allowedAppDefaultToolkit: p.allowedAppDefaultToolkit ?? undefined,
+            })),
+          });
+        }
+      })
+      .catch(() => {
+        // Silently fall back to local presets
+      });
+  }, [appStoreMutate]);
 
   const presetWithToolCount = useMemo(() => {
     return presets.map((preset) => ({
@@ -312,7 +369,7 @@ function ToolPresets() {
   }, [presets, mcpList]);
 
   const addPreset = useCallback(
-    (name: string) => {
+    async (name: string) => {
       if (name.trim() === "") {
         toast.error(t("Chat.Tool.presetNameCannotBeEmpty"));
         return;
@@ -321,35 +378,85 @@ function ToolPresets() {
         toast.error(t("Chat.Tool.presetNameAlreadyExists"));
         return;
       }
-      appStoreMutate((prev) => {
-        return {
+
+      setIsSaving(true);
+      try {
+        const res = await fetch("/api/preset", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            name,
+            allowedMcpServers,
+            allowedAppDefaultToolkit,
+          }),
+        });
+
+        if (!res.ok) throw new Error("Failed to save preset");
+
+        const saved = await res.json();
+        appStoreMutate((prev) => ({
+          toolPresets: [
+            ...prev.toolPresets,
+            {
+              id: saved.id,
+              name: saved.name,
+              allowedMcpServers: saved.allowedMcpServers ?? undefined,
+              allowedAppDefaultToolkit:
+                saved.allowedAppDefaultToolkit ?? undefined,
+            },
+          ],
+        }));
+        setPresetName("");
+        setOpen(false);
+        toast.success(t("Chat.Tool.presetSaved"));
+      } catch {
+        // Fallback: save locally only
+        appStoreMutate((prev) => ({
           toolPresets: [
             ...prev.toolPresets,
             { name, allowedMcpServers, allowedAppDefaultToolkit },
           ],
-        };
-      });
-      setPresetName("");
-      setOpen(false);
-      toast.success(t("Chat.Tool.presetSaved"));
+        }));
+        setPresetName("");
+        setOpen(false);
+        toast.success(t("Chat.Tool.presetSaved"));
+      } finally {
+        setIsSaving(false);
+      }
     },
-    [allowedMcpServers, allowedAppDefaultToolkit, presets],
+    [allowedMcpServers, allowedAppDefaultToolkit, presets, appStoreMutate, t],
   );
 
-  const deletePreset = useCallback((index: number) => {
-    appStoreMutate((prev) => {
-      return {
-        toolPresets: prev.toolPresets.filter((_, i) => i !== index),
-      };
-    });
-  }, []);
+  const deletePreset = useCallback(
+    (index: number) => {
+      const preset = presets[index] as any;
+      const presetId = preset?.id;
 
-  const applyPreset = useCallback((preset: (typeof presets)[number]) => {
-    appStoreMutate({
-      allowedMcpServers: preset.allowedMcpServers,
-      allowedAppDefaultToolkit: preset.allowedAppDefaultToolkit,
-    });
-  }, []);
+      // Remove from local store immediately
+      appStoreMutate((prev) => ({
+        toolPresets: prev.toolPresets.filter((_, i) => i !== index),
+      }));
+
+      // Delete from server if it has an id
+      if (presetId) {
+        fetch(`/api/preset/${presetId}`, { method: "DELETE" }).catch(() => {
+          // Silently ignore server errors; local delete already applied
+        });
+      }
+    },
+    [appStoreMutate, presets],
+  );
+
+  const applyPreset = useCallback(
+    (preset: (typeof presets)[number]) => {
+      appStoreMutate({
+        allowedMcpServers: preset.allowedMcpServers,
+        allowedAppDefaultToolkit: preset.allowedAppDefaultToolkit,
+      });
+      toast.success(`Preset "${preset.name}" applied`);
+    },
+    [appStoreMutate],
+  );
 
   return (
     <DropdownMenuGroup className="cursor-pointer">
@@ -391,10 +498,14 @@ function ToolPresets() {
                     variant={"secondary"}
                     size={"sm"}
                     className="border"
+                    disabled={isSaving}
                     onClick={() => {
                       addPreset(presetName);
                     }}
                   >
+                    {isSaving && (
+                      <Loader className="size-3.5 me-1 animate-spin" />
+                    )}
                     {t("Common.save")}
                   </Button>
                 </DialogContent>
@@ -436,6 +547,7 @@ function ToolPresets() {
                       className="p-1 hover:bg-input rounded-full cursor-pointer"
                       onClick={(e) => {
                         e.preventDefault();
+                        e.stopPropagation();
                         deletePreset(index);
                       }}
                     >
@@ -637,7 +749,7 @@ function McpServerSelector() {
         };
       });
     },
-    [],
+    [appStoreMutate],
   );
   return (
     <DropdownMenuGroup>
@@ -767,88 +879,81 @@ function McpServerToolSelector({
     () =>
       safe(() => setLoading(true))
         .map(() => redriectMcpOauth(serverId))
-        .ifOk(() => mutate("/api/mcp/list"))
-        .ifFail(handleErrorWithToast)
-        .watch(() => setLoading(false)),
-
+        .ifFail((e) => {
+          setLoading(false);
+          handleErrorWithToast(e);
+        })
+        .unwrap(),
     [serverId],
   );
 
-  if (isAuthorizing) {
-    return (
-      <Alert
-        className="cursor-pointer hover:bg-accent/10 transition-colors border-none"
-        onClick={handleAuthorize}
-        role="button"
-        tabIndex={0}
-        onKeyDown={(e) => {
-          if (e.key === "Enter" || e.key === " ") {
-            e.preventDefault();
-            handleAuthorize();
-          }
-        }}
-      >
-        {loading ? <Loader className="animate-spin" /> : <ShieldAlertIcon />}
-
-        <AlertTitle>Authorization Required</AlertTitle>
-        <AlertDescription>
-          Click here to authorize this MCP server and access its tools.
-        </AlertDescription>
-      </Alert>
-    );
-  }
   return (
-    <div>
-      <DropdownMenuLabel
-        className="text-muted-foreground flex items-center gap-2"
-        onClick={(e) => {
-          e.preventDefault();
-          onClickAllChecked(!checked);
-        }}
-      >
-        <input
-          autoFocus
-          placeholder={t("search")}
-          value={search}
-          onKeyDown={(e) => {
-            e.stopPropagation();
-          }}
-          onChange={(e) => setSearch(e.target.value)}
-          onClick={(e) => {
-            e.stopPropagation();
-          }}
-          className="placeholder:text-muted-foreground flex w-full text-xs   outline-hidden disabled:cursor-not-allowed disabled:opacity-50"
-        />
-        <div className="flex-1" />
-        <Switch checked={checked} />
+    <div className="w-full">
+      <DropdownMenuLabel className="p-2 space-y-2">
+        <div className="flex items-center gap-2">
+          <Input
+            placeholder={t("search")}
+            className="flex-1 h-8"
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <div className="flex items-center gap-2">
+          <Checkbox
+            checked={checked}
+            onCheckedChange={(checked) => onClickAllChecked(!!checked)}
+          />
+          <span className="text-xs font-semibold">{t("allTools")}</span>
+        </div>
       </DropdownMenuLabel>
       <DropdownMenuSeparator />
-      <div className="max-h-96 overflow-y-auto">
+      <div className="max-h-60 overflow-y-auto">
         {filteredTools.length === 0 ? (
-          <div className="text-sm text-muted-foreground w-full h-full flex items-center justify-center py-6">
+          <div className="p-4 text-center text-xs text-muted-foreground">
             {t("noResults")}
           </div>
         ) : (
           filteredTools.map((tool) => (
             <DropdownMenuItem
               key={tool.name}
-              className="flex items-center gap-2 cursor-pointer mb-1"
+              className="flex items-center gap-2 p-2 cursor-pointer"
               onClick={(e) => {
                 e.preventDefault();
                 onToolClick(tool.name, !tool.checked);
               }}
             >
-              <div className="mx-1 flex-1 min-w-0">
-                <p className="font-medium text-xs mb-1 truncate">{tool.name}</p>
-                <p className="text-xs text-muted-foreground truncate">
+              <Checkbox checked={tool.checked} className="shrink-0" />
+              <div className="flex flex-col min-w-0">
+                <span className="text-xs font-medium truncate">
+                  {tool.name}
+                </span>
+                <span className="text-[10px] text-muted-foreground truncate">
                   {tool.description}
-                </p>
+                </span>
               </div>
-              <Checkbox checked={tool.checked} className="ms-auto" />
             </DropdownMenuItem>
           ))
         )}
       </div>
+      {isAuthorizing && (
+        <>
+          <DropdownMenuSeparator />
+          <div className="p-2">
+            <Button
+              className="w-full h-8 text-xs"
+              onClick={handleAuthorize}
+              disabled={loading}
+            >
+              {loading ? (
+                <Loader className="animate-spin size-3 mr-2" />
+              ) : (
+                <ShieldAlertIcon className="size-3 mr-2" />
+              )}
+              {t("authorize")}
+            </Button>
+          </div>
+        </>
+      )}
     </div>
   );
 }
@@ -858,22 +963,25 @@ function AppDefaultToolKitSelector() {
     useShallow((state) => [state.mutate, state.allowedAppDefaultToolkit]),
   );
   const t = useTranslations();
-  const toggleAppDefaultToolkit = useCallback((toolkit: AppDefaultToolkit) => {
-    appStoreMutate((prev) => {
-      const newAllowedAppDefaultToolkit = [
-        ...(prev.allowedAppDefaultToolkit ?? []),
-      ];
-      if (newAllowedAppDefaultToolkit.includes(toolkit)) {
-        newAllowedAppDefaultToolkit.splice(
-          newAllowedAppDefaultToolkit.indexOf(toolkit),
-          1,
-        );
-      } else {
-        newAllowedAppDefaultToolkit.push(toolkit);
-      }
-      return { allowedAppDefaultToolkit: newAllowedAppDefaultToolkit };
-    });
-  }, []);
+  const toggleAppDefaultToolkit = useCallback(
+    (toolkit: AppDefaultToolkit) => {
+      appStoreMutate((prev) => {
+        const newAllowedAppDefaultToolkit = [
+          ...(prev.allowedAppDefaultToolkit ?? []),
+        ];
+        if (newAllowedAppDefaultToolkit.includes(toolkit)) {
+          newAllowedAppDefaultToolkit.splice(
+            newAllowedAppDefaultToolkit.indexOf(toolkit),
+            1,
+          );
+        } else {
+          newAllowedAppDefaultToolkit.push(toolkit);
+        }
+        return { allowedAppDefaultToolkit: newAllowedAppDefaultToolkit };
+      });
+    },
+    [appStoreMutate],
+  );
 
   const defaultToolInfo = useMemo(() => {
     const raw = t.raw("Chat.Tool.defaultToolKit");
@@ -913,36 +1021,21 @@ function AppDefaultToolKitSelector() {
         icon,
       };
     });
-  }, []);
+  }, [t]);
 
   return (
     <DropdownMenuGroup>
       {defaultToolInfo.map((tool) => {
+        const isChecked = !!allowedAppDefaultToolkit?.includes(tool.id);
         return (
-          <DropdownMenuItem
+          <DefaultToolSwitch
             key={tool.id}
-            className={cn(
-              "cursor-pointer font-semibold text-xs text-muted-foreground",
-              allowedAppDefaultToolkit?.includes(tool.id) && "text-foreground",
-            )}
-            onClick={(e) => {
-              e.preventDefault();
-              toggleAppDefaultToolkit(tool.id);
-            }}
-          >
-            <tool.icon
-              className={cn(
-                "size-3.5",
-                allowedAppDefaultToolkit?.includes(tool.id) &&
-                  "text-foreground",
-              )}
-            />
-            {tool.label}
-            <Switch
-              className="ms-auto"
-              checked={allowedAppDefaultToolkit?.includes(tool.id)}
-            />
-          </DropdownMenuItem>
+            toolkit={tool.id}
+            label={tool.label}
+            icon={tool.icon}
+            checked={isChecked}
+            onToggle={toggleAppDefaultToolkit}
+          />
         );
       })}
     </DropdownMenuGroup>
@@ -956,7 +1049,7 @@ function AgentSelector({
 }) {
   const t = useTranslations();
   const { myAgents, bookmarkedAgents } = useAgents({
-    filters: ["mine", "bookmarked"],
+    limit: 50,
   });
 
   const emptyAgent = useMemo(() => {
@@ -964,7 +1057,7 @@ function AgentSelector({
     return (
       <Link
         href={"/agent/new"}
-        className="py-8 px-4 hover:bg-input/100 rounded-lg cursor-pointer flex justify-between items-center text-xs overflow-hidden"
+        className="py-8 px-4 hover:bg-input rounded-lg cursor-pointer flex justify-between items-center text-xs overflow-hidden"
       >
         <div className="gap-1 z-10">
           <div className="flex items-center mb-4 gap-1">
@@ -1059,47 +1152,6 @@ function AgentSelector({
                 </div>
               </DropdownMenuItem>
             ))}
-          </DropdownMenuSubContent>
-        </DropdownMenuPortal>
-      </DropdownMenuSub>
-    </DropdownMenuGroup>
-  );
-}
-
-function ImageGeneratorSelector({
-  onGenerateImage,
-  modelInfo,
-}: {
-  onGenerateImage?: (provider?: "google" | "openai") => void;
-  modelInfo?: { isToolCallUnsupported?: boolean };
-}) {
-  const t = useTranslations("Chat");
-
-  return (
-    <DropdownMenuGroup>
-      <DropdownMenuSub>
-        <DropdownMenuSubTrigger className="text-xs flex items-center gap-2 font-semibold cursor-pointer">
-          <ImagesIcon className="size-3.5" />
-          {t("generateImage")}
-        </DropdownMenuSubTrigger>
-        <DropdownMenuPortal>
-          <DropdownMenuSubContent>
-            <DropdownMenuItem
-              disabled={modelInfo?.isToolCallUnsupported}
-              onClick={() => onGenerateImage?.("google")}
-              className="cursor-pointer"
-            >
-              <GeminiIcon className="me-2 size-4" />
-              Gemini (Nano Banana)
-            </DropdownMenuItem>
-            <DropdownMenuItem
-              disabled={modelInfo?.isToolCallUnsupported}
-              onClick={() => onGenerateImage?.("openai")}
-              className="cursor-pointer"
-            >
-              <OpenAIIcon className="me-2 size-4" />
-              OpenAI
-            </DropdownMenuItem>
           </DropdownMenuSubContent>
         </DropdownMenuPortal>
       </DropdownMenuSub>
