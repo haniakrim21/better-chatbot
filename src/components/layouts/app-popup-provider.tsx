@@ -1,6 +1,7 @@
 "use client";
 
 import dynamic from "next/dynamic";
+import { useState } from "react";
 
 const KeyboardShortcutsPopup = dynamic(
   () =>
@@ -62,11 +63,23 @@ const UserSettingsPopup = dynamic(
   },
 );
 
+const GlobalSearchDialog = dynamic(
+  () =>
+    import("@/components/global-search-dialog").then(
+      (mod) => mod.GlobalSearchDialog,
+    ),
+  {
+    ssr: false,
+  },
+);
+
 export function AppPopupProvider({
   userSettingsComponent,
 }: {
   userSettingsComponent: React.ReactNode;
 }) {
+  const [searchOpen, setSearchOpen] = useState(false);
+
   return (
     <>
       <KeyboardShortcutsPopup />
@@ -75,6 +88,7 @@ export function AppPopupProvider({
       <ChatBotVoice />
       <ChatBotTemporary />
       <McpCustomizationPopup />
+      <GlobalSearchDialog open={searchOpen} onOpenChange={setSearchOpen} />
     </>
   );
 }
