@@ -1,8 +1,8 @@
 import type { LanguageModelUsage, UIMessage } from "ai";
+import { tag } from "lib/tag";
 import { z } from "zod";
 import { AllowedMCPServerZodSchema } from "./mcp";
 import { UserPreferences } from "./user";
-import { tag } from "lib/tag";
 
 export type ChatMetadata = {
   usage?: LanguageModelUsage;
@@ -95,6 +95,16 @@ export const ChatMentionSchema = z.discriminatedUnion("type", [
 
 export type ChatMention = z.infer<typeof ChatMentionSchema>;
 
+export const PersonalityPresetSchema = z.enum([
+  "default",
+  "concise",
+  "detailed",
+  "creative",
+  "technical",
+]);
+
+export type PersonalityPreset = z.infer<typeof PersonalityPresetSchema>;
+
 export const chatApiSchemaRequestBodySchema = z.object({
   id: z.string(),
   message: z.any() as z.ZodType<UIMessage>,
@@ -114,6 +124,7 @@ export const chatApiSchemaRequestBodySchema = z.object({
   currentSelection: z.string().optional(),
   teamId: z.string().optional(),
   workflowId: z.string().optional(),
+  personalityPreset: PersonalityPresetSchema.optional(),
 });
 
 export type ChatApiSchemaRequestBody = z.infer<

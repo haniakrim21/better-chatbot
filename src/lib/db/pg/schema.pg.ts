@@ -1,25 +1,24 @@
+import { UIMessage } from "ai";
 import { Agent } from "app-types/agent";
-import { UserPreferences } from "app-types/user";
+import { ChatMetadata } from "app-types/chat";
 import { MCPServerConfig } from "app-types/mcp";
-import { sql, relations } from "drizzle-orm";
+import { UserPreferences } from "app-types/user";
+import { DBEdge, DBNode, DBWorkflow } from "app-types/workflow";
+import { isNotNull, relations, sql } from "drizzle-orm";
 import {
+  boolean,
+  index,
+  integer,
+  json,
+  jsonb,
   pgTable,
   text,
   timestamp,
-  json,
-  jsonb,
-  uuid,
-  boolean,
   unique,
+  uuid,
   varchar,
-  index,
   vector,
-  integer,
 } from "drizzle-orm/pg-core";
-import { isNotNull } from "drizzle-orm";
-import { DBWorkflow, DBEdge, DBNode } from "app-types/workflow";
-import { UIMessage } from "ai";
-import { ChatMetadata } from "app-types/chat";
 import { TipTapMentionJsonContent } from "@/types/util";
 
 // Team Table Changes
@@ -649,3 +648,94 @@ export const PlatformApiKeyTable = pgTable("platform_api_key", {
 });
 
 export type PlatformApiKeyEntity = typeof PlatformApiKeyTable.$inferSelect;
+
+export const ToolPresetTable = pgTable("tool_preset", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  name: text("name").notNull(),
+  allowedMcpServers: json("allowed_mcp_servers"),
+  allowedAppDefaultToolkit: json("allowed_app_default_toolkit").$type<
+    string[]
+  >(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => UserTable.id, { onDelete: "cascade" }),
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export type ToolPresetEntity = typeof ToolPresetTable.$inferSelect;
+
+export const UserMemoryTable = pgTable("user_memory", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => UserTable.id, { onDelete: "cascade" }),
+  content: text("content").notNull(), // The extracted fact/preference
+  category: text("category").notNull().default("general"), // e.g., preference, fact, project, style
+  source: text("source"), // threadId or context where it was extracted
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export type UserMemoryEntity = typeof UserMemoryTable.$inferSelect;
+
+export const AutomationTable = pgTable("automation", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  name: text("name").notNull(),
+  description: text("description"),
+  schedule: text("schedule").notNull(), // Cron expression, e.g. "0 9 * * 1" (every Monday 9am)
+  prompt: text("prompt").notNull(), // The instruction to send to the agent
+  agentId: uuid("agent_id").references(() => AgentTable.id, {
+    onDelete: "set null",
+  }),
+  enabled: boolean("enabled").notNull().default(true),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => UserTable.id, { onDelete: "cascade" }),
+  lastRunAt: timestamp("last_run_at"),
+  lastRunStatus: text("last_run_status"), // "success" | "error"
+  lastRunResult: text("last_run_result"), // Summary of last run
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export type AutomationEntity = typeof AutomationTable.$inferSelect;
+
+export const SkillTable = pgTable("skill", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  name: text("name").notNull(),
+  description: text("description"),
+  instructions: text("instructions").notNull(), // System prompt fragment for this skill
+  tools: json("tools").$type<string[]>(), // List of tool identifiers this skill uses
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => UserTable.id, { onDelete: "cascade" }),
+  visibility: varchar("visibility", {
+    enum: ["public", "private"],
+  })
+    .notNull()
+    .default("private"),
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export type SkillEntity = typeof SkillTable.$inferSelect;
+
+export const AgentSkillTable = pgTable(
+  "agent_skill",
+  {
+    id: uuid("id").primaryKey().notNull().defaultRandom(),
+    agentId: uuid("agent_id")
+      .notNull()
+      .references(() => AgentTable.id, { onDelete: "cascade" }),
+    skillId: uuid("skill_id")
+      .notNull()
+      .references(() => SkillTable.id, { onDelete: "cascade" }),
+    createdAt: timestamp("created_at")
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => [unique().on(table.agentId, table.skillId)],
+);
+
+export type AgentSkillEntity = typeof AgentSkillTable.$inferSelect;
