@@ -1,24 +1,30 @@
 "use client";
 
-import { useCallback, useMemo, useRef, useState } from "react";
-import { useRouter } from "next/navigation";
-import { useTranslations } from "next-intl";
-import { toast } from "sonner";
-import { useMutateAgents } from "@/hooks/queries/use-agents";
-import { useMcpList } from "@/hooks/queries/use-mcp-list";
-import { useWorkflowToolList } from "@/hooks/queries/use-workflow-tool-list";
-import { useObjectState } from "@/hooks/use-object-state";
-import { useBookmark } from "@/hooks/queries/use-bookmark";
 import { Agent, AgentCreateSchema, AgentUpdateSchema } from "app-types/agent";
 import { ChatMention } from "app-types/chat";
 import { MCPServerInfo } from "app-types/mcp";
 import { WorkflowSummary } from "app-types/workflow";
+import {
+  RandomDataGeneratorExample,
+  WeatherExample,
+} from "lib/ai/agent/example";
 import { DefaultToolName } from "lib/ai/tools";
 import { BACKGROUND_COLORS } from "lib/const";
+import { notify } from "lib/notify";
 import { cn, fetcher, objectFlow } from "lib/utils";
+import {
+  BookOpen,
+  ChevronDownIcon,
+  Loader,
+  Users2,
+  WandSparklesIcon,
+  X,
+} from "lucide-react";
+import { useRouter } from "next/navigation";
+import { useTranslations } from "next-intl";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { toast } from "sonner";
 import { safe } from "ts-safe";
-import { handleErrorWithToast } from "ui/shared-toast";
-import { ChevronDownIcon, Loader, WandSparklesIcon } from "lucide-react";
 import { Button } from "ui/button";
 import {
   DropdownMenu,
@@ -28,22 +34,22 @@ import {
 } from "ui/dropdown-menu";
 import { Input } from "ui/input";
 import { Label } from "ui/label";
-import { Textarea } from "ui/textarea";
 import { ScrollArea } from "ui/scroll-area";
+import { handleErrorWithToast } from "ui/shared-toast";
 import { Skeleton } from "ui/skeleton";
 import { TextShimmer } from "ui/text-shimmer";
+import { Textarea } from "ui/textarea";
 import { ShareableActions, Visibility } from "@/components/shareable-actions";
-import { GenerateAgentDialog } from "./generate-agent-dialog";
+import { TeamSelector } from "@/components/teams/team-selector";
+import { useMutateAgents } from "@/hooks/queries/use-agents";
+import { useBookmark } from "@/hooks/queries/use-bookmark";
+import { useMcpList } from "@/hooks/queries/use-mcp-list";
+import { useWorkflowToolList } from "@/hooks/queries/use-workflow-tool-list";
+import { useObjectState } from "@/hooks/use-object-state";
+import { CamelSessionDialog } from "../chat/camel-session-dialog";
 import { AgentIconPicker } from "./agent-icon-picker";
 import { AgentToolSelector } from "./agent-tool-selector";
-import { TeamSelector } from "@/components/teams/team-selector";
-import {
-  RandomDataGeneratorExample,
-  WeatherExample,
-} from "lib/ai/agent/example";
-import { notify } from "lib/notify";
-import { CamelSessionDialog } from "../chat/camel-session-dialog";
-import { Users2 } from "lucide-react";
+import { GenerateAgentDialog } from "./generate-agent-dialog";
 
 const defaultConfig = (): PartialBy<
   Omit<Agent, "createdAt" | "updatedAt" | "userId">,
@@ -93,6 +99,73 @@ export default function EditAgent({
   const [isVisibilityChangeLoading, setIsVisibilityChangeLoading] =
     useState(false);
   const [isCamelDialogOpen, setIsCamelDialogOpen] = useState(false);
+
+  // Skills state
+  const [allSkills, setAllSkills] = useState<
+    { id: string; name: string; description: string | null }[]
+  >([]);
+  const [attachedSkillIds, setAttachedSkillIds] = useState<Set<string>>(
+    new Set(),
+  );
+  const [isSkillsLoading, setIsSkillsLoading] = useState(false);
+
+  // Fetch available skills and attached skills for this agent
+  useEffect(() => {
+    const fetchSkills = async () => {
+      setIsSkillsLoading(true);
+      try {
+        const res = await fetch("/api/skill");
+        if (res.ok) {
+          const skills = await res.json();
+          setAllSkills(skills);
+        }
+        if (initialAgent?.id) {
+          const res2 = await fetch(
+            `/api/skill/agent?agentId=${initialAgent.id}`,
+          );
+          if (res2.ok) {
+            const attached = await res2.json();
+            setAttachedSkillIds(
+              new Set(attached.map((s: { id: string }) => s.id)),
+            );
+          }
+        }
+      } finally {
+        setIsSkillsLoading(false);
+      }
+    };
+    fetchSkills();
+  }, [initialAgent?.id]);
+
+  const toggleSkill = useCallback(
+    async (skillId: string) => {
+      if (!initialAgent?.id) return;
+      const isAttached = attachedSkillIds.has(skillId);
+      // Optimistic update
+      setAttachedSkillIds((prev) => {
+        const next = new Set(prev);
+        if (isAttached) next.delete(skillId);
+        else next.add(skillId);
+        return next;
+      });
+      try {
+        await fetch("/api/skill/agent", {
+          method: isAttached ? "DELETE" : "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ agentId: initialAgent.id, skillId }),
+        });
+      } catch {
+        // Revert on error
+        setAttachedSkillIds((prev) => {
+          const next = new Set(prev);
+          if (isAttached) next.add(skillId);
+          else next.delete(skillId);
+          return next;
+        });
+      }
+    },
+    [initialAgent?.id, attachedSkillIds],
+  );
 
   const textareaRef = useRef<HTMLTextAreaElement>(null);
 
@@ -574,6 +647,50 @@ export default function EditAgent({
               />
             )}
           </div>
+
+          {/* Skills section - only shown for existing agents */}
+          {initialAgent?.id && (
+            <div className="flex gap-2 flex-col">
+              <Label className="text-base flex items-center gap-2">
+                <BookOpen className="size-4" />
+                {t("Skills.title")}
+              </Label>
+              {isSkillsLoading ? (
+                <Skeleton className="w-full h-12" />
+              ) : allSkills.length === 0 ? (
+                <p className="text-sm text-muted-foreground">
+                  {t("Skills.noSkills")}
+                </p>
+              ) : (
+                <div className="flex flex-wrap gap-2">
+                  {allSkills.map((skill) => {
+                    const isAttached = attachedSkillIds.has(skill.id);
+                    return (
+                      <button
+                        key={skill.id}
+                        type="button"
+                        disabled={!hasEditAccess}
+                        onClick={() => toggleSkill(skill.id)}
+                        className={cn(
+                          "inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm border transition-colors",
+                          isAttached
+                            ? "bg-primary/10 border-primary text-primary"
+                            : "bg-secondary/40 border-transparent text-muted-foreground hover:bg-secondary",
+                          !hasEditAccess && "opacity-50 cursor-not-allowed",
+                        )}
+                      >
+                        <BookOpen className="size-3" />
+                        {skill.name}
+                        {isAttached && (
+                          <X className="size-3 ml-0.5 opacity-60" />
+                        )}
+                      </button>
+                    );
+                  })}
+                </div>
+              )}
+            </div>
+          )}
         </div>
 
         {hasEditAccess && (
