@@ -1,8 +1,8 @@
 import { Node } from "@xyflow/react";
 import { ChatModel } from "app-types/chat";
 import { ObjectJsonSchema7, TipTapMentionJsonContent } from "app-types/util";
-import { ConditionBranches } from "./condition";
 import { JSONSchema7 } from "json-schema";
+import { ConditionBranches } from "./condition";
 
 /**
  * Enum defining all available node types in the workflow system.
@@ -22,9 +22,31 @@ export enum NodeKind {
   Http = "http", // HTTP request node
   Template = "template", // Template processing node
   MultiAgent = "multiagent", // Multi-agent session node
-  Code = "code", // Code execution node (future implementation)
+  Code = "code", // Code execution node - runs sandboxed JavaScript
+  Loop = "loop", // Loop/iterator node - iterates over arrays
+  Delay = "delay", // Delay/wait node - pauses execution
+  SubWorkflow = "subworkflow", // Calls another workflow as a step
+  Storage = "storage", // Read/write key-value store for stateful workflows
+  Approval = "approval", // Human-in-the-loop approval gate
   Output = "output", // Exit point of workflow - produces final result
 }
+
+/**
+ * Error handling configuration for workflow nodes.
+ * Enables retry logic and fallback behavior on node failure.
+ */
+export type NodeErrorHandling = {
+  /** Whether error handling is enabled for this node */
+  enabled: boolean;
+  /** Number of retry attempts before giving up (0 = no retries) */
+  maxRetries: number;
+  /** Delay between retries in ms */
+  retryDelayMs: number;
+  /** What to do when all retries are exhausted */
+  onFailure: "stop" | "continue" | "fallback";
+  /** Default value to use when onFailure is "continue" */
+  fallbackValue?: any;
+};
 
 /**
  * Base interface for all workflow node data.
@@ -44,6 +66,8 @@ export type BaseWorkflowNodeDataData<
    * This enables data flow between connected nodes.
    */
   outputSchema: ObjectJsonSchema7;
+  /** Optional error handling / retry configuration */
+  errorHandling?: NodeErrorHandling;
 } & T;
 
 /**
@@ -203,6 +227,105 @@ export type TemplateNodeData = BaseWorkflowNodeDataData<{
 };
 
 /**
+ * Supported languages for the Code node.
+ */
+export type CodeLanguage = "javascript";
+
+/**
+ * Code node: Executes custom JavaScript code within the workflow.
+ * The code receives an `inputs` object containing outputs from previous nodes
+ * and must return a value that becomes the node's output.
+ *
+ * Security: Code runs in a sandboxed Function constructor with no access
+ * to Node.js APIs, file system, network, or global scope.
+ */
+export type CodeNodeData = BaseWorkflowNodeDataData<{
+  kind: NodeKind.Code;
+}> & {
+  language: CodeLanguage;
+  code: string; // The JavaScript code to execute
+  timeout?: number; // Execution timeout in ms (default: 5000)
+  inputMappings: {
+    variableName: string; // Variable name accessible in code as inputs.<variableName>
+    source?: OutputSchemaSourceKey; // Reference to source node's output
+  }[];
+};
+
+/**
+ * Loop node: Iterates over an array and executes connected nodes for each item.
+ * The array source comes from a previous node's output.
+ * Each iteration receives the current item and index.
+ */
+export type LoopNodeData = BaseWorkflowNodeDataData<{
+  kind: NodeKind.Loop;
+}> & {
+  arraySource?: OutputSchemaSourceKey; // Reference to array in a previous node's output
+  itemVariable: string; // Variable name for current item (default: "item")
+  indexVariable: string; // Variable name for current index (default: "index")
+  maxIterations: number; // Safety limit (default: 100)
+  mode: "sequential" | "parallel"; // How to process items
+};
+
+/**
+ * Delay node: Pauses workflow execution for a specified duration.
+ * Useful for rate limiting, waiting for external processes, or scheduling.
+ */
+export type DelayNodeData = BaseWorkflowNodeDataData<{
+  kind: NodeKind.Delay;
+}> & {
+  delayMs: number; // Delay duration in milliseconds
+  delayType: "fixed" | "dynamic"; // Fixed value or from a previous node's output
+  dynamicSource?: OutputSchemaSourceKey; // Source for dynamic delay value
+};
+
+/**
+ * Sub-Workflow node: Calls another published workflow as a step.
+ * Maps input data from the current workflow to the child workflow's input schema.
+ */
+export type SubWorkflowNodeData = BaseWorkflowNodeDataData<{
+  kind: NodeKind.SubWorkflow;
+}> & {
+  workflowId?: string; // ID of the workflow to invoke
+  workflowName?: string; // Display name (cached for UI)
+  inputMappings: {
+    key: string; // Key in the child workflow's input schema
+    source?: OutputSchemaSourceKey; // Reference to source node's output
+  }[];
+  timeout?: number; // Execution timeout in ms (default: 300000 = 5 min)
+};
+
+/**
+ * Storage node: Read/write operations on a persistent key-value store.
+ * Data persists across workflow runs and can be shared between workflows.
+ */
+export type StorageNodeData = BaseWorkflowNodeDataData<{
+  kind: NodeKind.Storage;
+}> & {
+  operation: "get" | "set" | "delete" | "list";
+  storageKey?: string | OutputSchemaSourceKey; // Static string or reference to another node
+  storageValue?: OutputSchemaSourceKey; // For 'set' operation - reference to data to store
+  ttlMs?: number; // Optional TTL for 'set' operation (0 = no expiry)
+};
+
+/**
+ * Approval node: Human-in-the-loop gate that pauses workflow execution.
+ *
+ * When reached, the workflow pauses and sends a notification/prompt
+ * to the user. Execution resumes only after explicit approval or rejection.
+ *
+ * Implementation: Uses a time-limited polling approach. The node
+ * waits for up to `timeoutMs` for approval, checking at regular intervals.
+ * If timeout is reached, the configured `onTimeout` action is taken.
+ */
+export type ApprovalNodeData = BaseWorkflowNodeDataData<{
+  kind: NodeKind.Approval;
+}> & {
+  message?: TipTapMentionJsonContent; // Message shown to approver
+  timeoutMs: number; // Max wait time in ms (default: 300000 = 5 min)
+  onTimeout: "approve" | "reject" | "stop"; // What happens if no response
+};
+
+/**
  * Union type of all possible node data types.
  * When adding a new node type, include it in this union.
  */
@@ -215,7 +338,13 @@ export type WorkflowNodeData =
   | ConditionNodeData
   | HttpNodeData
   | TemplateNodeData
-  | MultiAgentNodeData;
+  | MultiAgentNodeData
+  | CodeNodeData
+  | LoopNodeData
+  | DelayNodeData
+  | SubWorkflowNodeData
+  | StorageNodeData
+  | ApprovalNodeData;
 
 /**
  * Runtime fields added during workflow execution

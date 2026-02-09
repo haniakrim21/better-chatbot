@@ -1,21 +1,27 @@
 import { Edge } from "@xyflow/react";
 import { JSONSchema7 } from "json-schema";
 import {
+  ApprovalNodeData,
+  CodeNodeData,
   ConditionNodeData,
-  OutputNodeData,
-  LLMNodeData,
-  NodeKind,
+  DelayNodeData,
+  HttpNodeData,
   InputNodeData,
+  LLMNodeData,
+  LoopNodeData,
+  NodeKind,
+  OutputNodeData,
+  StorageNodeData,
+  SubWorkflowNodeData,
+  TemplateNodeData,
+  ToolNodeData,
   UINode,
   WorkflowNodeData,
-  ToolNodeData,
-  HttpNodeData,
-  TemplateNodeData,
 } from "lib/ai/workflow/workflow.interface";
 import { cleanVariableName } from "lib/utils";
 import { safe } from "ts-safe";
-import { findJsonSchemaByPath } from "./shared.workflow";
 import { ConditionBranch } from "./condition";
+import { findJsonSchemaByPath } from "./shared.workflow";
 
 export function validateSchema(key: string, schema: JSONSchema7) {
   const variableName = cleanVariableName(key);
@@ -49,7 +55,10 @@ type NodeValidate<T> = (context: {
 export function allNodeValidate({
   nodes,
   edges,
-}: { nodes: UINode[]; edges: Edge[] }):
+}: {
+  nodes: UINode[];
+  edges: Edge[];
+}):
   | true
   | {
       node?: UINode;
@@ -109,6 +118,18 @@ export const nodeValidate: NodeValidate<WorkflowNodeData> = ({
       return httpNodeValidate({ node, nodes, edges });
     case NodeKind.Template:
       return templateNodeValidate({ node, nodes, edges });
+    case NodeKind.Code:
+      return codeNodeValidate({ node, nodes, edges });
+    case NodeKind.Loop:
+      return loopNodeValidate({ node, nodes, edges });
+    case NodeKind.Delay:
+      return delayNodeValidate({ node, nodes, edges });
+    case NodeKind.SubWorkflow:
+      return subWorkflowNodeValidate({ node, nodes, edges });
+    case NodeKind.Storage:
+      return storageNodeValidate({ node, nodes, edges });
+    case NodeKind.Approval:
+      return approvalNodeValidate({ node, nodes, edges });
   }
 };
 
@@ -269,4 +290,145 @@ export const templateNodeValidate: NodeValidate<TemplateNodeData> = ({
 
   // Template content can be undefined/empty - that's valid
   // The actual content validation is handled by the TipTap editor
+};
+
+export const codeNodeValidate: NodeValidate<CodeNodeData> = ({ node }) => {
+  if (!node.language) {
+    throw new Error("Code node must have a language");
+  }
+  if (node.language !== "javascript") {
+    throw new Error("Code node currently only supports JavaScript");
+  }
+  if (!node.code || !node.code.trim()) {
+    throw new Error("Code node must have code to execute");
+  }
+  // Validate timeout if provided
+  if (node.timeout !== undefined) {
+    if (typeof node.timeout !== "number" || node.timeout <= 0) {
+      throw new Error("Code timeout must be a positive number");
+    }
+    if (node.timeout > 30000) {
+      throw new Error("Code timeout cannot exceed 30000ms (30 seconds)");
+    }
+  }
+  // Validate input mappings
+  if (node.inputMappings) {
+    const varNames = node.inputMappings.map((m) => m.variableName);
+    if (varNames.length !== new Set(varNames).size) {
+      throw new Error("Input mapping variable names must be unique");
+    }
+    for (const mapping of node.inputMappings) {
+      if (!mapping.variableName || !mapping.variableName.trim()) {
+        throw new Error("Input mapping variable name cannot be empty");
+      }
+      if (!/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(mapping.variableName)) {
+        throw new Error(
+          `Invalid variable name: "${mapping.variableName}". Must be a valid JavaScript identifier.`,
+        );
+      }
+    }
+  }
+};
+
+export const loopNodeValidate: NodeValidate<LoopNodeData> = ({ node }) => {
+  if (!node.arraySource) {
+    throw new Error("Loop node must have an array source");
+  }
+  if (!node.itemVariable || !node.itemVariable.trim()) {
+    throw new Error("Loop node must have an item variable name");
+  }
+  if (!/^[a-zA-Z_$][a-zA-Z0-9_$]*$/.test(node.itemVariable)) {
+    throw new Error(
+      `Invalid item variable name: "${node.itemVariable}". Must be a valid identifier.`,
+    );
+  }
+  if (node.maxIterations !== undefined) {
+    if (
+      typeof node.maxIterations !== "number" ||
+      node.maxIterations <= 0 ||
+      node.maxIterations > 1000
+    ) {
+      throw new Error("Max iterations must be between 1 and 1000");
+    }
+  }
+  const validModes = ["sequential", "parallel"];
+  if (!validModes.includes(node.mode)) {
+    throw new Error(`Loop mode must be one of: ${validModes.join(", ")}`);
+  }
+};
+
+export const delayNodeValidate: NodeValidate<DelayNodeData> = ({ node }) => {
+  const validTypes = ["fixed", "dynamic"];
+  if (!validTypes.includes(node.delayType)) {
+    throw new Error(`Delay type must be one of: ${validTypes.join(", ")}`);
+  }
+  if (node.delayType === "fixed") {
+    if (typeof node.delayMs !== "number" || node.delayMs < 0) {
+      throw new Error("Delay must be a non-negative number");
+    }
+    if (node.delayMs > 300000) {
+      throw new Error("Delay cannot exceed 300000ms (5 minutes)");
+    }
+  }
+  if (node.delayType === "dynamic" && !node.dynamicSource) {
+    throw new Error("Dynamic delay requires a source reference");
+  }
+};
+
+export const subWorkflowNodeValidate: NodeValidate<SubWorkflowNodeData> = ({
+  node,
+}) => {
+  if (!node.workflowId) {
+    throw new Error("Sub-Workflow node must have a workflow selected");
+  }
+  if (node.timeout !== undefined) {
+    if (typeof node.timeout !== "number" || node.timeout <= 0) {
+      throw new Error("Sub-Workflow timeout must be a positive number");
+    }
+    if (node.timeout > 600000) {
+      throw new Error(
+        "Sub-Workflow timeout cannot exceed 600000ms (10 minutes)",
+      );
+    }
+  }
+};
+
+export const storageNodeValidate: NodeValidate<StorageNodeData> = ({
+  node,
+}) => {
+  const validOps = ["get", "set", "delete", "list"];
+  if (!validOps.includes(node.operation)) {
+    throw new Error(`Storage operation must be one of: ${validOps.join(", ")}`);
+  }
+  if (node.operation !== "list" && !node.storageKey) {
+    throw new Error(
+      "Storage node requires a key for get/set/delete operations",
+    );
+  }
+  if (node.operation === "set" && !node.storageValue) {
+    throw new Error("Storage set operation requires a value source");
+  }
+  if (
+    node.ttlMs !== undefined &&
+    (typeof node.ttlMs !== "number" || node.ttlMs < 0)
+  ) {
+    throw new Error("TTL must be a non-negative number");
+  }
+};
+
+export const approvalNodeValidate: NodeValidate<ApprovalNodeData> = ({
+  node,
+}) => {
+  if (node.timeoutMs !== undefined) {
+    if (typeof node.timeoutMs !== "number" || node.timeoutMs <= 0) {
+      throw new Error("Approval timeout must be a positive number");
+    }
+    if (node.timeoutMs > 600000) {
+      throw new Error("Approval timeout cannot exceed 600000ms (10 minutes)");
+    }
+  }
+  const validOnTimeout = ["approve", "reject", "stop"];
+  if (!validOnTimeout.includes(node.onTimeout)) {
+    throw new Error(`On timeout must be one of: ${validOnTimeout.join(", ")}`);
+  }
 };

@@ -1,28 +1,34 @@
-import { NodeKind, UINode } from "lib/ai/workflow/workflow.interface";
 import { useReactFlow } from "@xyflow/react";
-import { NodeIcon } from "./node-icon";
-import { Input } from "ui/input";
+import { NodeKind, UINode } from "lib/ai/workflow/workflow.interface";
+import { nextTick } from "lib/utils";
+import { MoreHorizontalIcon, XIcon } from "lucide-react";
+import { useTranslations } from "next-intl";
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuTrigger,
 } from "ui/dropdown-menu";
-import { MoreHorizontalIcon, XIcon } from "lucide-react";
-import { NodeContextMenuContent } from "./node-context-menu-content";
-import { Textarea } from "ui/textarea";
-import { Separator } from "ui/separator";
-import { InputNodeDataConfig } from "./node-config/input-node-config";
-import { OutputNodeDataConfig } from "./node-config/output-node-config";
-import { LLMNodeDataConfig } from "./node-config/llm-node-config";
-import { ConditionNodeDataConfig } from "./node-config/condition-node-config";
+import { Input } from "ui/input";
 import { Label } from "ui/label";
+import { Separator } from "ui/separator";
+import { Textarea } from "ui/textarea";
 import { NextNodeInfo } from "./next-node-info";
-import { nextTick } from "lib/utils";
-import { ToolNodeDataConfig } from "./node-config/tool-node-config";
+import { ApprovalNodeConfig } from "./node-config/approval-node-config";
+import { CodeNodeConfig } from "./node-config/code-node-config";
+import { ConditionNodeDataConfig } from "./node-config/condition-node-config";
+import { DelayNodeConfig } from "./node-config/delay-node-config";
 import { HttpNodeConfig } from "./node-config/http-node-config";
-import { TemplateNodeConfig } from "./node-config/template-node-config";
+import { InputNodeDataConfig } from "./node-config/input-node-config";
+import { LLMNodeDataConfig } from "./node-config/llm-node-config";
+import { LoopNodeConfig } from "./node-config/loop-node-config";
 import { MultiAgentNodeConfig } from "./node-config/multi-agent-node-config";
-import { useTranslations } from "next-intl";
+import { OutputNodeDataConfig } from "./node-config/output-node-config";
+import { StorageNodeConfig } from "./node-config/storage-node-config";
+import { SubWorkflowNodeConfig } from "./node-config/sub-workflow-node-config";
+import { TemplateNodeConfig } from "./node-config/template-node-config";
+import { ToolNodeDataConfig } from "./node-config/tool-node-config";
+import { NodeContextMenuContent } from "./node-context-menu-content";
+import { NodeIcon } from "./node-icon";
 
 export function SelectedNodeConfigTab({ node }: { node: UINode }) {
   const t = useTranslations();
@@ -102,6 +108,18 @@ export function SelectedNodeConfigTab({ node }: { node: UINode }) {
           <TemplateNodeConfig data={node.data} />
         ) : node.data.kind === NodeKind.MultiAgent ? (
           <MultiAgentNodeConfig data={node.data} />
+        ) : node.data.kind === NodeKind.Code ? (
+          <CodeNodeConfig data={node.data} />
+        ) : node.data.kind === NodeKind.Loop ? (
+          <LoopNodeConfig data={node.data} />
+        ) : node.data.kind === NodeKind.Delay ? (
+          <DelayNodeConfig data={node.data} />
+        ) : node.data.kind === NodeKind.SubWorkflow ? (
+          <SubWorkflowNodeConfig data={node.data} />
+        ) : node.data.kind === NodeKind.Storage ? (
+          <StorageNodeConfig data={node.data} />
+        ) : node.data.kind === NodeKind.Approval ? (
+          <ApprovalNodeConfig data={node.data} />
         ) : node.data.kind === NodeKind.Note ? (
           <div className="h-full flex flex-col gap-2 px-4">
             <Label

@@ -739,3 +739,50 @@ export const AgentSkillTable = pgTable(
 );
 
 export type AgentSkillEntity = typeof AgentSkillTable.$inferSelect;
+
+// Webhook Trigger Table - allows external systems to trigger workflows via HTTP POST
+export const WebhookTriggerTable = pgTable("webhook_trigger", {
+  id: uuid("id").primaryKey().notNull().defaultRandom(),
+  workflowId: uuid("workflow_id")
+    .notNull()
+    .references(() => WorkflowTable.id, { onDelete: "cascade" }),
+  userId: uuid("user_id")
+    .notNull()
+    .references(() => UserTable.id, { onDelete: "cascade" }),
+  name: text("name").notNull(),
+  description: text("description"),
+  secret: text("secret"), // Optional secret for HMAC signature verification
+  isActive: boolean("is_active").notNull().default(true),
+  lastTriggeredAt: timestamp("last_triggered_at"),
+  triggerCount: integer("trigger_count").notNull().default(0),
+  createdAt: timestamp("created_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+  updatedAt: timestamp("updated_at").notNull().default(sql`CURRENT_TIMESTAMP`),
+});
+
+export type WebhookTriggerEntity = typeof WebhookTriggerTable.$inferSelect;
+
+// Workflow Key-Value Storage Table - persistent state for workflows across runs
+export const WorkflowStorageTable = pgTable(
+  "workflow_storage",
+  {
+    id: uuid("id").primaryKey().notNull().defaultRandom(),
+    workflowId: uuid("workflow_id")
+      .notNull()
+      .references(() => WorkflowTable.id, { onDelete: "cascade" }),
+    userId: uuid("user_id")
+      .notNull()
+      .references(() => UserTable.id, { onDelete: "cascade" }),
+    key: varchar("key", { length: 255 }).notNull(),
+    value: jsonb("value"),
+    expiresAt: timestamp("expires_at"),
+    createdAt: timestamp("created_at")
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+    updatedAt: timestamp("updated_at")
+      .notNull()
+      .default(sql`CURRENT_TIMESTAMP`),
+  },
+  (table) => [unique().on(table.workflowId, table.userId, table.key)],
+);
+
+export type WorkflowStorageEntity = typeof WorkflowStorageTable.$inferSelect;

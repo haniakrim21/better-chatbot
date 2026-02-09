@@ -1,7 +1,7 @@
-import { generateUUID } from "lib/utils";
-import { NodeKind, UINode } from "./workflow.interface";
-import { defaultObjectJsonSchema } from "./shared.workflow";
 import { ObjectJsonSchema7 } from "app-types/util";
+import { generateUUID } from "lib/utils";
+import { defaultObjectJsonSchema } from "./shared.workflow";
+import { NodeKind, UINode } from "./workflow.interface";
 
 export function createUINode(
   kind: NodeKind,
@@ -110,6 +110,37 @@ export function createUINode(
       type: "doc",
       content: [],
     };
+  } else if (node.data.kind === NodeKind.Code) {
+    node.data.outputSchema = structuredClone(defaultCodeNodeOutputSchema);
+    node.data.language = "javascript";
+    node.data.code =
+      '// Access previous node outputs via inputs object\n// Example: const data = inputs.myVar;\n\nreturn { message: "Hello from Code node!" };';
+    node.data.timeout = 5000;
+    node.data.inputMappings = [];
+  } else if (node.data.kind === NodeKind.Loop) {
+    node.data.outputSchema = structuredClone(defaultLoopNodeOutputSchema);
+    node.data.itemVariable = "item";
+    node.data.indexVariable = "index";
+    node.data.maxIterations = 100;
+    node.data.mode = "sequential";
+  } else if (node.data.kind === NodeKind.Delay) {
+    node.data.outputSchema = structuredClone(defaultDelayNodeOutputSchema);
+    node.data.delayMs = 1000;
+    node.data.delayType = "fixed";
+  } else if (node.data.kind === NodeKind.SubWorkflow) {
+    node.data.outputSchema = structuredClone(
+      defaultSubWorkflowNodeOutputSchema,
+    );
+    node.data.inputMappings = [];
+    node.data.timeout = 300000;
+  } else if (node.data.kind === NodeKind.Storage) {
+    node.data.outputSchema = structuredClone(defaultStorageNodeOutputSchema);
+    node.data.operation = "get";
+  } else if (node.data.kind === NodeKind.Approval) {
+    node.data.outputSchema = structuredClone(defaultApprovalNodeOutputSchema);
+    node.data.timeoutMs = 300000;
+    node.data.onTimeout = "stop";
+    node.data.message = { type: "doc", content: [] };
   }
 
   return node;
@@ -147,6 +178,81 @@ export const defaultMultiAgentNodeOutputSchema: ObjectJsonSchema7 = {
     },
     turns: {
       type: "number",
+    },
+  },
+};
+
+export const defaultCodeNodeOutputSchema: ObjectJsonSchema7 = {
+  type: "object",
+  properties: {
+    result: {
+      type: "object",
+    },
+  },
+};
+
+export const defaultLoopNodeOutputSchema: ObjectJsonSchema7 = {
+  type: "object",
+  properties: {
+    items: {
+      type: "array",
+    },
+    length: {
+      type: "number",
+    },
+    currentItem: {
+      type: "object",
+    },
+    currentIndex: {
+      type: "number",
+    },
+  },
+};
+
+export const defaultDelayNodeOutputSchema: ObjectJsonSchema7 = {
+  type: "object",
+  properties: {
+    delayed: {
+      type: "boolean",
+    },
+    delayMs: {
+      type: "number",
+    },
+  },
+};
+
+export const defaultSubWorkflowNodeOutputSchema: ObjectJsonSchema7 = {
+  type: "object",
+  properties: {
+    result: {
+      type: "object",
+    },
+  },
+};
+
+export const defaultStorageNodeOutputSchema: ObjectJsonSchema7 = {
+  type: "object",
+  properties: {
+    value: {
+      type: "object",
+    },
+    found: {
+      type: "boolean",
+    },
+  },
+};
+
+export const defaultApprovalNodeOutputSchema: ObjectJsonSchema7 = {
+  type: "object",
+  properties: {
+    approved: {
+      type: "boolean",
+    },
+    rejected: {
+      type: "boolean",
+    },
+    message: {
+      type: "string",
     },
   },
 };

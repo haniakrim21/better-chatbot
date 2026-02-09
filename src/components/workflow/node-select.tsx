@@ -1,6 +1,7 @@
 "use client";
 
 import { NodeKind } from "lib/ai/workflow/workflow.interface";
+import { useTranslations } from "next-intl";
 import { ReactNode, useMemo } from "react";
 import {
   DropdownMenu,
@@ -8,11 +9,10 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "ui/dropdown-menu";
-import { NodeIcon } from "./node-icon";
-import { useTranslations } from "next-intl";
 import { Tooltip, TooltipContent, TooltipTrigger } from "ui/tooltip";
+import { NodeIcon } from "./node-icon";
 
-const unSupportedKinds: NodeKind[] = [NodeKind.Code];
+const unSupportedKinds: NodeKind[] = [];
 
 export function NodeSelect({
   children,
@@ -37,7 +37,9 @@ export function NodeSelect({
 
 function NodeSelectContent({
   onChange,
-}: { onChange: (nodeKind: NodeKind) => void }) {
+}: {
+  onChange: (nodeKind: NodeKind) => void;
+}) {
   const t = useTranslations();
   const descriptions = useMemo(() => {
     return t.raw("Workflow.kindsDescription") ?? {};

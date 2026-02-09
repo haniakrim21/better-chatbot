@@ -1,24 +1,30 @@
-import { NodeKind } from "../workflow.interface";
-import { createGraphStore, WorkflowRuntimeState } from "./graph-store";
-import { createStateGraph, graphNode, StateGraphRegistry } from "ts-edge";
-import {
-  conditionNodeExecutor,
-  outputNodeExecutor,
-  llmNodeExecutor,
-  NodeExecutor,
-  inputNodeExecutor,
-  toolNodeExecutor,
-  httpNodeExecutor,
-  templateNodeExecutor,
-  multiAgentNodeExecutor,
-} from "./node-executor";
-import { toAny } from "lib/utils";
-import { addEdgeBranchLabel } from "./add-edge-branch-label";
 import { DBEdge, DBNode } from "app-types/workflow";
-import { convertDBNodeToUINode } from "../shared.workflow";
-import globalLogger from "logger";
 import { ConsolaInstance } from "consola";
 import { colorize } from "consola/utils";
+import { toAny } from "lib/utils";
+import globalLogger from "logger";
+import { createStateGraph, graphNode, StateGraphRegistry } from "ts-edge";
+import { convertDBNodeToUINode } from "../shared.workflow";
+import { NodeErrorHandling, NodeKind } from "../workflow.interface";
+import { addEdgeBranchLabel } from "./add-edge-branch-label";
+import { createGraphStore, WorkflowRuntimeState } from "./graph-store";
+import {
+  approvalNodeExecutor,
+  codeNodeExecutor,
+  conditionNodeExecutor,
+  delayNodeExecutor,
+  httpNodeExecutor,
+  inputNodeExecutor,
+  llmNodeExecutor,
+  loopNodeExecutor,
+  multiAgentNodeExecutor,
+  NodeExecutor,
+  outputNodeExecutor,
+  storageNodeExecutor,
+  subWorkflowNodeExecutor,
+  templateNodeExecutor,
+  toolNodeExecutor,
+} from "./node-executor";
 
 /**
  * Maps node kinds to their corresponding executor functions.
@@ -42,6 +48,18 @@ function getExecutorByKind(kind: NodeKind): NodeExecutor {
       return templateNodeExecutor;
     case NodeKind.MultiAgent:
       return multiAgentNodeExecutor;
+    case NodeKind.Code:
+      return codeNodeExecutor;
+    case NodeKind.Loop:
+      return loopNodeExecutor;
+    case NodeKind.Delay:
+      return delayNodeExecutor;
+    case NodeKind.SubWorkflow:
+      return subWorkflowNodeExecutor;
+    case NodeKind.Storage:
+      return storageNodeExecutor;
+    case NodeKind.Approval:
+      return approvalNodeExecutor;
     case "NOOP" as any:
       return () => {
         return {
@@ -128,11 +146,19 @@ export const createWorkflowExecutor = (workflow: {
       async execute(state) {
         // Get the appropriate executor for this node type
         const executor = getExecutorByKind(node.kind as NodeKind);
+        const uiNode = convertDBNodeToUINode(node.workflowId, node);
+        const errorHandling = uiNode.data.errorHandling as
+          | NodeErrorHandling
+          | undefined;
 
-        // Execute the node with current state
-        const result = await executor({
-          node: convertDBNodeToUINode(node.workflowId, node).data,
+        // Execute with retry logic if error handling is configured
+        const result = await executeWithRetry({
+          executor,
+          node: uiNode.data,
           state,
+          errorHandling,
+          logger,
+          nodeName: node.name,
         });
 
         // Store the execution results in the workflow state
@@ -194,6 +220,8 @@ export const createWorkflowExecutor = (workflow: {
     });
 
   // Set up event logging for workflow execution monitoring
+  // Enhanced with streaming output: NODE_END events include the node's
+  // input/output data for real-time intermediate result display in the UI
   app.subscribe((event) => {
     if (event.eventType == "WORKFLOW_START") {
       needTable = buildNeedTable(workflow.edges);
@@ -219,6 +247,18 @@ export const createWorkflowExecutor = (workflow: {
       logger.debug(
         `[${event.eventType}] ${nodeNameByNodeId.get(event.node.name)} ${colorize(color, event.isOk ? "SUCCESS" : "FAILED")} ${duration}s`,
       );
+
+      // Attach intermediate results to the event for streaming output
+      // This allows the UI to display each node's results in real-time
+      if (event.isOk) {
+        const nodeId = event.node.name;
+        const storeState = toAny(store).getState?.() ?? toAny(store);
+        const output = storeState?.outputs?.[nodeId];
+        const input = storeState?.inputs?.[nodeId];
+        if (output || input) {
+          toAny(event).result = { output, input };
+        }
+      }
     }
   });
 
@@ -246,4 +286,73 @@ function buildNeedTable(edges: DBEdge[]): Record<string, number> {
   const tbl: Record<string, number> = {};
   map.forEach((set, n) => set.size > 1 && (tbl[n] = set.size));
   return tbl;
+}
+
+/**
+ * Executes a node with retry logic based on error handling configuration.
+ *
+ * Retry behavior:
+ * - If no errorHandling config or not enabled, executes once (normal behavior)
+ * - If enabled, retries up to maxRetries times with retryDelayMs between attempts
+ * - On final failure, behavior depends on onFailure:
+ *   - "stop": re-throws the error (workflow fails)
+ *   - "continue": returns fallbackValue as output (workflow continues)
+ *   - "fallback": returns fallbackValue as output (alias for continue)
+ */
+async function executeWithRetry({
+  executor,
+  node,
+  state,
+  errorHandling,
+  logger,
+  nodeName,
+}: {
+  executor: NodeExecutor;
+  node: any;
+  state: WorkflowRuntimeState;
+  errorHandling?: NodeErrorHandling;
+  logger: ConsolaInstance;
+  nodeName: string;
+}): Promise<{ input?: any; output?: any } | undefined> {
+  const maxRetries = errorHandling?.enabled
+    ? (errorHandling.maxRetries ?? 0)
+    : 0;
+  const retryDelay = errorHandling?.retryDelayMs ?? 1000;
+
+  let lastError: Error | undefined;
+
+  for (let attempt = 0; attempt <= maxRetries; attempt++) {
+    try {
+      return await executor({ node, state });
+    } catch (error: any) {
+      lastError = error;
+
+      if (attempt < maxRetries) {
+        logger.warn(
+          `[RETRY] ${nodeName} attempt ${attempt + 1}/${maxRetries} failed: ${error.message}. Retrying in ${retryDelay}ms...`,
+        );
+        await new Promise((resolve) => setTimeout(resolve, retryDelay));
+      }
+    }
+  }
+
+  // All retries exhausted
+  if (errorHandling?.enabled) {
+    const onFailure = errorHandling.onFailure ?? "stop";
+
+    if (onFailure === "continue" || onFailure === "fallback") {
+      logger.warn(
+        `[ERROR_HANDLING] ${nodeName} failed after ${maxRetries + 1} attempts. Continuing with fallback value.`,
+      );
+      return {
+        output: errorHandling.fallbackValue ?? {
+          error: lastError?.message,
+          _fallback: true,
+        },
+      };
+    }
+  }
+
+  // Default: re-throw the error
+  throw lastError;
 }

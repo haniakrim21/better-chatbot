@@ -5,14 +5,19 @@ import { cn } from "lib/utils";
 import {
   BotIcon,
   BoxIcon,
+  ClockIcon,
+  DatabaseIcon,
   HardDriveUpload,
   HouseIcon,
   InfoIcon,
   LandPlotIcon,
+  RepeatIcon,
+  ShieldCheckIcon,
   SplitIcon,
   TerminalIcon,
   TextIcon,
   Users2,
+  WorkflowIcon,
   WrenchIcon,
 } from "lucide-react";
 import { useMemo } from "react";
@@ -46,6 +51,16 @@ export function NodeIcon({
         return TextIcon;
       case NodeKind.Code:
         return TerminalIcon;
+      case NodeKind.Loop:
+        return RepeatIcon;
+      case NodeKind.Delay:
+        return ClockIcon;
+      case NodeKind.SubWorkflow:
+        return WorkflowIcon;
+      case NodeKind.Storage:
+        return DatabaseIcon;
+      case NodeKind.Approval:
+        return ShieldCheckIcon;
       case NodeKind.MultiAgent:
         return Users2;
       default:
@@ -74,7 +89,17 @@ export function NodeIcon({
                         ? "bg-amber-500"
                         : type === NodeKind.MultiAgent
                           ? "bg-cyan-500"
-                          : "bg-card",
+                          : type === NodeKind.Loop
+                            ? "bg-orange-500"
+                            : type === NodeKind.Delay
+                              ? "bg-slate-500"
+                              : type === NodeKind.SubWorkflow
+                                ? "bg-teal-500"
+                                : type === NodeKind.Storage
+                                  ? "bg-emerald-500"
+                                  : type === NodeKind.Approval
+                                    ? "bg-yellow-500"
+                                    : "bg-card",
         "p-1 rounded",
         className,
       )}
