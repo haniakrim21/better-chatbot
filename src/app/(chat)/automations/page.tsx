@@ -2,6 +2,7 @@
 
 import {
   AlertCircle,
+  CalendarClock,
   CheckCircle2,
   Clock,
   Loader2,
@@ -49,6 +50,48 @@ type Automation = {
   createdAt: string;
   updatedAt: string;
 };
+
+function getNextRunLabel(cron: string): string | null {
+  try {
+    // Parse a simple next-run estimate from common cron patterns
+    const parts = cron.split(" ");
+    if (parts.length !== 5) return null;
+    const [min, hour, dom, , dow] = parts;
+
+    const now = new Date();
+    const labels: string[] = [];
+
+    if (hour === "*" && min === "0") {
+      labels.push("Every hour");
+    } else if (hour.includes("*/")) {
+      labels.push(`Every ${hour.replace("*/", "")}h`);
+    } else if (dow !== "*") {
+      const days = ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"];
+      const dayName = days[parseInt(dow)] || dow;
+      labels.push(`Next ${dayName} at ${hour}:${min.padStart(2, "0")}`);
+    } else if (dom !== "*") {
+      labels.push(`Day ${dom} at ${hour}:${min.padStart(2, "0")}`);
+    } else if (hour !== "*") {
+      const h = parseInt(hour);
+      const m = parseInt(min);
+      const next = new Date(now);
+      next.setHours(h, m, 0, 0);
+      if (next <= now) next.setDate(next.getDate() + 1);
+      const diff = next.getTime() - now.getTime();
+      const hours = Math.floor(diff / (1000 * 60 * 60));
+      const mins = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+      if (hours > 0) {
+        labels.push(`in ${hours}h ${mins}m`);
+      } else {
+        labels.push(`in ${mins}m`);
+      }
+    }
+
+    return labels[0] || null;
+  } catch {
+    return null;
+  }
+}
 
 const SCHEDULE_PRESETS = [
   { label: "Every hour", value: "0 * * * *" },
@@ -283,9 +326,17 @@ export default function AutomationsPage() {
               </CardHeader>
               <CardContent>
                 <div className="space-y-3">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Clock className="h-4 w-4" />
-                    <span>{getScheduleLabel(auto.schedule)}</span>
+                  <div className="flex items-center gap-4 text-sm text-muted-foreground">
+                    <span className="flex items-center gap-2">
+                      <Clock className="h-4 w-4" />
+                      {getScheduleLabel(auto.schedule)}
+                    </span>
+                    {auto.enabled && getNextRunLabel(auto.schedule) && (
+                      <span className="flex items-center gap-1 text-xs text-primary/80">
+                        <CalendarClock className="h-3 w-3" />
+                        Next: {getNextRunLabel(auto.schedule)}
+                      </span>
+                    )}
                   </div>
                   <div className="rounded-md bg-muted p-3 text-sm">
                     <p className="line-clamp-2">{auto.prompt}</p>

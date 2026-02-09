@@ -2,6 +2,7 @@
 
 import {
   BookOpen,
+  Copy,
   Loader2,
   Pencil,
   Plus,
@@ -155,6 +156,29 @@ export default function SkillsPage() {
     }
   };
 
+  const handleDuplicate = async (skill: Skill) => {
+    const body = {
+      name: `${skill.name} (Copy)`,
+      description: skill.description || null,
+      instructions: skill.instructions,
+      tools: skill.tools,
+      visibility: "private" as const,
+    };
+
+    try {
+      const res = await fetch("/api/skill", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(body),
+      });
+      if (!res.ok) throw new Error();
+      toast.success("Skill duplicated");
+      fetchSkills();
+    } catch {
+      toast.error(t("saveFailed"));
+    }
+  };
+
   const filtered = skills.filter(
     (s) =>
       s.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -259,6 +283,14 @@ export default function SkillsPage() {
                     >
                       <Pencil className="mr-1 h-3 w-3" />
                       {t("edit")}
+                    </Button>
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => handleDuplicate(skill)}
+                      title="Duplicate skill"
+                    >
+                      <Copy className="h-3 w-3" />
                     </Button>
                     <Button
                       size="sm"

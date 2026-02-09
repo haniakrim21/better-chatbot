@@ -6,6 +6,7 @@ import {
   Loader2,
   PlusIcon,
   SearchIcon,
+  Star,
   Trash2,
 } from "lucide-react";
 import { useRouter } from "next/navigation";
@@ -41,6 +42,8 @@ type Prompt = {
   updatedAt: string;
 };
 
+type SortOption = "recent" | "alpha" | "variables";
+
 /** Extract `{{variable}}` placeholders from a string */
 function extractVariables(content: string): string[] {
   const matches = content.match(/\{\{(\w+)\}\}/g);
@@ -72,6 +75,34 @@ export default function PromptsPage() {
     {},
   );
   const [saving, setSaving] = useState(false);
+  const [favorites, setFavorites] = useState<Set<string>>(new Set());
+  const [sortBy, setSortBy] = useState<SortOption>("recent");
+  const [showFavoritesOnly, setShowFavoritesOnly] = useState(false);
+
+  // Load favorites from localStorage
+  useEffect(() => {
+    const stored = localStorage.getItem("prompt-favorites");
+    if (stored) {
+      try {
+        setFavorites(new Set(JSON.parse(stored)));
+      } catch {
+        // ignore
+      }
+    }
+  }, []);
+
+  const toggleFavorite = (id: string) => {
+    setFavorites((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) {
+        next.delete(id);
+      } else {
+        next.add(id);
+      }
+      localStorage.setItem("prompt-favorites", JSON.stringify([...next]));
+      return next;
+    });
+  };
 
   // Form state
   const [formTitle, setFormTitle] = useState("");
@@ -94,18 +125,38 @@ export default function PromptsPage() {
     fetchPrompts();
   }, [fetchPrompts]);
 
-  const filtered = useMemo(
-    () =>
-      prompts.filter(
-        (p) =>
-          p.title.toLowerCase().includes(search.toLowerCase()) ||
-          p.content.toLowerCase().includes(search.toLowerCase()) ||
-          p.tags?.some((tag) =>
-            tag.toLowerCase().includes(search.toLowerCase()),
-          ),
-      ),
-    [prompts, search],
-  );
+  const filtered = useMemo(() => {
+    let result = prompts.filter(
+      (p) =>
+        p.title.toLowerCase().includes(search.toLowerCase()) ||
+        p.content.toLowerCase().includes(search.toLowerCase()) ||
+        p.tags?.some((tag) => tag.toLowerCase().includes(search.toLowerCase())),
+    );
+
+    if (showFavoritesOnly) {
+      result = result.filter((p) => favorites.has(p.id));
+    }
+
+    // Sort
+    if (sortBy === "alpha") {
+      result = [...result].sort((a, b) => a.title.localeCompare(b.title));
+    } else if (sortBy === "variables") {
+      result = [...result].sort(
+        (a, b) =>
+          extractVariables(b.content).length -
+          extractVariables(a.content).length,
+      );
+    }
+    // "recent" is default order from API
+
+    // Always put favorites first
+    result = [
+      ...result.filter((p) => favorites.has(p.id)),
+      ...result.filter((p) => !favorites.has(p.id)),
+    ];
+
+    return result;
+  }, [prompts, search, showFavoritesOnly, sortBy, favorites]);
 
   const openCreate = () => {
     setFormTitle("");
@@ -215,14 +266,58 @@ export default function PromptsPage() {
         </Button>
       </div>
 
-      <div className="relative max-w-md">
-        <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
-        <Input
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-          placeholder={t("searchPlaceholder")}
-          className="pl-9"
-        />
+      <div className="flex items-center gap-3 flex-wrap">
+        <div className="relative max-w-md flex-1 min-w-[200px]">
+          <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 size-4 text-muted-foreground" />
+          <Input
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+            placeholder={t("searchPlaceholder")}
+            className="pl-9"
+          />
+        </div>
+        <div className="flex items-center gap-1 bg-muted rounded-lg p-1">
+          <Button
+            variant={sortBy === "recent" ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => setSortBy("recent")}
+            className="text-xs h-7"
+          >
+            Recent
+          </Button>
+          <Button
+            variant={sortBy === "alpha" ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => setSortBy("alpha")}
+            className="text-xs h-7"
+          >
+            A-Z
+          </Button>
+          <Button
+            variant={sortBy === "variables" ? "secondary" : "ghost"}
+            size="sm"
+            onClick={() => setSortBy("variables")}
+            className="text-xs h-7"
+          >
+            Variables
+          </Button>
+        </div>
+        <Button
+          variant={showFavoritesOnly ? "default" : "outline"}
+          size="sm"
+          onClick={() => setShowFavoritesOnly(!showFavoritesOnly)}
+          className="text-xs h-8 gap-1"
+        >
+          <Star
+            className={`h-3 w-3 ${showFavoritesOnly ? "fill-current" : ""}`}
+          />
+          Favorites
+          {favorites.size > 0 && (
+            <span className="bg-secondary/80 px-1 rounded text-[10px]">
+              {favorites.size}
+            </span>
+          )}
+        </Button>
       </div>
 
       {loading ? (
@@ -245,11 +340,22 @@ export default function PromptsPage() {
                 <CardHeader>
                   <CardTitle className="flex items-center justify-between">
                     <span className="truncate">{prompt.title}</span>
-                    <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                    <div className="flex gap-1">
                       <Button
                         variant="ghost"
                         size="icon"
-                        className="h-7 w-7"
+                        className={`h-7 w-7 ${favorites.has(prompt.id) ? "opacity-100 text-amber-500" : "opacity-0 group-hover:opacity-100"} transition-opacity`}
+                        onClick={() => toggleFavorite(prompt.id)}
+                        title="Favorite"
+                      >
+                        <Star
+                          className={`h-3.5 w-3.5 ${favorites.has(prompt.id) ? "fill-current" : ""}`}
+                        />
+                      </Button>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        className="h-7 w-7 opacity-0 group-hover:opacity-100 transition-opacity"
                         onClick={() => openUse(prompt)}
                         title={t("use")}
                       >

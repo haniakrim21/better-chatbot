@@ -465,7 +465,12 @@
     "modelBreakdownDescription": "Token usage per model",
     "providerBreakdown": "Provider Breakdown",
     "providerBreakdownDescription": "Token usage by provider",
-    "noData": "No usage data for this period."
+    "noData": "No usage data for this period.",
+    "estimatedCost": "Est. Cost",
+    "perRequest": "/request",
+    "exportCsv": "Export CSV",
+    "exportSuccess": "Analytics exported to CSV",
+    "vsPreview": "vs prev"
   },
   "Automations": {
     "title": "Automations",

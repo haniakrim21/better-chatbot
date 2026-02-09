@@ -1,14 +1,13 @@
-import { archiveRepository, chatRepository } from "lib/db/repository";
 import { getSession } from "auth/server";
-import { redirect } from "next/navigation";
-import Link from "next/link";
-import { Card, CardContent, CardHeader } from "ui/card";
+import { archiveRepository, chatRepository } from "lib/db/repository";
 import { MessageCircleXIcon } from "lucide-react";
-import { ArchiveActionsClient } from "@/app/(chat)/archive/[id]/archive-actions-client";
-import { Separator } from "ui/separator";
-
+import { redirect } from "next/navigation";
+import { Card, CardContent } from "ui/card";
 import LightRays from "ui/light-rays";
 import Particles from "ui/particles";
+import { Separator } from "ui/separator";
+import { ArchiveActionsClient } from "@/app/(chat)/archive/[id]/archive-actions-client";
+import { ArchiveSearchFilter } from "@/app/(chat)/archive/[id]/archive-search-filter";
 
 // Simple date formatting function
 function formatTimeAgo(date: Date): string {
@@ -155,26 +154,16 @@ export default async function ArchivePage({
               </CardContent>
             </Card>
           ) : (
-            archive.threads.map((thread) => (
-              <Link key={thread.id} href={`/chat/${thread.id}`}>
-                <Card className="hover:bg-accent/30 transition-all duration-200 cursor-pointer">
-                  <CardHeader className="py-4">
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="min-w-0 flex-1">
-                        <h3 className="font-medium text-base truncate mb-1">
-                          {thread.title || "Untitled Chat"}
-                        </h3>
-                      </div>
-                      <span className="text-xs text-muted-foreground">
-                        {formatTimeAgo(
-                          new Date(thread.lastMessageAt || thread.createdAt),
-                        )}
-                      </span>
-                    </div>
-                  </CardHeader>
-                </Card>
-              </Link>
-            ))
+            <ArchiveSearchFilter
+              threads={archive.threads.map((t) => ({
+                id: t.id,
+                title: t.title,
+                createdAt: t.createdAt.toISOString(),
+                lastMessageAt: new Date(
+                  t.lastMessageAt || t.createdAt,
+                ).toISOString(),
+              }))}
+            />
           )}
         </div>
       </div>
